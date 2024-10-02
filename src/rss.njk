@@ -1,0 +1,29 @@
+---
+layout: null
+title : RSS Feed
+permalink: rss.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>{{ site.title }}</title>
+        <description>{{ site.description }}</description>
+        <link>{{ site.url }}{{ site.rss_path }}</link>
+        <link>{{ site.url }}</link>
+        <lastBuildDate>{{ site.time | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}</lastBuildDate>
+        <pubDate>{{ site.time | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}</pubDate>
+        <ttl>1800</ttl>
+
+        {% for post in collections.posts %}
+        <item>
+            <title>{{ post.data.title  }}</title>
+            <link>{{ site.url }}{{ post.url }}</link>
+            <guid >{{ site.url }}{{ post.id }}</guid>
+            <pubDate>{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}</pubDate>
+            <description><![CDATA[{{ post.templateContent | safe }}]]></description>
+        </item>
+        {% endfor %}
+
+    </channel>
+</rss>

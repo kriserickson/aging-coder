@@ -1,0 +1,9 @@
+---
+title : Sitemap
+permalink: /sitemap.txt
+eleventyExcludeFromCollections: true
+---
+{% for page in site.pages %}
+{{site.url}}{{ page.url }}{% endfor %}
+{% for post in site.posts %}
+{{site.url}}{{ post.url }}{% endfor %}

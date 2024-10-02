@@ -1,0 +1,33 @@
+---
+layout: page.njk
+permalink: /featured/
+title: FEATURED POSTS
+description: "An archive of featured posts"
+eleventyExcludeFromCollections: true
+---
+{% set featuredcount = '0' %}
+<ul class="post-list">
+    {% for post in collections.posts %}
+        {% if post.data.featured %}
+            {% set featuredcount = featuredcount + 1 %}
+            <li>
+                <article>
+                    <i class="fa fa-star-half-o"></i>
+                    <a href="{{ post.url }}">
+                        {{ post.data.title }}
+                        <span class="entry-date">
+                            <time datetime="{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
+                                {{ post.date | date('MMMM D, yyyy') }}
+                            </time>
+                        </span>
+                    </a>
+                </article>
+            </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+{% if featuredcount == 0 %}
+    <div class="notepad-page-title row">
+        <h1>No posts has been featured yet</h1>
+    </div>
+{% endif %}

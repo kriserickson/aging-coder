@@ -1,0 +1,32 @@
+---
+layout: page.njk
+title: Tag Index
+permalink: /tags/
+description: "An archive of posts ordered by tag."
+eleventyExcludeFromCollections: true
+---
+<ul class="tag-box inline">
+
+{% for tag in collections.tags %}
+	<li><a href="#{{ tag[0] }}">{{ tag.name | capitalize }} <span>{{ tag.size }}</span></a></li>
+{% endfor %}
+
+</ul>
+
+{% for tag in collections.tags %}
+	<h2 id="{{ tag[0] }}">{{ tag.name | capitalize }}</h2>
+	<ul class="post-list">
+		{% for post in tag.posts %}
+			<li>
+				<a href="{{ post.url }}">
+					{{ post.data.title }}
+					<span class="entry-date">
+						 <time datetime="{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
+									{{ post.date | date('MMMM D, yyyy') }}
+						 </time>
+                	</span>
+				</a>
+			</li>
+		{% endfor %}
+	</ul>
+{% endfor %}

@@ -1,0 +1,35 @@
+---
+layout: page.njk
+title: Category Index
+permalink: /categories/
+tags: [Categories]
+description: "An archive of posts sorted by category."
+eleventyExcludeFromCollections: true
+---
+
+<ul class="tag-box inline">
+
+  {% for tag in collections.categories %}
+    <li><a href="#{{ tag.name }}">{{ tag.name | capitalize }} <span>{{ tag.size }}</span></a></li>
+  {% endfor %}
+
+
+</ul>
+
+{% for tag in collections.categories %}
+  <h2 id="{{ tag.name }}">{{ tag.name | capitalize }}</h2>
+  <ul class="post-list">
+    {% for post in tag.posts %}
+        <li>
+            <a href="{{ post.url }}">
+                {{ post.data.title }}
+                <span class="entry-date">
+                     <time datetime="{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
+                                {{ post.date | date('MMMM D, yyyy') }}
+                     </time>
+                </span>
+            </a>
+        </li>
+    {% endfor %}
+  </ul>
+{% endfor %}

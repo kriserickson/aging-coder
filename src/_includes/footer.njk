@@ -1,0 +1,33 @@
+<footer class="notepad-site-footer">
+    <div class="copyright">
+        <section>All content copyright <a href="/about">{{ site.owner.name }}</a> &copy; {{ site.time | date('YYYY') }}
+            &bull; All rights reserved.
+        </section>
+        <section>Published with <a class="icon-ghost" href="https://www.11ty.dev/">11ty</a></section>
+        <section>Based on <a href="https://github.com/hmfaysal/Notepad">Notepad</a> by <a
+                    href="https://twitter.com/hmfaysal">@hmfaysal</a></section>
+    </div>
+    <div class="social-icons">
+
+        {% if site.owner.twitter %}
+            <a href="https://twitter.com/{{ site.owner.twitter }}">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fa fa-twitter fa-stack-1x"></i>
+                </span>
+            </a>
+        {% endif %}
+
+        {% if site.owner.github %}
+            <a href="https://github.com/{{ site.owner.github }}">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fa fa-github fa-stack-1x"></i>
+                </span>
+            </a>
+        {% endif %}
+
+    </div>
+
+    <div class="cf"></div>
+</footer>

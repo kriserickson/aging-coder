@@ -1,0 +1,44 @@
+{
+  "title": "Aging Coder",
+  "description": "Random Musings on Technology",
+  "logo": "logo.png",
+  "disqus_shortname": "agingcoder",
+  "share": true,
+  "dropcap": true,
+  "comments": true,
+  "url": "http://agingcoder.com",
+  "owner": {
+    "name": "Kris Erickson",
+    "avatar": "portrait.jpg",
+    "email": "kristian.erickson@gmail.com",
+    "description": "The Aging Coder",
+    "twitter": "ksoncan34",
+    "github": "kriserickson"
+  },
+  "google_analytics": "UA-46763224-1",
+  "google_verify": "",
+  "bing_verify": "",
+  "keep_files": [
+    ".well-known/acme-challenge"
+  ],
+  "links": [
+    {
+      "title": "Home",
+      "url": "/",
+      "external": false,
+      "icon": "home"
+    },
+    {
+      "title": "Featured Posts",
+      "url": "/featured"
+    },
+    {
+      "title": "Categories",
+      "url": "/categories"
+    },
+    {
+      "title": "About",
+      "url": "/about"
+    }
+  ]
+}
