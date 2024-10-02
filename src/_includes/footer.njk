@@ -5,24 +5,33 @@
         </section>
         <section>Published with <a class="icon-ghost" href="https://www.11ty.dev/">11ty</a></section>
         <section>Based on <a href="https://github.com/hmfaysal/Notepad">Notepad</a> by <a
-                    href="https://twitter.com/hmfaysal">@hmfaysal</a></section>
+                    href="https://x.com/hmfaysal">@hmfaysal</a></section>
     </div>
     <div class="social-icons">
 
         {% if site.owner.twitter %}
-            <a href="https://twitter.com/{{ site.owner.twitter }}">
-                <span class="fa-stack fa-lg">
-                    <i class="fa fa-circle fa-stack-2x fa-inverse"></i>
-                    <i class="fa fa-twitter fa-stack-1x"></i>
+            <a href="https://x.com/{{ site.owner.twitter }}">
+                <span class="fa-stack fas-lg">
+                    <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fab fa-x-twitter fa-stack-1x"></i>
                 </span>
             </a>
         {% endif %}
 
         {% if site.owner.github %}
             <a href="https://github.com/{{ site.owner.github }}">
-                <span class="fa-stack fa-lg">
-                    <i class="fa fa-circle fa-stack-2x fa-inverse"></i>
-                    <i class="fa fa-github fa-stack-1x"></i>
+                <span class="fa-stack fas-lg">
+                    <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fab fa-github fa-stack-1x"></i>
+                </span>
+            </a>
+        {% endif %}
+
+        {% if site.owner.mastodon %}
+            <a href="{{ site.owner.mastodon }}">
+                <span class="fa-stack fas-lg">
+                    <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fab fa-mastodon fa-stack-1x"></i>
                 </span>
             </a>
         {% endif %}

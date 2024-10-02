@@ -48,20 +48,25 @@ pagination:
 <nav class="pagination" role="navigation">
     {% if pagination.href.previous %}
         {% if pagination.pageNumber == 1 %}
-            <a class="newer-posts" href="/"><i class="fa fa-chevron-left"></i> Newer</a>
+            <a class="newer-posts" href="/"><i class="fas fa-chevron-left"></i> Newer</a>
         {% else %}
-            <a class="newer-posts" href="/page/{{ pagination.pageNumber - 1 }}/"><i class="fa fa-chevron-left"></i> Newer</a>
+            <a class="newer-posts" href="/page/{{ pagination.pageNumber - 1 }}/">
+                <i class="fas fa-chevron-left"></i> Newer
+            </a>
         {% endif %}
     {% else %}
-        <span class="newer-posts faded"><i class="fa fa-chevron-left"></i> Newer</span>
+        <span class="newer-posts faded"><i class="fas fa-chevron-left"></i> Newer</span>
     {% endif %}
 
-    <span class="page-number">Page {{ pagination.pageNumber + 1 }} of {{ pagination.pages.length }}</span>
+    <span class="page-number">Page {{ pagination.pageNumber + 1 }} of
+        {{ pagination.pages.length }}</span>
 
     {% if pagination.href.next %}
-        <a class="older-posts" href="/page/{{ pagination.pageNumber + 1 }}/">Older <i class="fa fa-chevron-right"></i></a>
+        <a class="older-posts" href="/page/{{ pagination.pageNumber + 1 }}/">
+            Older <i class="fas fa-chevron-right"></i>
+        </a>
     {% else %}
-        <span class="older-posts faded">Older <i class="fa fa-chevron-right"></i></span>
+        <span class="older-posts faded">Older <i class="fas fa-chevron-right"></i></span>
     {% endif %}
 </nav>
 

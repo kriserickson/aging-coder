@@ -13,9 +13,10 @@
     "email": "kristian.erickson@gmail.com",
     "description": "The Aging Coder",
     "twitter": "ksoncan34",
-    "github": "kriserickson"
+    "github": "kriserickson",
+    "mastodon": "https://mastodon.social/@ksoncan34"
   },
-  "google_analytics": "UA-46763224-1",
+  "google_analytics": "G-90YGBLJTS2",
   "google_verify": "",
   "bing_verify": "",
   "keep_files": [

@@ -4,6 +4,8 @@ const dateFilter = require('nunjucks-date');
 
 module.exports = function(eleventyConfig) {
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     eleventyConfig.addFilter('safeDump', function(obj) {
         return JSON.stringify(Object.keys(obj));
     });
@@ -31,12 +33,13 @@ module.exports = function(eleventyConfig) {
 
     // Passthrough copy for img directory
     eleventyConfig.addPassthroughCopy('img');
+    eleventyConfig.addPassthroughCopy('favicon.*');
 
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
 
-            if (data.draft) {
+            if (isProduction && data.draft) {
                 return undefined;  // Skip processing for drafts
             }
             // Check if pagination object exists and has a pageNumber
