@@ -2,9 +2,18 @@ const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const rssPlugin = require('@11ty/eleventy-plugin-rss');
 const dateFilter = require('nunjucks-date');
 
+const isBuild = process.env.ELEVENTY_RUN_MODE === 'build';
+
+function getPosts(collectionApi) {
+    return collectionApi.getFilteredByGlob('src/posts/*.md').filter(function(post) {
+        // Skip drafts if we are in production mode
+        return post.data.draft !== true || !isBuild;
+    });
+}
+
 module.exports = function(eleventyConfig) {
 
-    const isProduction = process.env.NODE_ENV === 'production';
+    console.log('starting... ' +  (isBuild ? 'Build' : 'Serve'));
 
     eleventyConfig.addFilter('safeDump', function(obj) {
         return JSON.stringify(Object.keys(obj));
@@ -38,10 +47,6 @@ module.exports = function(eleventyConfig) {
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
-
-            if (isProduction && data.draft) {
-                return undefined;  // Skip processing for drafts
-            }
             // Check if pagination object exists and has a pageNumber
             if (data.pagination && data.pagination.pageNumber === 0) {
                 return '/';  // Return root for the first page
@@ -55,12 +60,12 @@ module.exports = function(eleventyConfig) {
     });
 
     eleventyConfig.addCollection('posts', function(collectionApi) {
-        const posts = collectionApi.getFilteredByGlob('src/posts/*.md');
+        const posts = getPosts(collectionApi);
         return posts.reverse();
     });
 
     eleventyConfig.addCollection('categories', function(collectionApi) {
-        const posts = collectionApi.getFilteredByGlob('src/posts/*.md');
+        const posts = getPosts(collectionApi);
         const categories = {};
         posts.forEach((post) => {
             if (!post.data.category) return;
@@ -80,7 +85,7 @@ module.exports = function(eleventyConfig) {
 
 
     eleventyConfig.addCollection('tags', function(collectionApi) {
-        const posts = collectionApi.getFilteredByGlob('src/posts/*.md');
+        const posts = getPosts(collectionApi);
         const tags = {};
         posts.forEach((post) => {
             if (!post.data.tags || post.data.tags.length === 0) return;
