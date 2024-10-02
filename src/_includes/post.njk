@@ -5,7 +5,8 @@
 {% if site.dropcap %}<style type="text/css">@media only screen and (min-width:43.75em){.notepad-post-content div>p:first-child:first-letter{float:left;font-size:4.688rem;line-height:4.375rem;padding-top:.25rem;padding-right:.5rem;padding-left:.188rem;font-family:serif}}</style>{% endif %}
 </head>
 <body class="post-template">
-{% if page.imagefeature %}
+
+{% if imagefeature %}
         <main id="notepad-post-container" class="notepad-post-container intro-effect-sliced" role="main">
             <header class="notepad-post-header">
                 <div class="bg-img"></div>
@@ -36,15 +37,15 @@
 
 </div>
             </div>
-{% if page.imagefeature %}
+{% if imagefeature %}
             <div class="notepad-post-title bg-check">
-                <h1>{{ page.title }}</h1>
+                <h1>{{ title }}</h1>
                 <p>
                     by <strong>{{ site.owner.name }}</strong> &#8212;
-                    {% set tagsize = page.tags.size %}
+                    {% set tagsize = tags.size %}
                     {% if tagsize != 0 %}
                         on
-                        {% for tag in page.tags %}
+                        {% for tag in tags %}
                             <a href="/tags/index.html#{{ tag | cgi_encode }}"
                                 data-toggle="tooltip" title="Posts tagged with {{ tag }}"
                                 rel="tag">{{ tag }}
@@ -62,16 +63,16 @@
             <div class="bg-img"></div>
         </header>
         <button class="trigger bg-check" data-info="Read more"><span>Trigger</span></button>
-        <img src="/img/{{ page.imagefeature }}" alt="cover-image" />
+        <img src="/img/{{ imagefeature }}" alt="cover-image" />
 {% else %}
                 <div class="notepad-post-title-simple row">
                     <div class="small-12 columns">
                         <div class="notepad-post-meta-simple">
-                            <h1>{{ page.title }}</h1>
+                            <h1>{{ title }}</h1>
                             <p>by <strong>{{ site.owner.name }}</strong> &#8212;
-                                {% set tagsize = page.tags.size %}
+                                {% set tagsize = tags.size %}
                                 {% if tagsize != 0 %}on
-                                    {% for tag in page.tags %}
+                                    {% for tag in tags %}
                                         <a href="/tags/index.html#{{ tag | cgi_encode }}"
                                            data-toggle="tooltip"
                                            title="Posts tagged with {{ tag }}" rel="tag">{{ tag }}
@@ -90,7 +91,7 @@
                 </div>
             </header>
 {% endif %}
-        {% if page.imagefeature %}<article class="notepad-post-content post">{% else %}<article class="notepad-post-content post tag-simple">{% endif %}
+        {% if imagefeature %}<article class="notepad-post-content post">{% else %}<article class="notepad-post-content post tag-simple">{% endif %}
             <div>{{ content | safe }}
             </div>
         </article>

@@ -8,6 +8,19 @@ module.exports = function(eleventyConfig) {
         return JSON.stringify(Object.keys(obj));
     });
 
+    eleventyConfig.addFilter('cgi_encode', function(str) {
+        return encodeURIComponent(str);
+    });
+
+    eleventyConfig.addTransform("wrapImages", function(content, outputPath) {
+        // Only apply this transformation to HTML files
+        if (outputPath && outputPath.endsWith(".html")) {
+            // Use a regex to wrap all <img> tags in <p class="with-image">
+            return content.replace(/<img(.*?)>/g, '<p class="with-image"><img$1></p>');
+        }
+        return content; // If not HTML, return content unmodified
+    });
+
     eleventyConfig.addPlugin(syntaxHighlight);
     eleventyConfig.addPlugin(rssPlugin);
     eleventyConfig.addFilter('date', dateFilter);
@@ -22,15 +35,17 @@ module.exports = function(eleventyConfig) {
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
-            console.log('path: ' + data.page.inputPath + ' has pagination: ' + (data.pagination ? 'yes' : 'no'));
-            if (data.page.inputPath === './src/index.njk') {
-                // Check if pagination object exists and has a pageNumber
-                if (data.pagination && data.pagination.pageNumber === 0) {
-                    return '/';  // Return root for the first page
-                } else if (data.pagination) {
-                    return `/page/${data.pagination.pageNumber}/`;  // Return for paginated pages
-                }
+
+            if (data.draft) {
+                return undefined;  // Skip processing for drafts
             }
+            // Check if pagination object exists and has a pageNumber
+            if (data.pagination && data.pagination.pageNumber === 0) {
+                return '/';  // Return root for the first page
+            } else if (data.pagination) {
+                return `/page/${data.pagination.pageNumber}/`;  // Return for paginated pages
+            }
+
             // Return undefined if no pagination (use default Eleventy behavior)
             return data.permalink;
         }
