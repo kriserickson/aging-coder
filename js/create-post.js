@@ -31,6 +31,7 @@ const frontMatter = `---
 layout: post
 category: 
 title: ${title}
+imagefeature:
 description: 
 draft: true
 tags: []
