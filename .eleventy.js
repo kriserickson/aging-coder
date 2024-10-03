@@ -13,12 +13,6 @@ function getPosts(collectionApi) {
 
 module.exports = function(eleventyConfig) {
 
-    console.log('starting... ' +  (isBuild ? 'Build' : 'Serve'));
-
-    eleventyConfig.addFilter('safeDump', function(obj) {
-        return JSON.stringify(Object.keys(obj));
-    });
-
     eleventyConfig.addFilter('cgi_encode', function(str) {
         return encodeURIComponent(str);
     });
@@ -34,7 +28,11 @@ module.exports = function(eleventyConfig) {
 
     eleventyConfig.addPlugin(syntaxHighlight);
     eleventyConfig.addPlugin(rssPlugin);
+    // eleventyConfig.addFilter('date', (date, format = 'MMMM yyyy', timezone = 'America/Vancouver') => {
+    //     return dateFilter(date, format, timezone);
+    // });
     eleventyConfig.addFilter('date', dateFilter);
+
     eleventyConfig.setTemplateFormats(['njk', 'md', 'liquid']);
 
     // Passthrough copy for assets directory
