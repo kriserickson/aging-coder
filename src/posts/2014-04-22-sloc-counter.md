@@ -12,6 +12,8 @@ tags: [SLOC, LOC, Tools]
 
 ### (SLOC/LOC) Line of Code Counter ###
 
+**There is a great site called [utiliti.dev](https://utiliti.dev) that has a much better version of this tool, I would recommend using that instead.**
+
 I needed a quick way to count the lines of code in a program, skipping empty lines and ignoring commented lines so I
 could get an estimate of how many lines of code a Library used (I have a current interest in SLOC and complexity).  I
 searched online to find such a beast and was surprised that the only online Line of Code Counters I could find didn't

@@ -9,11 +9,15 @@ tags: [DataUrl, Tools]
 
 ### Data Url Viewer ###
 
+**There is a great site called [utiliti.dev](https://utiliti.dev) that has a much better version of this tool, I would recommend using that instead.**
+
 I needed a quick and dirty way to display a dataUrl as an image...   
 
 <textarea id="dataUrlTextarea" style="width: 1020px; height: 400px; margin: 0 auto 20px;"></textarea>
 
+<div style="width:1020px; margin:auto;">
 <input type="button" id="dataUrlButton" value="Show Data Url">
+</div>
 
 <span id="imageResultText"></span>
 <img id="imageResult" style="width: 100%"/>
