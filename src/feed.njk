@@ -14,7 +14,7 @@ eleventyExcludeFromCollections: true
   <author>
     <name>{{ site.owner.name }}</name>
   </author>
-  {%- for post in collections.posts | reverse %}
+  {%- for post in collections.posts %}
     <entry>
       <title>{{ post.data.title }}</title>
       <link href="{{ site.url }}{{ post.url }}" />
