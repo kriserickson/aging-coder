@@ -173,8 +173,7 @@ Javascript library is going to be easier, award 3 points to Cordova.
 
 #### Update Requirements
 
-A lot of hay was made about ReactNative's ability to update without going the App Store, and with multiple [plugins] 
-(https://github.com/nordnet/cordova-hot-code-push), including one from [Microsoft](https://github.com/Microsoft/cordova-plugin-code-push), or 
+A lot of hay was made about ReactNative's ability to update without going the App Store, and with multiple [plugins](https://github.com/nordnet/cordova-hot-code-push), including one from [Microsoft](https://github.com/Microsoft/cordova-plugin-code-push), or 
 with the [hydration](http://docs.phonegap.com/phonegap-build/tools/hydration/) feature from PhoneGap build you can do the
 same thing with Cordova.  In the past, the week to two week updates times of the iOS App Store made this a truly compelling
 feature, however with Apple's new [push to shorten approval times](http://www.bloomberg.com/news/articles/2016-05-12/apple-shortens-app-review-times-in-push-to-boost-service-sales)

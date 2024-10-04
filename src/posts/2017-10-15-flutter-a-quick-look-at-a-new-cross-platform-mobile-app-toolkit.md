@@ -20,7 +20,7 @@ shaping into a reasonable solution for creation cross platform Apps.
 Flutter is a bit of a strange beast -- it runs fully natively, but uses Dart as its "lingua franca" (as far as I understand compiling
 Dart into optionally Java or Kotlin on Android and into Object-C or Swift on iOS).
 
-<img src="/img/flutter/new_project.png" style="border: 1px solid #000; margin: 10px auto 0" />
+<img alt="Flutter" src="/img/flutter/new_project.png" style="border: 1px solid #000; margin: 10px auto 0" />
 
 It doesn't use native widgets, but uses its own C++ Rendering (written with [Skia](https://en.wikipedia.org/wiki/Skia_Graphics_Engine))
 to quickly draw native-like widgets.  The authors state that they are doing this to ship higher quality widgets otherwise
@@ -28,7 +28,7 @@ to quickly draw native-like widgets.  The authors state that they are doing this
 They claim to be inspired by React's style, and use code rather than markup to create UI, and not even in the JSX sense but literally
 you create UI by creating objects as seen in the definition of a ChatWindow from their tutorial:
 
-{% highlight csharp %}
+{% highlight dart %}
   @override
   Widget build(BuildContext context) {
     return new FadeTransition(
@@ -116,7 +116,7 @@ aren't), and you don't have to much to get a pretty good looking app form the ge
 the strange ["Cupertino Widgets"](https://flutter.io/widgets/cupertino/) to get the iOS look and feel, I think we can all agree that code
 that looks like the following is ugh:
 
-{% highlight csharp %}
+{% highlight dart %}
 child: Theme.of(context).platform == TargetPlatform.iOS
     ? new CupertinoButton(
         child: new Text("Send"),
