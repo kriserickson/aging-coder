@@ -4,8 +4,8 @@ category: Programming
 title: "Leveraging LLMs for Coding: Insights and Real-World Experiences"
 imagefeature: blog/llms.webp
 description: 
-draft: true
 tags: ["Programming", "LLM"]
+featured: true
 ---
 ### Leveraging LLMs for Coding: Insights and Real-World Experiences
 
