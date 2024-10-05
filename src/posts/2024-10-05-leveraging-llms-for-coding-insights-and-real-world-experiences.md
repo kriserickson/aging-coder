@@ -7,8 +7,6 @@ description:
 tags: ["Programming", "LLM"]
 featured: true
 ---
-### Leveraging LLMs for Coding: Insights and Real-World Experiences
-
 I've been using LLMs like GitHub Copilot, ChatGPT, Gemini, and Claude for the past couple of years to assist with coding, automate repetitive tasks, and even do language translations—both for computer languages and for generating initial translations for languages like Spanish and French. These tools have transformed the way I approach coding, providing assistance across various aspects of software development. While I have worked with almost all of the popular LLMs, GitHub Copilot and ChatGPT are the two I keep coming back to.  LLM's over the past couple of years have significantly influenced the way I think about development, automation, and efficiency. Here are some of the key advantages and limitations I've experienced while using LLMs in my coding process.
 
 #### Advantages of LLMs in Coding
