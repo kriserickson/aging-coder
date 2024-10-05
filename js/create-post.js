@@ -20,7 +20,7 @@ const day = String(today.getDate()).padStart(2, '0');
 const datePrefix = `${year}-${month}-${day}`;
 
 // Slugify the title for the filename
-const slug = slugify(title.toLowerCase());
+const slug = slugify(title.toLowerCase().replace(/:/g, ''));
 
 // Define the post file path
 const postFileName = `${datePrefix}-${slug}.md`;
@@ -30,7 +30,7 @@ const postFilePath = path.join('src', 'posts', postFileName);
 const frontMatter = `---
 layout: post
 category: 
-title: ${title}
+title: "${title}"
 imagefeature:
 description: 
 draft: true

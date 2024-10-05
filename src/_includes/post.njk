@@ -42,16 +42,12 @@
                 <p>
                     by <strong>{{ site.owner.name }}</strong> &#8212;
                     {% set tagsize = tags.size %}
-                    {% if tagsize != 0 %}
-                        on
-                        {% for tag in tags %}
-                            <a href="/tags/index.html#{{ tag | cgi_encode }}"
-                                data-toggle="tooltip" title="Posts tagged with {{ tag }}"
-                                rel="tag">{{ tag }}
-                            </a>
-                            {% if not forloop.last %}&nbsp;&comma;&nbsp;{% endif %}
-                        {% endfor %}
-                    {% endif %}
+                    {% if tagsize != 0 %}in
+                        {% for tag in tags %}<a href="/tags/index.html#{{ tag | cgi_encode }}"
+                                                data-toggle="tooltip"
+                                                title="Posts tagged with {{ tag }}"
+                                                rel="tag">{{ tag }}</a>{% if not loop.last %}&comma;&nbsp;{% endif %} {% endfor %}
+                    {% endif %}&#8212;
                     <strong>
                         <time datetime="{{ page.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
                             {{ page.date | date('DD MMM YYYY') }}
@@ -70,15 +66,12 @@
                             <h1>{{ title }}</h1>
                             <p>by <strong>{{ site.owner.name }}</strong> &#8212;
                                 {% set tagsize = tags.size %}
-                                {% if tagsize != 0 %}on
-                                    {% for tag in tags %}
-                                        <a href="/tags/index.html#{{ tag | cgi_encode }}"
+                                {% if tagsize != 0 %}in
+                                    {% for tag in tags %}<a href="/tags/index.html#{{ tag | cgi_encode }}"
                                            data-toggle="tooltip"
-                                           title="Posts tagged with {{ tag }}" rel="tag">{{ tag }}
-                                        </a>
-                                        {% if not forloop.last %}&nbsp;&comma;&nbsp;{% endif %}
-                                    {% endfor %}
-                                {% endif %}
+                                           title="Posts tagged with {{ tag }}"
+                                            rel="tag">{{ tag }}</a>{% if not loop.last %}&comma;&nbsp;{% endif %} {% endfor %}
+                                {% endif %}&#8212;
                                 <strong>
                                   <time datetime="{{ page.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
                                     {{ page.date | date('MMMM D, yyyy') }}
