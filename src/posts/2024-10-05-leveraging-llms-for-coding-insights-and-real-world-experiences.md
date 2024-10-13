@@ -43,13 +43,7 @@ I've been using LLMs like GitHub Copilot, ChatGPT, Gemini, and Claude for the pa
 
    This capability is especially useful for developers working on cross-platform projects or those who need to quickly adapt to a new language for a specific task. By generating code that follows the best practices of the language, LLMs help us avoid common pitfalls and write cleaner, more maintainable code. It also shortens the learning curve, allowing us to become productive in the new language more quickly.
 
-6.  **Writing Idiomatic Code in Unfamiliar Languages**
-   
-      When learning a new programming language, one of the biggest challenges is writing code that adheres to that language's conventions. LLMs can generate idiomatic code, helping us write in a style that is consistent with best practices, even if we are not yet familiar with the language's nuances. For example, if we're transitioning from JavaScript to Python, LLMs can help us understand Pythonic ways of achieving similar outcomes, such as using list comprehensions instead of traditional loops.
-
-      This capability is especially useful for developers working on cross-platform projects or those who need to quickly adapt to a new language for a specific task. By generating code that follows the best practices of the language, LLMs help us avoid common pitfalls and write cleaner, more maintainable code. It also shortens the learning curve, allowing us to become productive in the new language more quickly.
-
-      This feature is particularly beneficial during code reviews or when refactoring. LLMs can provide context for why certain approaches were taken, making it easier to determine whether changes are safe or if there are potential side effects. By improving our understanding of the code, LLMs contribute to better decision-making and more effective collaboration within the team.
+6. This feature is also beneficial during code reviews or when refactoring langauges that you are not one of your "native" languages. LLMs can provide context for why certain approaches were taken, making it easier to determine whether changes are safe or if there are potential side effects.
 
 #### Limitations of LLMs in Coding
 
