@@ -4,7 +4,6 @@ category:
 title: "The Trough of Disillusionment"
 imagefeature: blog/trough-of-disillusionment.webp
 description: 
-draft: true
 tags: ["LLM", "AI"]
 ---
 As we get more and more experience with LLM's I am starting to get worried that I am spending more time relying them
