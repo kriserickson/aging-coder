@@ -1,0 +1,6 @@
+---
+permalink: /static-snippets/convert-strategy/raw/index.html
+eleventyExcludeFromCollections: true
+---
+{% set snippet = collections['static-snippets'] | findSnippetByName('convert-strategy') %}
+<pre style="white-space: pre-wrap; word-break: break-all;">{{ snippet.data.rawMarkdown | escape }}</pre>
