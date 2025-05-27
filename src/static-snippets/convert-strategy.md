@@ -2,6 +2,8 @@
 title: "Strategy for Converting Express Directory Files to TypeScript"
 permalink: /static-snippets/convert-strategy/
 snippet: convert-strategy
+eleventyComputed:
+   raw_permalink: "{{ page.url }}raw/"
 ---
 # Strategy for Converting Express Directory Files to TypeScript
 

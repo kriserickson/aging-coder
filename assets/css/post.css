@@ -54,6 +54,20 @@ body,
     padding: 2rem;
 }
 
+.notepad-post-content .snippet-preview h1 {
+    font-size: 1.5rem;
+    color: #58b958;
+}
+
+.notepad-post-content .snippet-preview h2 {
+    font-size: 1.25rem;
+    color: #58b958;
+}
+
+.post-template .notepad-post-content .snippet-preview p {
+    font-size: 1rem !important;
+}
+
 .post-template .notepad-post-content .snippet-preview a.external-link {
     color: #b6b617;
 }

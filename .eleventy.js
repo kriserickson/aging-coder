@@ -17,9 +17,9 @@ module.exports = function(eleventyConfig) {
         return encodeURIComponent(str);
     });
 
-    eleventyConfig.addTransform("wrapImages", function(content, outputPath) {
+    eleventyConfig.addTransform('wrapImages', function(content, outputPath) {
         // Only apply this transformation to HTML files
-        if (outputPath && outputPath.endsWith(".html")) {
+        if (outputPath && outputPath.endsWith('.html')) {
             // Use a regex to wrap all <img> tags in <p class="with-image">
             return content.replace(/<img(.*?)>/g, '<p class="with-image"><img$1></p>');
         }
@@ -103,14 +103,31 @@ module.exports = function(eleventyConfig) {
         return Object.values(tags);
     });
 
-    eleventyConfig.addCollection("static-snippets", function(collectionApi) {
+    eleventyConfig.addCollection('static-snippets', function(collectionApi) {
         // Return all snippets with a 'snippet' property in frontmatter
-        return collectionApi.getFilteredByGlob("src/static-snippets/*.md").filter(item => !!item.data.snippet);
+        return collectionApi.getFilteredByGlob('src/static-snippets/*.md').filter(item => !!item.data.snippet)
+            .map(item => {
+                // Attach raw markdown content for use in templates
+                item.data.rawMarkdown = require('fs').readFileSync(item.inputPath, 'utf8');
+                // Attach a raw permalink property for convenience
+                item.data.raw_permalink = (item.url.endsWith('/') ? item.url : item.url + '/') + 'raw/';
+                return item;
+            });
     });
 
-    // Add a filter to get a snippet by its 'snippet' frontmatter property
-    eleventyConfig.addLiquidFilter("findSnippetByName", function(snippets, name) {
+    // Add a filter to get a snippet by its 'snippet' frontmatter property (for both Liquid and Nunjucks)
+    function findSnippetByName(snippets, name) {
         return snippets.find(snippet => snippet.data.snippet === name);
+    }
+    eleventyConfig.addFilter('findSnippetByName', findSnippetByName);
+    eleventyConfig.addLiquidFilter('findSnippetByName', findSnippetByName);
+
+    // Add a shortcode to generate a "view raw" link for a snippet
+    eleventyConfig.addShortcode('snippetRawLink', function(snippet) {
+        if (!snippet || !snippet.data.raw_permalink) {
+            return '';
+        }
+        return `<a class="external-link" href="${snippet.data.raw_permalink}">View raw markdown</a>`;
     });
 
     return {
