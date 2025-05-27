@@ -8,12 +8,11 @@ const postsDir = path.join('src', 'posts');
 // Function to find all draft posts
 function findDraftPosts() {
     const files = fs.readdirSync(postsDir);
-    const drafts = files.filter(file => {
+    return files.filter(file => {
         const filePath = path.join(postsDir, file);
         const content = fs.readFileSync(filePath, 'utf-8');
         return content.includes('draft: true');
     });
-    return drafts;
 }
 
 // Function to remove 'draft: true' from the front matter

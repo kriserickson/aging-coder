@@ -1,9 +1,10 @@
 ---
 layout: post
-category: 
+category: Programming 
 title: "The Trough of Disillusionment"
 imagefeature: blog/trough-of-disillusionment.webp
-description: 
+description: "As we get more and more experience with LLM's I am starting to get worried that I am spending more time relying them
+and letting my brain atrophy..."
 tags: ["LLM", "AI"]
 ---
 As we get more and more experience with LLM's I am starting to get worried that I am spending more time relying them

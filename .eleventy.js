@@ -21,6 +21,7 @@ module.exports = function(eleventyConfig) {
         // Only apply this transformation to HTML files
         if (outputPath && outputPath.endsWith('.html')) {
             // Use a regex to wrap all <img> tags in <p class="with-image">
+            // noinspection HtmlRequiredAltAttribute
             return content.replace(/<img(.*?)>/g, '<p class="with-image"><img$1></p>');
         }
         return content; // If not HTML, return content unmodified
