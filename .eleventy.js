@@ -82,7 +82,6 @@ module.exports = function(eleventyConfig) {
         return Object.values(categories);
     });
 
-
     eleventyConfig.addCollection('tags', function(collectionApi) {
         const posts = getPosts(collectionApi);
         const tags = {};
@@ -102,6 +101,16 @@ module.exports = function(eleventyConfig) {
             });
         });
         return Object.values(tags);
+    });
+
+    eleventyConfig.addCollection("static-snippets", function(collectionApi) {
+        // Return all snippets with a 'snippet' property in frontmatter
+        return collectionApi.getFilteredByGlob("src/static-snippets/*.md").filter(item => !!item.data.snippet);
+    });
+
+    // Add a filter to get a snippet by its 'snippet' frontmatter property
+    eleventyConfig.addLiquidFilter("findSnippetByName", function(snippets, name) {
+        return snippets.find(snippet => snippet.data.snippet === name);
     });
 
     return {
