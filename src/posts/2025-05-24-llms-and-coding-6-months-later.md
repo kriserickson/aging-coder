@@ -2,9 +2,8 @@
 layout: post
 category: Programming
 title: "LLMs and Coding 6 months later"
-imagefeature:
+imagefeature: blog/llms-6months-later.webp
 description: 
-draft: true
 tags: ["Programming", "LLM"]
 featured: true
 ---
@@ -23,8 +22,9 @@ Visual Studio Code as the Jetbrains Plugin for CoPilot was clearly falling behin
 [Codex App](https://chatgpt.com/codex).  I know, OpenAi is great at naming things, you spent $3B on Windsurf 
 how about a few bucks for someone who could help you with sane naming?  I've used [Junie](https://www.jetbrains.com/junie/) 
 as well as the standard AI Chat in JetBrains IDEs (Junie appears to be a superset of the AI Chat that does Editing and 
-Ask but they still install both by default).  This is just a little write up of my experiences with these tools and
-maybe some tips I have learned along the way.
+Ask but they still install both by default).  
+
+So this post is just a little write up of my experiences with these tools and maybe some tips I have learned along the way.
 
 ### CoPilot in JetBrains IDEs
 

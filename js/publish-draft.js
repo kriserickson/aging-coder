@@ -29,7 +29,7 @@ function publishDraft(fileName) {
 }
 
 // Main function to run the script
-function run() {
+async function run() {
     const drafts = findDraftPosts();
 
     if (drafts.length === 0) {
@@ -43,18 +43,20 @@ function run() {
         publishDraft(drafts[0]);
     } else {
         // If multiple drafts, prompt the user to select one
-        inquirer.prompt([
-            {
-                type: 'list',
-                name: 'selectedDraft',
-                message: 'Select a draft to publish:',
-                choices: drafts
-            }
-        ]).then((answers) => {
+        const prompt = inquirer.createPromptModule();
+        try {
+            const answers = await prompt([
+                {
+                    type: 'list',
+                    name: 'selectedDraft',
+                    message: 'Select a draft to publish:',
+                    choices: drafts
+                }
+            ]);
             publishDraft(answers.selectedDraft);
-        }).catch((error) => {
+        } catch (error) {
             console.error('Error:', error);
-        });
+        }
     }
 }
 
