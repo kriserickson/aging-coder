@@ -1,37 +1,32 @@
 <meta charset="utf-8">
 <title>{% if title %}{{ title | upper }} &vert; {% endif %}{{ site.title | upper }}</title>
-<meta name="description"
-      content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
-{% if page.tags %}
-    <meta name="keywords" content="{{ tags | join(', ') }}">{% endif %}
+<meta name="description" content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
 
-{% if site.owner.twitter %}<!-- Twitter Cards -->
+{% if page.tags %}
+    <meta name="keywords" content="{{ page.tags | join(', ') }}">
+{% endif %}
+
+{# Twitter Card #}
+{% if site.owner.twitter %}
     {% if imagefeature %}
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:image" content="/img/{{ imagefeature }}">
     {% else %}
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:image"
-              content="{% if page.image.thumb %}/img/{{ page.image.thumb }}{% else %}/img/{{ site.logo }}{% endif %}">{% endif %}
+        <meta name="twitter:card" content="summary">
+    {% endif %}
     <meta name="twitter:title" content="{% if title %}{{ title }}{% else %}{{ site.title }}{% endif %}">
-    <meta name="twitter:description"
-          content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
+    <meta name="twitter:description" content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
+    <meta name="twitter:image" content="{% if imagefeature %}/img/{{ imagefeature }}{% elseif page.image.thumb %}/img/{{ page.image.thumb }}{% else %}/img/{{ site.logo }}{% endif %}">
     <meta name="twitter:creator" content="@{{ site.owner.twitter }}">
 {% endif %}
 
-<!-- Open Graph -->
+{# Open Graph #}
 <meta property="og:locale" content="en_US">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{% if title %}{{ title }}{% else %}{{ site.title }}{% endif %}">
-<meta property="og:description"
-      content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
+<meta property="og:description" content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
 <meta property="og:url" content="{{ page.url }}">
 <meta property="og:site_name" content="{{ site.title }}">
-{% if imagefeature %}
-    <meta property="og:image" content="/img/{{ page.imagefeature }}">
-{% else %}
-    <meta property="og:image" content="/img/{{ site.default_bg }}">
-{% endif %}
+<meta property="og:image" content="{% if imagefeature %}/img/{{ imagefeature }}{% else %}/img/{{ site.logo }}{% endif %}">
 
 {% if site.google_verify %}
     <meta name="google-site-verification" content="{{ site.google_verify }}">
@@ -40,37 +35,32 @@
     <meta name="msvalidate.01" content="{{ site.bing_verify }}">
 {% endif %}
 
+{# Canonical URL #}
 {% if site.permalink in '.njk' %}
     {% set canonical = page.url %}
 {% else %}
     {% set canonical = page.url | replace('index.njk', '') %}
 {% endif %}
-
 <link rel="canonical" href="{{ canonical }}">
+
 <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="{{ site.title }} Feed">
 
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-<link href='//fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,600,300,800,700' rel='stylesheet'
-      type='text/css'>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" /><link rel="stylesheet" href="/assets/css/vendor/normalize.css">
+<link href='//fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,600,300,800,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="/assets/css/vendor/normalize.css">
 <link rel="stylesheet" href="/assets/css/vendor/foundation.min.css">
 <link rel="stylesheet" href="/assets/css/vendor/darcula.css">
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/post.css">
 
-<!-- Icons -->
-<!-- 16x16 -->
+{# Icons #}
 <link rel="shortcut icon" href="/favicon.ico">
-<!-- 32x32 -->
 <link rel="shortcut icon" href="/favicon.png">
-<!-- 57x57 (precomposed) for iPhone 3GS, pre-2011 iPod Touch and older Android devices -->
 <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-precomposed.png">
-<!-- 72x72 (precomposed) for 1st generation iPad, iPad 2 and iPad mini -->
 <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/img/apple-touch-icon-72x72-precomposed.png">
-<!-- 114x114 (precomposed) for iPhone 4, 4S, 5 and post-2011 iPod Touch -->
 <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/img/apple-touch-icon-114x114-precomposed.png">
-<!-- 144x144 (precomposed) for iPad 3rd and 4th generation -->
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/img/apple-touch-icon-144x144-precomposed.png">
