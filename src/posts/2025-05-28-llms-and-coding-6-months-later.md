@@ -7,7 +7,9 @@ description: "Good lord, it has been 6 months since I last wrote a post about LL
 tags: ["Programming", "LLM"]
 featured: true
 ---
-Good lord, it has been 6 months since I last wrote a post about LLMs and coding and how the world has changed.  
+Good lord, has really been 6 months since I last 
+[wrote a post about LLMs and coding](/posts/2024-10-05-leveraging-llms-for-coding-insights-and-real-world-experiences/) - 
+how the world has changed since that time.  
 I guess with 6 years between posts before November, and 6 months between posts now I should look on this as an 
 improvement but with how much things change in AI and LLM world that is the same as 6 years between posts
 on Cordova.
