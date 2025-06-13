@@ -119,7 +119,8 @@ Lets look at the report again:
 weighted avg       0.91      0.68      0.75     67682
 ```
 
-When I first started using `classification_report`, I found the output a little confusing. If you're new to supervised learning, it helps to understand exactly what each number represents.
+When I first started using `classification_report`, I found the output a little confusing. If you're new to supervised learning, 
+it helps to understand exactly what each number represents.
 
 #### Rows: The Classes
 
@@ -157,7 +158,8 @@ At the bottom, you get 3 summary rows:
   Average of precision, recall, and F1 across all classes, treating all classes equally regardless of size.
 
 - **weighted avg**
-  Like macro avg, but gives more weight to classes with more examples. This gives you a sense of how the model is doing "on average" in proportion to your data.
+  Like macro avg, but gives more weight to classes with more examples. This gives you a sense of how the model is doing 
+- "on average" in proportion to your data.
 
 ### A Quick Tour of Our First Results
 
