@@ -7,7 +7,7 @@ description:
 draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
-## First Results: Running the Rough Parser
+## First Results: Building and Running the Initial Model
 
 In the [last post](/posts/REPLACE_ME), we looked at how an old side project —**Recipe Folder**— left me with a rich but messy dataset of recipes labeled by real users. We covered the evolution of extracting recipes from the web: starting with structured data scraping, falling back to manual user labeling when that failed, and ultimately ending up with a trove of human-annotated HTML blocks marking **ingredients**, **directions**, **titles**, and more.
 
@@ -60,7 +60,9 @@ Total time: 51.11s
 {% endhighlight %}
 
 
-### The Code
+## The Code
+
+### Loading and Preparing the Data
 
 Although the code in the repo (once again at [Github Recipe Parser](https://github.com/kriserickson/recipe-parser/tree/blog-post-1)) is 
 commented, I will be removing things like comments and logs to keep this as brief as possible.  Lets look at the train.py script and the function train.   The first real code we see is:
@@ -105,7 +107,7 @@ This code simply grabs all the JSON files in the data/labels directory and all t
 The function parse_html uses [Beautiful Soup](https://pypi.org/project/beautifulsoup4/) to extract a dictionary of the relevant elements of the html page (the text, parent tag, and depth). which we then pass (using only the text portion to label_element to get the label for the block.
 
 {% highlight python %}
-def parse_html(html: str) -> list[dict[str, str]]:
+def label_element(text: str, label_data: Dict[str, Any]) -> str:
   t = text.strip().lower()
   if not t or t.isdigit():
       return 'none'
@@ -119,6 +121,8 @@ def parse_html(html: str) -> list[dict[str, str]]:
 {% endhighlight %}
 
 Our label will be one of 4 things, "none" if it is not relevant to our recipe, "ingredient" if it is an ingredient, "direction" if it is a direction, and "title" if it is the title of the recipe (obviously enough) - these labels will be used in the training.
+
+### Feature Extraction
 
 Next, we extract features from the raw data. 
 
@@ -144,8 +148,22 @@ def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
   ]
 {% endhighlight %}
 
-For our initial run we are going to just do very basic feature extraction, the tag that feature
-exists in, the depth in the heirachy of the HTML, the length of the text, whether it starts with a digit, and the number of commas and periods in the text and of course the raw text itself.  As we will see later, this is a very basic feature set, but it is enough to understand the idea of training and see where we will need improvement later.
+### Building the ML Pipeline
+
+Before diving into our specific model, let me briefly explain what a scikit-learn pipeline is for those who aren't familiar.
+
+A pipeline in scikit-learn is a way to chain together multiple processing steps into a single, cohesive workflow. Think of it as an assembly line: raw data enters at one end, passes through various transformations (preprocessing, feature extraction, scaling), and finally reaches the machine learning algorithm at the other end.
+
+The main benefits of using pipelines include:
+- **Cleaner code**: All your preprocessing steps stay organized in a single object
+- **Prevention of data leakage**: Transformations are properly separated between training and test data
+- **Simplified model deployment**: The entire workflow can be saved as one unit
+- **Easy parameter tuning**: You can optimize parameters across all steps at once
+
+In our recipe classifier, we'll build a pipeline that handles both text and structured features, scales the data appropriately, and feeds everything into our classification algorithm.
+
+For our initial model we are going to just do very basic feature extraction, the tag that feature
+exists in, the depth in the heirarchy of the HTML, the length of the text, whether it starts with a digit, and the number of commas and periods in the text and of course the raw text itself.  As we will see later, this is a very basic feature set, but it is enough to understand the idea of training and see where we will need improvement later.
 
 Finally we are going to get into some actual machine learning code, the first thing we will split the data into training and testing sets.  We are using [scikit-learn](https://scikit-learn.org/stable/) (imported as sklearn) which is one of the most popular [Python libraries for machine learning](https://en.wikipedia.org/wiki/Scikit-learn).  The code to split the data is:
 
@@ -164,6 +182,8 @@ X_test_proc = preprocess_data(X_test)
 {% endhighlight %}
 
 The `preprocess_data` function converts the data into data structures that our model is going handle.  
+
+### Under the Hood: How the Pipeline Processes Data
 
 {% highlight python %}
 def preprocess_data(features: List[Dict[str, Any]]) -> List[Tuple[Dict[str, Any], str]]:
@@ -204,7 +224,7 @@ model = make_pipeline(
 )
 {% endhighlight %}
 
-Ok, we have our tranformer, then we pass to our Scaler (StandardScaler) which standardizes features by removing the mean and scaling to unit variance.  There are other scalers (MinMax, Robust, Normalizer) but LogicalRegression wants the StandardScaler. This is important for our LogicalRegression classifier. The `with_mean=False` argument is used because we are dealing with sparse matrices (from DictVectorizer), and subtracting the mean would not be appropriate.
+Ok, we have our tranformer, then we pass to our Scaler (StandardScaler) which standardizes features by removing the mean and scaling to unit variance.  There are other scalers (MinMax, Robust, Normalizer) but LogisticRegression wants the StandardScaler. This is important for our LogisticRegression classifier. The `with_mean=False` argument is used because we are dealing with sparse matrices (from DictVectorizer), and subtracting the mean would not be appropriate.
 
 {% highlight python %}
 model = make_pipeline(
@@ -303,7 +323,7 @@ We do "with_mean=False" to avoid centering the data.  This isimportant because t
 
 ### Step 4: LogisticRegression(...)
 
-This actuall trains a logistic regression model.  It uses the scaled, combined feature matrixt that it created in the previous phase of the pipeline.  It then computes class probabilities using a sigmoid or softmax.  As explained above, we uses class_weight='balanced' to give more weight to minority classes since the none class is so dominant in our dataset.  
+This actually trains a logistic regression model.  It uses the scaled, combined feature matrixt that it created in the previous phase of the pipeline.  It then computes class probabilities using a sigmoid or softmax.  As explained above, we uses class_weight='balanced' to give more weight to minority classes since the none class is so dominant in our dataset.  
 
 Our model is now trained.  Now we test it on the test data:
 
@@ -321,7 +341,7 @@ dump(model, MODEL_PATH)
 
 Finally we output the classification_report and save the model to a file. The `classification_report` function computes precision, recall, F1-score, and support for each class in the test set, giving us a detailed view of how well our model performed (see below for more details on this).
 
-Our first model is very small, clocking in at only 52KB and as we will see below, is only moderately succesful at differentiating between the different classes.  But it is a start, and in upcoming posts we will improve upon it.
+Our first model is very small, clocking in at only 52KB and as we will see below, is only moderately successful at differentiating between the different classes.  But it is a start, and in upcoming posts we will improve upon it.
 
 ### What Does `classification_report` Actually Mean?
 
