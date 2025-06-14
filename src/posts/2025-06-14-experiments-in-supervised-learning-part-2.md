@@ -9,7 +9,7 @@ tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 ## First Results: Building and Running the Initial Model
 
-In the [last post](/posts/REPLACE_ME), we looked at how an old side project —**Recipe Folder**— left me with a rich but messy dataset of recipes labeled by real users. We covered the evolution of extracting recipes from the web: starting with structured data scraping, falling back to manual user labeling when that failed, and ultimately ending up with a trove of human-annotated HTML blocks marking **ingredients**, **directions**, **titles**, and more.
+In the [last post](/posts/2025-06-13-experiments-in-supervised-learning), we looked at how an old side project —**Recipe Folder**— left me with a rich but messy dataset of recipes labeled by real users. We covered the evolution of extracting recipes from the web: starting with structured data scraping, falling back to manual user labeling when that failed, and ultimately ending up with a trove of human-annotated HTML blocks marking **ingredients**, **directions**, **titles**, and more.
 
 We also got your development environment set up and ran the script to validate and download a fresh set of HTML pages and label files. Now that you’ve got a folder full of recipe pages and your IDE is ready to run Python, it’s time to take the next step:
 
