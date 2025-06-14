@@ -15,7 +15,7 @@ tags: ["Programming", "ML", "Supervised Learning", "AI"]
 
 Before diving into the nuts and bolts of supervised learning, I want to revisit a personal project that laid the groundwork for some of the ideas explored here: **Recipe Folder**.
 
-Back in 2013, I built a web app called [Recipe Folder](https://web.archive.org/web/20220630230600/http://recipe-folder.com/) as a hobby project. You can take a trip down memory lane of what the state of PAAS and software development was 10 years ago read more about its creation and the technology used here: [Building a Not Very Successful Product for No Money](https://agingcoder.com/posts/2016-01-26-building-a-not-very-successful-product-for-no-money/).
+Back in 2013, I built a web app called [Recipe Folder](https://web.archive.org/web/20220630230600/http://recipe-folder.com/) as a hobby project. You can take a trip down memory lane of what the state of PAAS and software development was 10 years ago read more about its creation and the technology used here: [Building a Not Very Successful Product for No Money](/posts/2016-01-26-building-a-not-very-successful-product-for-no-money/).
 
 ### What Recipe Folder Did
 
@@ -66,7 +66,7 @@ In the rest of this post, I’ll walk through the process of turning this kind o
 
 ### Getting Started
 
-Using this data or a couple posts, I am going to build a supervised learning model for recipe extraction using the data from Recipe Folder. If you want to follow along, the project is on Github as [recipe-parser](https://github.com/kriserickson/recipe-parser)..  Check out the [blog-post-1](https://github.com/kriserickson/recipe-parser/tree/blog-post-1) branch - I am using VS Code the example, but you can use any IDE you are comfortable with, the examples will be somewhat similar.  BTW, I am not a python expert and am learning this stuff myself (so let me know if I have made any glaring mistakes), but if you want to any ML programming you should become familiar with Python.
+Using this data or a couple posts, I am going to build a supervised learning model for recipe extraction using the data from Recipe Folder. If you want to follow along, the project is on Github as [recipe-parser](https://github.com/kriserickson/recipe-parser)..  Check out the [blog-post-1](https://github.com/kriserickson/recipe-parser/tree/blog-post-1) branch - I am using VS Code the example, but you can use any IDE you are comfortable with, the examples will be somewhat similar.  BTW, I am not a python expert and am learning this stuff myself (so let me know if I have made any glaring mistakes), but if you want to any ML programming you should become familiar with Python. Also for these tutorials, you are going to need a modernish version of Python (3.10 or higher) and a very basic understanding of Python programming.
 
 **1. Create Virtual Environment:** Open VS Code terminal (`Ctrl+`` or View → Terminal`) and run:
 
