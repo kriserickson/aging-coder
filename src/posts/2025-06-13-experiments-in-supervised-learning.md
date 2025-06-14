@@ -4,7 +4,6 @@ category: AI
 title: "Experiments in Supervised Learning: Lessons from an old Recipe App"
 imagefeature: blog/supervised-part-1.webp
 description: 
-draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 

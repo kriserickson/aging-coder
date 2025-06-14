@@ -4,7 +4,6 @@ category: AI
 title: "Experiments in Supervised Learning Part 2"
 imagefeature:
 description: 
-draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 ## First Results: Building and Running the Initial Model
