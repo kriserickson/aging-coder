@@ -1422,4 +1422,10 @@ ol.CodeRay li {
     color: #f4f;
 }
 
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+    margin-bottom: 1.5rem;
+}
+
+
 
