@@ -14,13 +14,23 @@ tags: ["Programming", "ML", "Supervised Learning", "AI"]
 
 This is the first in a series of at least 4 articles where I will explore the process of building a supervised learning model using real-world data.   This is a hands-on series, so if you want to follow along, you should have some basic programming skills and be comfortable with Python.  This first post really just goes over what we are going to do, shows you how to get the training data, and sets up the environment and how to run the first step of the process.  In the next post we will build a model using [scikit-learn](https://scikit-learn.org/stable/) and the data we extract in this post (this will be a fairly naive model and won't be particularly good at extracting data).  The third post we will start tuning the model in various ways, using various techniques.  In the final post we will finally produce a model that could be used for extracting recipes from web pages, and present some suggestions for some experiments you can run on your own.
 
+To begin with, I should probably define what [Supervised Learning](https://en.wikipedia.org/wiki/Supervised_learning) is and what it is used for.  There are many types of [ML](https://en.wikipedia.org/wiki/Machine_learning) (and some like LLMs use multiple types of ML) that are use for what is loosely (and in my opinion inaccurately) called "AI".  Supervised learning is a type of machine learning where you train a model on a labeled dataset, meaning that each example in the training set is paired with an output label. The model learns to map inputs to outputs based on this labeled data. Supervised learning is used for many tasks, including Spam detection, image classification, and natural language processing. 
+
+This is in contrast to [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning), where the model tries to find patterns in data without explicit labels.  Unsupervised learning is often used for clustering (for example, group customers by behavior for target marketing), topic modeling (e.g. discovering similar topics in a group of topics), and anomaly detection (credit card fraud detection is an example of this).  
+
+There is also [semi-supervised learning](https://en.wikipedia.org/wiki/Weak_supervision), which combines both labeled and unlabeled data to improve model performance. 
+
+[Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning) is another type of machine learning where an agent learns to make decisions by taking actions in an environment to maximize a reward signal.  Reinforcement learning is often used in robotics, game playing, and autonomous systems.
+
+[LLMs](https://www.cloudflare.com/learning/ai/what-is-large-language-model/) require both supervised learning and unsupervised learning, as they are trained on large datasets of text (unsupervised) and then fine-tuned on specific tasks with labeled data (supervised).  They also are now using reinforcement learning to improve their accuracy and results.
+
 Before diving into the nuts and bolts of supervised learning, I want to revisit a personal project that laid the groundwork for some of the ideas explored here: **Recipe Folder**.
 
 Back in 2013, I built a web app called [Recipe Folder](https://web.archive.org/web/20220630230600/http://recipe-folder.com/) as a hobby project. You can take a trip down memory lane of what the state of PAAS and software development was 10 years ago read more about its creation and the technology used here: [Building a Not Very Successful Product for No Money](/posts/2016-01-26-building-a-not-very-successful-product-for-no-money/).
 
 ### What Recipe Folder Did
 
-Recipe Folder was a tool that let users save recipes from the web into their own personal collection. You could import recipes from websites and organize them, add notes, and create grocery lists. One of core features was a browser extension (or in the early days a [bookmarklet](https://en.m.wikipedia.org/wiki/Bookmarklet)) that helped you "clip" recipes directly from a web page.  I never found an effective monetization strategy beyond de minimis ad revenue and a $2.99 deluxe mobile version to strip the ads (which sold about 10 copies). Despite this, I maintained the site and its apps for over ten years..
+Recipe Folder was a tool that let users save recipes from the web into their own personal collection. You could import recipes from websites and organize them, add notes, and create grocery lists. One of core features was a browser extension (or in the early days a [bookmarklet](https://en.m.wikipedia.org/wiki/Bookmarklet)) that helped you "clip" recipes directly from a web page.  I never found an effective monetization strategy beyond *de minimis* ad revenue and a $2.99 deluxe mobile version to strip the ads (which sold about 10 copies). Despite this, I maintained the site and its apps for over ten years..
 
 ### The Challenge: Scraping Recipe Data
 
@@ -71,10 +81,10 @@ Using this data, over a series of blog posts, I am going to build a supervised l
 
 {% highlight bash %}
 $ git clone git@github.com:kriserickson/recipe-parser.git
-$ git branch blog-post-1
+$ git checkout blog-post-1
 {% endhighlight %}
 
-I am using VS Code the example, but you can use any IDE you are comfortable with, the examples will be somewhat similar.   If you are using Visual Studio, install the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python). BTW, I am not a python expert and am actively learning Python myself (so let me know if I have made any glaring mistakes) -- also I prefer to have types so my Python code is usually heavily typed.  While a deep understanding of Python is not required for these blog posts, or to know how to do supervised learning, if you want to do any ML programming you will want to become familiar with Python. Also for these tutorials, you are going to need a modernish version of Python (3.10 or higher) and a very basic understanding of Python programming.  
+I will exlain how to run things using VS Code (as it is the most popular free IDE) but you can use any IDE you are comfortable with, the examples will be somewhat similar.   If you are using Visual Studio, install the [Python extension](https://mafrketplace.visualstudio.com/items?itemName=ms-python.python). BTW, I am not a python expert and am actively learning Python myself (so let me know if I have made any glaring mistakes) -- also I prefer to have types so my Python code is usually heavily typed.  While a deep understanding of Python is not required for these blog posts, or to know how to do supervised learning, if you want to do any ML programming you will want to become familiar with Python. Also for these tutorials, you are going to need a modernish version of Python (3.10 or higher) and a very basic understanding of Python programming.  
 
 If you are running on a Mac you may find that python is installedas python3 and this will tend to be a quite antiquated version.  Installing a modern version of Python, whatever system you are running on, is a task left to the reader.
 
@@ -103,7 +113,7 @@ source .venv/bin/activate
 pip install -r requirements.txt   
 {% endhighlight %}
 
-3. **Verify Setup in VS Vode:**
+3. **Verify Setup in VS Code:**
 
 * Bottom-left corner should show your Python interpreter (`.venv`)
 * Terminal should show `(.venv)` prefix when activated
@@ -149,7 +159,7 @@ pip install -r requirements.txt
 
 * This should look pretty obvious, the only weird thing is that directions and ingredients have this random "0" as the first entry.  This was because the old site supported multiple sections of ingredients and directions (you will see a "1" in some recipes, in fact recipe\_00000.json has 2 ingredient sections).
 * The validate\_and\_filter\_recipes.py file goes through all the "potential" recipes, downloads the HTML file as it currently stands, and if the HTML is there, and doesn't look like a 404 it copies the html file into the data/html directory and json file in the data/labels directory.
-* I won't go through and explain the  validate\_and\_filter\_recipes.py too deeply, this isn't an article about web scraping or simple parsing of JSON (and to be fair, [GitHub Copilot](https://github.com/features/copilot) wrote most of it), but I will warn you that you will see a browser pop up a fair bit when running through the 20,000 recipes - this is because some sites like [All Recipes](https://www.allrecipes.com) block straight HTTP requests so we have to use \[Selenium]\() to grab the data.
+* I won't go through and explain the  validate\_and\_filter\_recipes.py too deeply, this isn't an article about web scraping or simple parsing of JSON (and to be fair, [GitHub Copilot](https://github.com/features/copilot) wrote most of it), but I will warn you that you will see a browser pop up a fair bit when running through the 20,000 recipes - this is because some sites like [All Recipes](https://www.allrecipes.com) block straight HTTP requests so we have to use [Selenium](https://www.selenium.dev) to grab the data.
 * Press the play button or hit **F5** (or hit **Control F5** -- **Command F5** on a Mac to run rather than debug).
 * Depending on your computer and internet connection this will take a while (I could have made this much faster with [concurrent,futures](https://docs.python.org/3/library/concurrent.futures.html)) and done multi-threading but it only has to run once so go grab a cup of Joe and come back in a while.
 * You can experiment with the other functions in the project, and in the next article I will explain what is going on with them and how the first stab at building a supervised learning model worked.
