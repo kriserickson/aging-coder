@@ -10,7 +10,9 @@ tags: ["Programming", "ML", "Supervised Learning", "AI"]
 
 # How to Do Supervised Learning: Lessons from an Old Recipe App
 
-**Heads Up : This is a technical post and requires enough understanding of programming to be relatively comfortable in [Visual Studio Code](https://code.visualstudio.com)**
+**Heads Up : This is a technical post and requires enough understanding of programming to be relatively comfortable in [Visual Studio Code](https://code.visualstudio.com)*
+
+This is the first in a series of at least 4 articles where I will explore the process of building a supervised learning model using real-world data.   This is a hands-on series, so if you want to follow along, you should have some basic programming skills and be comfortable with Python.  This first post really just goes over what we are going to do, shows you how to get the training data, and sets up the environment and how to run the first step of the process.  In the next post we will build a model using [scikit-learn](https://scikit-learn.org/stable/) and the data we extract in this post (this will be a fairly naive model and won't be particularly good at extracting data).  The third post we will start tuning the model in various ways, using various techniques.  In the final post we will finally produce a model that could be used for extracting recipes from web pages, and present some suggestions for some experiments you can run on your own.
 
 Before diving into the nuts and bolts of supervised learning, I want to revisit a personal project that laid the groundwork for some of the ideas explored here: **Recipe Folder**.
 
@@ -18,7 +20,7 @@ Back in 2013, I built a web app called [Recipe Folder](https://web.archive.org/w
 
 ### What Recipe Folder Did
 
-Recipe Folder was a tool that let users save recipes from the web into their own personal collection. You could import recipes from websites and organize them, add notes, and create grocery lists. One of core features was a browser extension (or in the early days a [bookmarklet](https://en.m.wikipedia.org/wiki/Bookmarklet)) that helped you "clip" recipes directly from a web page.  I never found an effective monetization strategy beyond diminmous ad revenue and a $2.99 deluxe mobile version to strip the ads (which sold about 10 copies). Despite this, I maintained the site and its apps for over ten years..
+Recipe Folder was a tool that let users save recipes from the web into their own personal collection. You could import recipes from websites and organize them, add notes, and create grocery lists. One of core features was a browser extension (or in the early days a [bookmarklet](https://en.m.wikipedia.org/wiki/Bookmarklet)) that helped you "clip" recipes directly from a web page.  I never found an effective monetization strategy beyond de minimis ad revenue and a $2.99 deluxe mobile version to strip the ads (which sold about 10 copies). Despite this, I maintained the site and its apps for over ten years..
 
 ### The Challenge: Scraping Recipe Data
 
@@ -65,7 +67,16 @@ In the rest of this post, I’ll walk through the process of turning this kind o
 
 ### Getting Started
 
-Using this data or a couple posts, I am going to build a supervised learning model for recipe extraction using the data from Recipe Folder. If you want to follow along, the project is on Github as [recipe-parser](https://github.com/kriserickson/recipe-parser)..  Check out the [blog-post-1](https://github.com/kriserickson/recipe-parser/tree/blog-post-1) branch - I am using VS Code the example, but you can use any IDE you are comfortable with, the examples will be somewhat similar.  BTW, I am not a python expert and am learning this stuff myself (so let me know if I have made any glaring mistakes), but if you want to any ML programming you should become familiar with Python. Also for these tutorials, you are going to need a modernish version of Python (3.10 or higher) and a very basic understanding of Python programming.
+Using this data, over a series of blog posts, I am going to build a supervised learning model for recipe extraction using the data from Recipe Folder. If you want to follow along, the project is on Github as [recipe-parser](https://github.com/kriserickson/recipe-parser).  Check out the [blog-post-1](https://github.com/kriserickson/recipe-parser/tree/blog-post-1) branch
+
+{% highlight bash %}
+$ git clone git@github.com:kriserickson/recipe-parser.git
+$ git branch blog-post-1
+{% endhighlight %}
+
+I am using VS Code the example, but you can use any IDE you are comfortable with, the examples will be somewhat similar.   If you are using Visual Studio, install the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python). BTW, I am not a python expert and am actively learning Python myself (so let me know if I have made any glaring mistakes) -- also I prefer to have types so my Python code is usually heavily typed.  While a deep understanding of Python is not required for these blog posts, or to know how to do supervised learning, if you want to do any ML programming you will want to become familiar with Python. Also for these tutorials, you are going to need a modernish version of Python (3.10 or higher) and a very basic understanding of Python programming.  
+
+If you are running on a Mac you may find that python is installedas python3 and this will tend to be a quite antiquated version.  Installing a modern version of Python, whatever system you are running on, is a task left to the reader.
 
 **1. Create Virtual Environment:** Open VS Code terminal (`Ctrl+`` or View → Terminal`) and run:
 
@@ -80,19 +91,19 @@ python -m venv .venv
 source .venv/bin/activate
 {% endhighlight %}
 
-**2. Select Python Interpreter:**
+**2. Select Python Interpreter (this is only if you are running Visual Studio)**
 
 * Press `Ctrl+Shift+P` or Command+Shift+P if you are on a Mac to open the Command Palette.
 * Type "Python: Select Interpreter"
 * Choose the one in your `.venv` folder (should show `.venv/Scripts/python.exe` or `.venv/bin/python`)
 
-**3. Install Dependencies:**
+**3. Install Dependencies (requirements):**
 
 {% highlight bash %}
-pip install -r requirements.txt   # if you have a requirements file
+pip install -r requirements.txt   
 {% endhighlight %}
 
-3. **Verify Setup:**
+3. **Verify Setup in VS Vode:**
 
 * Bottom-left corner should show your Python interpreter (`.venv`)
 * Terminal should show `(.venv)` prefix when activated
@@ -103,7 +114,7 @@ pip install -r requirements.txt   # if you have a requirements file
 * Go to Run and Debug view (`Ctrl+Shift+D` or Click the Icon on the left that has Play Triangle with a Bug on it)
 * Select validate\_and\_filter\_recipes from the dropdown at the top (if you want to see what is going on, you can look at the launch.json file in the .vscode directory.
 * I would put a breakpoint in src/validate\_and\_filter\_recipes.py file, and I wouldn't start things yet - let me explain what is going to happen.
-* This code looks through the data/potential\_labels directory and reasons all the .json files (these were exported from my old Recipe Folder site)  lets look at one now.
+* This code looks through the data/potential\_labels directory and finds all the .json files (these were exported from my old Recipe Folder site)  lets look at one now.
 
 {% highlight json %}
 {
@@ -143,5 +154,5 @@ pip install -r requirements.txt   # if you have a requirements file
 * Depending on your computer and internet connection this will take a while (I could have made this much faster with [concurrent,futures](https://docs.python.org/3/library/concurrent.futures.html)) and done multi-threading but it only has to run once so go grab a cup of Joe and come back in a while.
 * You can experiment with the other functions in the project, and in the next article I will explain what is going on with them and how the first stab at building a supervised learning model worked.
 
-*To be continued...*
+*[To be continued...](/posts/2025-06-14-experiments-in-supervised-learning-part-2.md)*
 
