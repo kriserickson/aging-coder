@@ -154,5 +154,5 @@ pip install -r requirements.txt
 * Depending on your computer and internet connection this will take a while (I could have made this much faster with [concurrent,futures](https://docs.python.org/3/library/concurrent.futures.html)) and done multi-threading but it only has to run once so go grab a cup of Joe and come back in a while.
 * You can experiment with the other functions in the project, and in the next article I will explain what is going on with them and how the first stab at building a supervised learning model worked.
 
-*[To be continued...](/posts/2025-06-14-experiments-in-supervised-learning-part-2.md)*
+*[To be continued...](/posts/2025-06-14-experiments-in-supervised-learning-part-2/)*
 
