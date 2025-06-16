@@ -70,9 +70,9 @@ commented, I will be removing things like comments and logs to keep this as brie
 X_raw, y = load_labeled_blocks(limit=limit)
 {% endhighlight %}
 
-This loads the labels, in the form we are getting it here, we are putting some information from each html element (text, the parent tag and the depth into the html hierarchy.  Why do we do X\_raw rather than x\_raw?  It is a convention in Machine Learning that the X axis capitalized in variables name the y is lower case - not that important but you might see it in other source code.  
+This loads the labeled data, extracting structural information from each HTML element (such as the element's text content, its parent tag, and its depth in the DOM hierarchy). Why do we use X\_raw rather than x\_raw? It's a common convention in Machine Learning to use capital X for feature matrices and lowercase y for target variables or labels - not critically important, but you'll see this pattern frequently in ML code.  
 
-Lets quickly look at load\_labeled\_blocks (I've removed some comments and the code to display the progress.
+Lets quickly look at load\_labeled\_blocks (I've removed not only the comments but also the code to display the progress).
 
 {% highlight python %}
 def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
@@ -101,9 +101,9 @@ def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
 {% endhighlight %}
 
 
-This code simply grabs all the JSON files in the data/labels directory and all the HTML files in the data/html\_pages directory.  It loads the HTML for each page and the JSON file (which has the ingredients, directions and title that users had previous extracted from the recipe).  
+This code simply grabs and loads into memory all the JSON files (which has the ingredients, directions and title that users had previous extracted from the recipe) in the data/labels directory and all the HTML files (which obviously contain the recipe as posted to the web) in the data/html\_pages directory.  
 
-The function parse_html uses [Beautiful Soup](https://pypi.org/project/beautifulsoup4/) to extract a dictionary of the relevant elements of the html page (the text, parent tag, and depth). which we then pass (using only the text portion to label_element to get the label for the block.
+The function parse\_html uses [Beautiful Soup](https://pypi.org/project/beautifulsoup4/) to extract a dictionary of the relevant elements of the html page (the text, parent tag, and depth). which we then pass (using only the text portion) to label_element to get the label for the block.
 
 {% highlight python %}
 def label_element(text: str, label_data: Dict[str, Any]) -> str:
@@ -213,7 +213,7 @@ def build_transformer() -> FeatureUnion:
     return transformer
 {% endhighlight %}
 
-returns a FeatureUnion (a tool for combining multiple feature extraction or transformation steps in parallel, and then concatenating their outputs into a single feature matrix).  This combines two parallel feature extraction pipelines: Structured features (dictionary-based features e.g., tag, depth, text length using DictVectorizer) and Text features (text features using TfidfVectorizer). ItemSelector is used to pick the right part (structured or text) from each input tuple.  This is a a fairly common text transformer that can be re-used with any text and structured data (for example for a book recommendation engine or a customer support ticket classification system).  We will be improving this in the future, but for now it demonstrates how to combine structured and text features to pass to our pipeline.
+returns a [FeatureUnion](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html) (a tool for combining multiple feature extraction or transformation steps in parallel, and then concatenating their outputs into a single feature matrix).  This combines two parallel feature extraction pipelines: Structured features (dictionary-based features e.g., tag, depth, text length using [DictVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.DictVectorizer.html)) and Text features (text features using [TfidfVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)). ItemSelector is a class we create which is used to pick the right part (structured or text) from each input tuple.  This is a a fairly common text transformer that can be re-used with any text and structured data (for example for a book recommendation engine or a customer support ticket classification system).  We will be improving this in the future, but for now it demonstrates how to combine structured and text features to pass to our pipeline.
 
 {% highlight python %}
 model = make_pipeline(
@@ -223,7 +223,9 @@ model = make_pipeline(
 )
 {% endhighlight %}
 
-Ok, we have our tranformer, then we pass to our Scaler (StandardScaler) which standardizes features by removing the mean and scaling to unit variance.  There are other scalers (MinMax, Robust, Normalizer) but LogisticRegression wants the StandardScaler. This is important for our LogisticRegression classifier. The `with_mean=False` argument is used because we are dealing with sparse matrices (from DictVectorizer), and subtracting the mean would not be appropriate.
+Next, we apply [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) to normalize our feature values. This transformer standardizes features by scaling them to have unit variance, which is crucial for Logistic Regression to perform optimally. While other options exist (like MinMaxScaler, RobustScaler, or Normalizer), StandardScaler is particularly well-suited for LogisticRegression because it prevents certain features from dominating due to their scale. 
+
+We set `with_mean=False` because our features are stored as a sparse matrix (many zeros). If we tried to center the data by subtracting the mean, we'd convert all those zeros to non-zero values, destroying the memory-efficient sparse representation and potentially causing memory issues with large datasets.
 
 {% highlight python %}
 model = make_pipeline(
@@ -234,10 +236,12 @@ model = make_pipeline(
 {% endhighlight %}
 
 Finally we add our classifier, in this case we are using a [Logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) for our model.  Despite the name, Logistic Regression is a classification algorithm, not a regression one. It models the probability that a given input belongs to a class.
-At its core, it uses a logistic (sigmoid) function to squash the output of a linear model into a probability between 0 and 1.   The model outputs a probability, and you typically choose a threshold (e.g., 0.5) to decide the class label. Logistic regression tries to find the best w and b by minimizing the logistic loss function (also known as log loss or cross-entropy).   If your features are not well-scaled, optimization may struggle to converge (hence why we are using the StandardScaler before this model).   
 
-There are a bunch of options for the Logistical Regrssion classifier.  We are mostly using the defaults, we are using the default [lbfgs (Limited-memory Broyden–Fletcher–Goldfarb–Shanno)](https://en.wikipedia.org/wiki/Limited-memory_BFGS) solver -- there are other options (liblinear
-, sag, saga, newton-cg) but lbfgs is a good default for small to medium datasets.  We are also using the `class_weight='balanced'` option, which automatically adjusts weights inversely proportional to class frequencies in the input data. This helps with imbalanced datasets, where some classes have many more examples than others (like our "none" class).
+At its core, it uses a logistic (known as a [sigmoid](https://en.wikipedia.org/wiki/Sigmoid_function)) function to squash the output of a linear model into a probability between 0 and 1.   The model outputs a probability, and you typically choose a threshold (e.g., 0.5) to decide the class label.
+
+Logistic regression tries to find the best weights (w) and bias term (b) by minimizing the logistic loss function (also known as log loss or cross-entropy). These parameters define the decision boundary that separates different classes. If your features are not well-scaled, optimization may struggle to converge (hence why we are using the StandardScaler before this model).   
+
+There are a bunch of options for the Logistical Regrssion classifier.  We are mostly using the default arguments, the solver [lbfgs (Limited-memory Broyden–Fletcher–Goldfarb–Shanno)](https://en.wikipedia.org/wiki/Limited-memory_BFGS) solver – there are other options \([liblinear](https://medium.com/@arnavr/scikit-learn-solvers-explained-780a17bc322d#44a4), [sag](https://medium.com/@arnavr/scikit-learn-solvers-explained-780a17bc322d#c6f4), [saga](https://medium.com/@arnavr/scikit-learn-solvers-explained-780a17bc322d#e28b), [newton-cg](https://medium.com/@arnavr/scikit-learn-solvers-explained-780a17bc322d#339a)\) but lbfgs is a good default for small to medium datasets.  We are also using the `class_weight='balanced'` option, which automatically adjusts weights inversely proportional to class frequencies in the input data. This helps with imbalanced datasets, where some classes have many more examples than others (like our "none" class).
 
 Next we fit (train) the model:
 
@@ -269,7 +273,15 @@ This JSON
 is sent to the DictVectorizer, which 
 
 - Converts all values into numeric form:
-- Categorical features (like "tag" or "starts_with_digit") are one-hot encoded.
+- Categorical features (like "tag" or "starts_with_digit") are one-hot (sometimes called one-shot) encoded.  This transforms categorical variables into a format suitable for machine learning algorithms by converting them into binary vectors. For example, "tag" becomes:
+
+{% highlight json %}
+{
+    "tag=div": 1.0,
+    "tag=p": 0.0,
+    "tag=span": 0.0
+}
+{% endhighlight %}
 - Numeric fields are left as-is.
 
 Which for the above example produces:
@@ -292,9 +304,9 @@ Simply has the text from the element:
 
 Branch 1 and Branch 2 get sent into the TfidfVectorizer.  Its role is to
 
--	Tokenizes text into words and bigrams (e.g., "3 large", "large tomatoes") (which is an n-gram of 2)
+-	Tokenizes text into words and bigrams (e.g., "3 large", "large tomatoes") (which is an [n-gram](https://en.wikipedia.org/wiki/N-gram) of 2)
 -	Builds a vocabulary of the top 500 features
--	Computes TF-IDF scores for this text
+-	Computes [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf#:~:text=In%20information%20retrieval%2C%20tf%E2%80%93idf,appear%20more%20frequently%20in%20general.) scores for this text
 -	Output into a sparse vector that is the weights for tokenized [n-grams](https://en.wikipedia.org/wiki/N-gram):
 
 {% highlight json %}
@@ -318,11 +330,11 @@ The StadardScaler then computes the standard deviation for each feature (across 
 x_scaled = x / std
 {% endhighlight %}
 
-We do "with_mean=False" to avoid centering the data.  This isimportant because the data is still sparse.
+We do "with_mean=False" to avoid centering the data.  This is important because the data is still sparse.
 
 ### Step 4: LogisticRegression(...)
 
-This actually trains a logistic regression model.  It uses the scaled, combined feature matrixt that it created in the previous phase of the pipeline.  It then computes class probabilities using a sigmoid or softmax.  As explained above, we uses class_weight='balanced' to give more weight to minority classes since the none class is so dominant in our dataset.  
+This actually trains a logistic regression model. It uses the scaled, combined feature matrix that it created in the previous phase of the pipeline. It then computes class probabilities using a sigmoid function (for binary classification) or softmax function (for multi-class problems like ours). These mathematical functions transform raw numeric predictions into probabilities between 0 and 1 - sigmoid squeezes a single score into a probability, while softmax converts multiple scores into a probability distribution where all classes sum to 1. As explained above, we use class_weight='balanced' to give more weight to minority classes since the none class is so dominant in our dataset.
 
 Our model is now trained.  Now we test it on the test data:
 
@@ -366,66 +378,51 @@ it helps to understand exactly what each number represents.
 
 Each row represents one of the categories the model is trying to predict:
 
-- **direction** = a block of text containing recipe directions
-- **ingredient** = a block of text listing an ingredient
-- **none** = not part of the recipe (ads, unrelated content, etc.)
-- **title** = the recipe title
+- **direction** – a block of text containing recipe directions
+- **ingredient** – a block of text listing an ingredient
+- **none** – not part of the recipe (ads, unrelated content, etc.)
+- **title** – the recipe title
 
 #### Columns: The Metrics
 
-- **precision**
-  Of all the times the model *predicted* a block was of this type, how many were correct?\
-  → High precision = few false positives.
-
-- **recall**
-  Of all the blocks that *actually* were of this type, how many did the model find?\
-  → High recall = few false negatives.
-
-- **f1-score**
-  The harmonic mean of precision and recall—this balances both metrics into one number.
-
-- **support**
-  The number of true examples of this class in the test data. This shows if some classes are rare or common.
+- **precision** – Of all the times the model *predicted* a block was of this type, how many were correct?   If we have high precision, we have few false positives.
+- **recall** – Of all the blocks that *actually* were of this type, how many did the model find?   If we have a high recall, we have fewer false negatives.
+- **f1-score** – The harmonic mean of precision and recall—this balances both metrics into one number.
+- **support** – The number of true examples of this class in the test data. This shows if some classes are rare or common.
 
 #### Overall Averages
 
 At the bottom, you get 3 summary rows:
 
-- **accuracy**
-  Overall fraction of correct predictions across all blocks.
-
-- **macro avg**
-  Average of precision, recall, and F1 across all classes, treating all classes equally regardless of size.
-
-- **weighted avg**
-  Like macro avg, but gives more weight to classes with more examples. This gives you a sense of how the model is doing 
-- "on average" in proportion to your data.
+- **accuracy** – Overall fraction of correct predictions across all blocks.
+- **macro avg** – Average of precision, recall, and F1 across all classes, treating all classes equally regardless of size.
+- **weighted avg** – Like macro avg, but gives more weight to classes with more examples. This gives you a sense of how the model is doing "on average" in proportion to your data.
 
 ### A Quick Tour of Our First Results
 
 #### `direction`
 
-- **Precision 0.18** = lots of false positives.
-- **Recall 0.68** = found many true directions.
-- **F1-score 0.29** = this low F1-score reflects the poor balance between precision and recall—even though recall is decent, the many false positives are dragging performance down.
+- **Precision 0.18** – lots of false positives.
+- **Recall 0.68** – found many true directions.
+- **F1-score 0.29** – this low F1-score reflects the poor balance between precision and recall—even though recall is decent, the many false positives are dragging performance down.
 
 #### `ingredient`
 
-- **Precision 0.24** = lots of false positives.
-- **Recall 0.85** = very good at finding actual ingredients.
-- **F1-score 0.38** = this F1-score indicates that while recall is strong, the poor precision means the model is still not reliably labeling ingredient blocks.
+- **Precision 0.24** – lots of false positives.
+- **Recall 0.85** – very good at finding actual ingredients.
+- **F1-score 0.38** – this F1-score indicates that while recall is strong, the poor precision means the model is still not reliably labeling ingredient blocks.
 
 #### `none`
 
-- **Precision 0.99** = very few false positives when predicting "none." This is because there are so many "none" blocks that precision is high—not because we are doing a fantastic job in itself.
-- **Recall 0.66** = it missed many actual "none" blocks. The model is cautious about declaring something "none," but often errs on the side of labeling it as recipe content.
-- **F1-score 0.79** = a decent F1-score here—the model is reasonably strong at this dominant class, but we still want to improve recall to avoid contaminating recipe content with stray "none" labels.
+- **Precision 0.99** – very few false positives when predicting "none." This is because there are so many "none" blocks that precision is high — not because we are doing a fantastic job in itself but more because there are just so many none's in the document.
+- **Recall 0.66** – it missed many actual "none" blocks. The model is cautious about declaring something "none," but often errs on the side of labeling it as recipe content.
+- **F1-score 0.79** - a decent F1-score here—the model is reasonably strong at this dominant class, but we still want to improve recall to avoid contaminating recipe content with stray "none" labels.
 
 #### `title`
 
-- **Precision 0.07** = very poor precision.
-- **Recall 0.86** = surprisingly high recall. The model is wildly overpredicting titles—lots of blocks are getting incorrectly labeled as "title."
-- **F1-score 0.12** = a very low F1-score, showing that despite finding most true titles (high recall), the extreme overprediction makes this classification highly unreliable.
+- **Precision 0.07** - very poor precision.
+- **Recall 0.86** - surprisingly high recall. The model is wildly overpredicting titles—lots of blocks are getting incorrectly labeled as "title."
+- **F1-score 0.12** - a very low F1-score, showing that despite finding most true titles (high recall), the extreme overprediction makes this classification highly unreliable.
 
 ### Takeaways
 
@@ -599,4 +596,6 @@ In the next phase, we’ll:
 - Add balancing to give equal attention to minority classes
 - Investigate why categories like "title" are being so heavily misclassified
 
-**We have what would could call "Supervised Machine Learning", it's not very good, but it is a start. Now the real tuning begins. Stay tuned!**
+We have what would could call "Supervised Machine Learning", it's not very good, but it is a start. Now the real tuning (and fun) begins. Stay tuned!
+
+*I'd like to thank [Hussein Jafferjee](https://github.com/inssein) for doing some last-minute proof-reading and making some very helpful suggestions on what to clarify in this article*
