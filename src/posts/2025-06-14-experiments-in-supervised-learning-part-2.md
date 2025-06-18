@@ -18,14 +18,14 @@ In this post, I’ll show you how to run the training script, and then we’ll w
 
 Step one is to run the train.py script, this can be done either with one of presets I added launch.json ("Python Debugger: train limit 1000"), or you can run it from the command line (remember to activate your .venv before starting)
 
-{% highlight bash %}
+```bash
 (.venv) \src>python train.py --limit=1000
-{% endhighlight %}
+```
 
 
 You will see something like (this will take a little while, running it on the whole dataset takes a long time -- 
 
-{% highlight bash %}
+```bash
 Loading labeled data...
 Processed 100/1000 files (10.0%)
 Processed 200/1000 files (20.0%)
@@ -56,7 +56,7 @@ weighted avg       0.91      0.68      0.75     67682
 
 Model saved to ..\models\model.joblib
 Total time: 51.11s
-{% endhighlight %}
+```
 
 
 ## The Code
@@ -66,15 +66,15 @@ Total time: 51.11s
 Although the code in the repo (once again at [Github Recipe Parser](https://github.com/kriserickson/recipe-parser/tree/blog-post-1)) is 
 commented, I will be removing things like comments and logs to keep this as brief as possible.  Lets look at the train.py script and the function train.   The first real code we see is:
 
-{% highlight python %}
+```python
 X_raw, y = load_labeled_blocks(limit=limit)
-{% endhighlight %}
+```
 
 This loads the labeled data, extracting structural information from each HTML element (such as the element's text content, its parent tag, and its depth in the DOM hierarchy). Why do we use X\_raw rather than x\_raw? It's a common convention in Machine Learning to use capital X for feature matrices and lowercase y for target variables or labels - not critically important, but you'll see this pattern frequently in ML code.  
 
 Lets quickly look at load\_labeled\_blocks (I've removed not only the comments but also the code to display the progress).
 
-{% highlight python %}
+```python
 def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
     X, y = [], []
     json_files = sorted(LABELS_DIR.glob("recipe_*.json"))
@@ -98,14 +98,14 @@ def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
 
     return X, y
 
-{% endhighlight %}
+```
 
 
 This code simply grabs and loads into memory all the JSON files (which has the ingredients, directions and title that users had previous extracted from the recipe) in the data/labels directory and all the HTML files (which obviously contain the recipe as posted to the web) in the data/html\_pages directory.  
 
 The function parse\_html uses [Beautiful Soup](https://pypi.org/project/beautifulsoup4/) to extract a dictionary of the relevant elements of the html page (the text, parent tag, and depth). which we then pass (using only the text portion) to label_element to get the label for the block.
 
-{% highlight python %}
+```python
 def label_element(text: str, label_data: Dict[str, Any]) -> str:
   t = text.strip().lower()
   if not t or t.isdigit():
@@ -117,7 +117,7 @@ def label_element(text: str, label_data: Dict[str, Any]) -> str:
   if label_data.get("title", "").strip().lower() == t:
       return 'title'
   return 'none'
-{% endhighlight %}
+```
 
 Our label will be one of 4 things, "none" if it is not relevant to our recipe, "ingredient" if it is an ingredient, "direction" if it is a direction, and "title" if it is the title of the recipe (obviously enough) - these labels will be used in the training.
 
@@ -125,13 +125,13 @@ Our label will be one of 4 things, "none" if it is not relevant to our recipe, "
 
 Next, we extract features from the raw data. 
 
-{% highlight python %}
+```python
 X_features = extract_features(X_raw)
-{% endhighlight %}
+```
 
 This is where we convert our text and HTML structure into "numerical" features that the model can understand.
 
-{% highlight python %}
+```python
 def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
   return [
     {
@@ -145,7 +145,7 @@ def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     }
     for el in elements
   ]
-{% endhighlight %}
+```
 
 ### Building the ML Pipeline
 
@@ -166,43 +166,43 @@ exists in, the depth in the heirarchy of the HTML, the length of the text, wheth
 
 Finally we are going to get into some actual machine learning code, the first thing we will split the data into training and testing sets.  We are using [scikit-learn](https://scikit-learn.org/stable/) (imported as sklearn) which is one of the most popular [Python libraries for machine learning](https://en.wikipedia.org/wiki/Scikit-learn).  The code to split the data is:
 
-{% highlight python %}
+```python
 X_train, X_test, y_train, y_test = 
     train_test_split(X_features, y, test_size=0.2, random_state=42)
-{% endhighlight %}
+```
 
 This splits our data into 80% for training and 20% for testing. The `random_state` ensures that the split is reproducible (the 42 is a commonly used number in machine learning given that is the [meaning of life, the universe and everything](https://www.goodreads.com/book/show/11.The_Hitchhiker_s_Guide_to_the_Galaxy)), so you get the same results every time you run it.  You can try playing with these numbers, but until you understand the basics, I would recommend leaving them as is.
 
 Next split both the training and testing data into features and text:
 
-{% highlight python %}
+```python
 X_train_proc = preprocess_data(X_train)
 X_test_proc = preprocess_data(X_test)
-{% endhighlight %}
+```
 
 The `preprocess_data` function converts the data into data structures that our model is going handle.  
 
 ### Under the Hood: How the Pipeline Processes Data
 
-{% highlight python %}
+```python
 def preprocess_data(features: List[Dict[str, Any]]) -> List[Tuple[Dict[str, Any], str]]:
     features_wo_text, texts = split_features_and_text(features)
     combined = list(zip(features_wo_text, texts))
     return combined
-{% endhighlight %}
+```
 
 The expression list(zip(features_wo_text, texts)) pairs each element from the features_wo_text list with the corresponding element from the texts list, creating a list of tuples. Each tuple contains one structured feature dictionary and its associated text string, preserving their order.  Next we create the model that we are going to train:
 
-{% highlight python %}
+```python
 model = make_pipeline(
   build_transformer(),
   ...
 )
-{% endhighlight %}
+```
 
 The build_transformer() function 
 
-{% highlight python %}
+```python
 def build_transformer() -> FeatureUnion:
     dict_vect = DictVectorizer(sparse=True)
     transformer = FeatureUnion([
@@ -211,29 +211,29 @@ def build_transformer() -> FeatureUnion:
     ])
 
     return transformer
-{% endhighlight %}
+```
 
 returns a [FeatureUnion](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html) (a tool for combining multiple feature extraction or transformation steps in parallel, and then concatenating their outputs into a single feature matrix).  This combines two parallel feature extraction pipelines: Structured features (dictionary-based features e.g., tag, depth, text length using [DictVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.DictVectorizer.html)) and Text features (text features using [TfidfVectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)). ItemSelector is a class we create which is used to pick the right part (structured or text) from each input tuple.  This is a a fairly common text transformer that can be re-used with any text and structured data (for example for a book recommendation engine or a customer support ticket classification system).  We will be improving this in the future, but for now it demonstrates how to combine structured and text features to pass to our pipeline.
 
-{% highlight python %}
+```python
 model = make_pipeline(
   build_transformer(),
   StandardScaler(with_mean=False), 
   ...
 )
-{% endhighlight %}
+```
 
 Next, we apply [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) to normalize our feature values. This transformer standardizes features by scaling them to have unit variance, which is crucial for Logistic Regression to perform optimally. While other options exist (like MinMaxScaler, RobustScaler, or Normalizer), StandardScaler is particularly well-suited for LogisticRegression because it prevents certain features from dominating due to their scale. 
 
 We set `with_mean=False` because our features are stored as a sparse matrix (many zeros). If we tried to center the data by subtracting the mean, we'd convert all those zeros to non-zero values, destroying the memory-efficient sparse representation and potentially causing memory issues with large datasets.
 
-{% highlight python %}
+```python
 model = make_pipeline(
   build_transformer(),
   StandardScaler(with_mean=False), # Add StandardScaler here
   LogisticRegression(max_iter=1000, class_weight='balanced')
 )
-{% endhighlight %}
+```
 
 Finally we add our classifier, in this case we are using a [Logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) for our model.  Despite the name, Logistic Regression is a classification algorithm, not a regression one. It models the probability that a given input belongs to a class.
 
@@ -245,9 +245,9 @@ There are a bunch of options for the Logistical Regrssion classifier.  We are mo
 
 Next we fit (train) the model:
 
-{% highlight python %}
+```python
 model.fit(X_train_proc, y_train)
-{% endhighlight %}
+```
 
 Heres what happens when `model.fit` is executed:
 
@@ -259,42 +259,42 @@ This splits and processes the input sample in two parallel branches:
 
 This JSON
 
-{% highlight json %}
+```json
 {
     "tag": "div",
     "depth": 3,
     "text_len": 42,
-    "starts_with_digit": False,
+    "starts_with_digit": false,
     "comma_count": 2,
-    "dot_count": 1,
+    "dot_count": 1
 }
-{% endhighlight %}
+```
 
 is sent to the DictVectorizer, which 
 
 - Converts all values into numeric form:
 - Categorical features (like "tag" or "starts_with_digit") are one-hot (sometimes called one-shot) encoded.  This transforms categorical variables into a format suitable for machine learning algorithms by converting them into binary vectors. For example, "tag" becomes:
 
-{% highlight json %}
+```json
 {
     "tag=div": 1.0,
     "tag=p": 0.0,
     "tag=span": 0.0
 }
-{% endhighlight %}
+```
 - Numeric fields are left as-is.
 
 Which for the above example produces:
 
-{% highlight json %}
+```text
 [ comma_count=2.0, depth=3.0, dot_count=1.0, starts_with_digit=False=1.0, starts_with_digit=True=0.0, tag=div=1.0, tag=p=0.0, tag=span=0.0, text_len=42.0 ]
-{% endhighlight %}
+```
 
 which as sparse matrix looks like:
 
-{% highlight json %}
+```json
 [2.0, 3.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 42.0]
-{% endhighlight %}
+```
 
 **Branch 2: "text" pipeline**
 
@@ -309,26 +309,26 @@ Branch 1 and Branch 2 get sent into the TfidfVectorizer.  Its role is to
 -	Computes [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf#:~:text=In%20information%20retrieval%2C%20tf%E2%80%93idf,appear%20more%20frequently%20in%20general.) scores for this text
 -	Output into a sparse vector that is the weights for tokenized [n-grams](https://en.wikipedia.org/wiki/N-gram):
 
-{% highlight json %}
+```json
 [0.18, 0.0, 0.11, 0.04, ...]
-{% endhighlight %}
+```
 
 ### Step 2: FeatureUnion
 
 This takes the output vectors from both branches and concatenates them horizontally to create one combined sparse feature vector:
 
-{% highlight json %}
+```json
 [3.0, 42.0, 2.0, 1.0, 1.0, 0.0, ..., 0.18, 0.0, 0.11, 0.04, ...]
-{% endhighlight %}
+```
 
 ### Step 3: StandardScaler(with_mean=False)
 
 The StadardScaler then computes the standard deviation for each feature (across all training samples)
  and scales each feature to unit variance.
 
-{% highlight python %}
+```python
 x_scaled = x / std
-{% endhighlight %}
+```
 
 We do "with_mean=False" to avoid centering the data.  This is important because the data is still sparse.
 
@@ -338,17 +338,17 @@ This actually trains a logistic regression model. It uses the scaled, combined f
 
 Our model is now trained.  Now we test it on the test data:
 
-{% highlight python %}
+```python
 y_pred = model.predict(X_test_proc)
-{% endhighlight %}
+```
 
 This uses the trained model to predict labels for the test set. The `predict` method applies the learned weights to the test features and outputs predicted class labels.
 
-{% highlight python %}
+```python
 print(classification_report(y_test, y_pred))
 
 dump(model, MODEL_PATH)
-{% endhighlight %}
+```
 
 Finally we output the classification_report and save the model to a file. The `classification_report` function computes precision, recall, F1-score, and support for each class in the test set, giving us a detailed view of how well our model performed (see below for more details on this).
 
@@ -358,7 +358,7 @@ Our first model is very small, clocking in at only 52KB and as we will see below
 
 Lets look at the report again:
 
-```
+```text
               precision    recall  f1-score   support
 
    direction       0.18      0.68      0.29      1889
@@ -433,7 +433,7 @@ At the bottom, you get 3 summary rows:
 
 BTW, so you don't have to, running it on the full dataset takes a lot longer, but doesn't improve results much (in fact, everything but ingredients gets worse). &#x20;
 
-```
+```text
               precision    recall  f1-score   support
 
    direction       0.18      0.68      0.28     25477
@@ -455,13 +455,13 @@ So we learn that when tuning training we want to work on a subset to keep the fe
 
 Ok, now lets run the predict.py script to see how our model does on a real recipe.  You can run this from the command line, or you can use the launch.json file to run it in the debugger.  The command line version is:
 
-{% highlight bash %}
+```bash
 (.venv) \src>python predict.py ../data/html/crab-cakes.html
-{% endhighlight %}
+```
 
 and we get the rather uninspiring result of 
 
-{% highlight json %}
+```json
 {
   "title": "Maryland Crab Cakes",
   "ingredients": [
@@ -584,7 +584,7 @@ and we get the rather uninspiring result of
     "Sign in"
   ]
 }
-{% endhighlight %}
+```
 
 So we got the title, but we have **way** too many false positives on the ingredients and the directions (though all the ingredients are in the ingredients tag, and all the directions are in the directions tag).  We are going to have to a fair bit to improve this model.
 

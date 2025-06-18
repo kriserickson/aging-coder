@@ -79,10 +79,10 @@ In the rest of this post, I’ll walk through the process of turning this kind o
 
 Using this data, over a series of blog posts, I am going to build a supervised learning model for recipe extraction using the data from Recipe Folder. If you want to follow along, the project is on Github as [recipe-parser](https://github.com/kriserickson/recipe-parser).  Check out the [blog-post-1](https://github.com/kriserickson/recipe-parser/tree/blog-post-1) branch
 
-{% highlight bash %}
+```bash
 $ git clone git@github.com:kriserickson/recipe-parser.git
 $ git checkout blog-post-1
-{% endhighlight %}
+```
 
 I will exlain how to run things using VS Code (as it is the most popular free IDE) but you can use any IDE you are comfortable with, the examples will be somewhat similar.   If you are using Visual Studio, install the [Python extension](https://mafrketplace.visualstudio.com/items?itemName=ms-python.python). BTW, I am not a python expert and am actively learning Python myself (so let me know if I have made any glaring mistakes) -- also I prefer to have types so my Python code is usually heavily typed.  While a deep understanding of Python is not required for these blog posts, or to know how to do supervised learning, if you want to do any ML programming you will want to become familiar with Python. Also for these tutorials, you are going to need a modernish version of Python (3.10 or higher) and a very basic understanding of Python programming.  
 
@@ -90,7 +90,7 @@ If you are running on a Mac you may find that python is installedas python3 and 
 
 **1. Create Virtual Environment:** Open VS Code terminal (`Ctrl+`` or View → Terminal`) and run:
 
-{% highlight bash %}
+```bash
 # Create virtual environment
 python -m venv .venv
 
@@ -99,7 +99,7 @@ python -m venv .venv
 
 # Activate it (Mac/Linux)
 source .venv/bin/activate
-{% endhighlight %}
+```
 
 **2. Select Python Interpreter (this is only if you are running Visual Studio)**
 
@@ -109,9 +109,9 @@ source .venv/bin/activate
 
 **3. Install Dependencies (requirements):**
 
-{% highlight bash %}
+```bash
 pip install -r requirements.txt   
-{% endhighlight %}
+```
 
 3. **Verify Setup in VS Code:**
 
@@ -126,7 +126,7 @@ pip install -r requirements.txt
 * I would put a breakpoint in src/validate\_and\_filter\_recipes.py file, and I wouldn't start things yet - let me explain what is going to happen.
 * This code looks through the data/potential\_labels directory and finds all the .json files (these were exported from my old Recipe Folder site)  lets look at one now.
 
-{% highlight json %}
+```json
 {
   "hash": "0fa3ca4369af73ba398d3f542bbddc47d91b0454",
   "title": "Toasted Pumpkin Seeds Recipe",
@@ -155,7 +155,7 @@ pip install -r requirements.txt
   ],
   "__v": 0
 }
-{% endhighlight %}
+```
 
 * This should look pretty obvious, the only weird thing is that directions and ingredients have this random "0" as the first entry.  This was because the old site supported multiple sections of ingredients and directions (you will see a "1" in some recipes, in fact recipe\_00000.json has 2 ingredient sections).
 * The validate\_and\_filter\_recipes.py file goes through all the "potential" recipes, downloads the HTML file as it currently stands, and if the HTML is there, and doesn't look like a 404 it copies the html file into the data/html directory and json file in the data/labels directory.
