@@ -1,40 +1,27 @@
 ---
 layout: post
 category: AI 
-title: "Experiments In Supervised Learning Part 3"
+title: "Experiments in Supervised Learning Part 3"
 imagefeature:
 description: 
 draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 
+Running on a recipe has produced terrible results. Ingredients include things like "Pin" and "Tweet," and many ingredients are duplicated. Directions include irrelevant text like "This site uses Akismet to reduce spam." and "Sign in." There are too many ingredients and too many directions (there are 10 ingredients for the recipe and 5 directions). Another problem is that ingredients are consistently broken across two lines ("2 tablespoons", "finely chopped parsley"). The good news is that all the ingredients are in the ingredient array and all the directions are in the direction array, but there are many false positives.
 
-So, running on a recipe has produced terrible results.  Ingredients includes things like "Pin" and "Tweet" and a lot of ingredients are doubled.  And directions include things like "This site uses Akismet to reduce spam.", "Sign in".  It includes too many ingredients and too many directions (there are 10 ingredients for the recipe and 5 directions). Another problem is that ingredients are broken between 2 lines consistently ("2 tablespoons", "finely chopped parsley").  The good news is that all the ingredients are in the ingredient array and all the directions are in the direction array but so many false positives.  
-
-First lets get our project to the expected state.  Since we are going to do a bunch of small 
-changes in this article, I have created tags for each little part.   Checkout the tag if you 
-want to follow along:
+First, let's get our project to the expected state. Since we are going to make a bunch of small changes in this article, I have created tags for each part. Check out the tag if you want to follow along:
 
 ```bash
 git checkout post-3-part-1
 ```
 
-### Adding Features 
+### Adding Features
 
-Now, we learned last post that we extract features that we give to trainer when training the model. 
-Our features were pretty generic so lets see if in step one of our training we can improve the features.  
-Lets add the number of digits in the text ("num_digits") whether the text contains a known unit 
-like tablespoons, or millimeters, etc ("contains_unit"), the number of commas in the text ("comma_count"), 
-the number of periods in the text ("dot_count"), whether the tag is a heading ("is_heading")
-and if it is a list item ("is_list_item").  The assumptions we are making is that ingredients are more likely to
-have a unit, a digit, and is probably a list item.  Directions are more likely to contain commas,
-and perhaps more than 1 period.  These names, BTW, are for us, the modelers of the data - 
-they don't mean anything to the statistical models.  In fact, only their positions are stored 
-(so make sure that when extracting features the positions don't change).
+In the last post, we learned that we extract features to give to the trainer when training the model. Our features were pretty generic, so let's see if we can improve them in step one of our training. Let's add the number of digits in the text ("num_digits"), whether the text contains a known unit like tablespoons or millimeters ("contains_unit"), the number of commas in the text ("comma_count"), the number of periods in the text ("dot_count"), whether the tag is a heading ("is_heading"), and if it is a list item ("is_list_item"). The assumptions are that ingredients are more likely to have a unit, a digit, and are probably list items. Directions are more likely to contain commas and perhaps more than one period. These names, by the way, are for us, the modelers of the data—they don't mean anything to the statistical models. In fact, only their positions are stored (so make sure that when extracting features, the positions don't change).
 
 ```python
 def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    
     return [
         {
             "tag": (tag := el["tag"]),
@@ -54,7 +41,8 @@ def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     ]
 ```
 
-And now we run the training data again (this is going to a become refrain) and look at the classification report:
+And now we run the training data again (this is going to become a common refrain) and look at the 
+classification report:
 
 ```text
                precision    recall  f1-score   support
@@ -69,7 +57,7 @@ And now we run the training data again (this is going to a become refrain) and l
 weighted avg      0.91      0.69      0.76     67682
 ```
 
-if we compare this with the report from last time we can see that things are slightly better:
+If we compare this with the report from last time, we can see that things are slightly better:
 
 ```text
               precision    recall  f1-score   support
@@ -84,13 +72,13 @@ if we compare this with the report from last time we can see that things are sli
 weighted avg       0.91      0.68      0.75     67682
 ```
 
-For accuracy .69 is better than .68.  Not a lot better, but we have improved on ingredients, title and none -- and
-(directions have gotten slightly worse).  We added a bunch of features, lets figure out which ones actually helped
-us.   Let's try running it without the is_header and is_list_item features.  But first, loading even 
-a subset (1000) of the items is taking a while (over 50s on my machine, and another 20s or so to train
-and analyze the model. Sklearn is automatically parallelizing the training (fit)) and prediction for us so 
-we can't really speed up model creation, but reading 1000 json and html files is super-paralelizable so 
-lets change the load_labeled_blocks to be parallilized.  
+For accuracy, 0.69 is better than 0.68. Not a lot better, but we have improved on ingredients, title, and 
+none — though directions have gotten slightly worse. We added a bunch of features; let's figure out which ones actually helped 
+us. Let's try running it without the is_heading and is_list_item features. But first, loading even 
+a subset (1000) of the items is taking a while (over 50 seconds on my machine, and another 20 seconds or so to train 
+and analyze the model). Scikit-learn is automatically parallelizing the training (fit) and prediction for us, so 
+we can't really speed up model creation, but reading 1000 JSON and HTML files is super-parallelizable, so 
+let's change the load_labeled_blocks to be parallelized.
 
 For those following along, check out the next step in git:
 
@@ -98,7 +86,7 @@ For those following along, check out the next step in git:
 git checkout post-3-part-2
 ```
 
-To paralalize  we create (or more to the point, extract from our old load_labeled_blocks), the function
+To parallelize, we create (or more to the point, extract from our old load_labeled_blocks) the function 
 to get the elements from the file:
 
 
@@ -119,9 +107,9 @@ def process_pair(json_file_path: Path) -> Tuple[List[Dict[str, Any]], List[str]]
     return X, y
 ```
 
-Next, we get a ProcessPoolExecutor, and submit each of the json_file to it.  This returns us an array of 
-futures (promises, if you are used to JavaScript), as each future is completed, we get the result and 
-extend our blocks and our labels (extend flattens the array as it merges, the old code appended each 
+Next, we get a ProcessPoolExecutor and submit each of the JSON files to it. This returns us an array of 
+futures (promises, if you are used to JavaScript). As each future is completed, we get the result and 
+extend our blocks and our labels (extend flattens the array as it merges; the old code appended each 
 block one at a time as it was processing the file).
 
 ```python
@@ -147,8 +135,8 @@ def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
     return X, y
 ```
 
-If we run train now, we can see that loading the files (at least on my computer) takes about 1/10th the 
-time, and we can also see that "is_header" and "is_list_item" is basically doing nothing.
+If we run training now, we can see that loading the files (at least on my computer) takes about 1/10th the 
+time, and we can also see that "is_heading" and "is_list_item" are basically doing nothing.
 
 ```text
               precision    recall  f1-score   support
@@ -177,7 +165,7 @@ Overall macro and weighted F1: Unchanged.
 
 What does this mean?
 
-Adding is_heading and is_list_item had only a very minor effect—slight bump in direction and title f1, but a tiny drop in accuracy (possibly just noise).
+Adding is_heading and is_list_item had only a very minor effect—a slight bump in direction and title f1, but a tiny drop in accuracy (possibly just noise).
 
 No evidence of harm: Performance didn't decrease.
 
@@ -185,20 +173,20 @@ No major gain: These features didn’t provide a significant improvement, but al
 
 ###
 
-Next, lets assume that ingredients do have units, and they also have quantity and sometimes quantity is a written number, sometimes it is a special character like ½ or ¼ and sometimes it is a plain number.  
-So lets a a feature for that, but first check out the next part tag.
+Next, let's assume that ingredients do have units, and they also have quantity, and sometimes quantity is a written number, sometimes it is a special character like ½ or ¼, and sometimes it is a plain number. 
+So let's add a feature for that, but first check out the next part tag.
 
 ```bash
-git checkout-part-3-part-3
+git checkout post-3-part-3
 ```
 
 So to our feature extraction dictionary we add:
 
 ```python
-"contains_quantity_number": int(bool(re.search(r"\d+|\d+/\d+|½|¼|¾|⅓|⅔\bone\b|\btwo\b|\bthree\b|\bfour\b|\bfive\b", elem_text))),
+"contains_quantity_number": int(bool(re.search(r"\d+|\d+/\d+|½|¼|¾|⅓|⅔|\bone\b|\btwo\b|\bthree\b|\bfour\b|\bfive\b", elem_text))),
 ```
 
-and run the test again.  
+and run the test again.
 
 ```text
               precision    recall  f1-score   support
@@ -213,21 +201,21 @@ and run the test again.
 weighted avg       0.91      0.70      0.77     67682
 ```
 
-It is getting slightly better.  But these are all pretty small wins (though all wins are important in 
-tuning).  However, I feel that we have to now think how recipes are structured on a web page.  The 
-title comes first, then the ingredients (usually after and ingredients header) and then directions 
-(usually after the directions header).  So, currently we aren't putting any weight on things like 
-where on the page the elements are, or have we seen an ingredient header yet.  Unfortunately, since we
-are extracting the features in bulk for all recipes pages we currently don't know their position on 
+It is getting slightly better. But these are all pretty small wins (though all wins are important in 
+tuning). However, I feel that we have to now think about how recipes are structured on a web page. The 
+title comes first, then the ingredients (usually after an ingredients header), and then directions 
+(usually after the directions header). So, currently we aren't putting any weight on things like 
+where on the page the elements are, or whether we have seen an ingredient header yet. Unfortunately, since we
+are extracting the features in bulk for all recipe pages, we currently don't know their position on 
 the page. We are going to have to either store more data with the X_raw or extract the features in 
-the new process_pair function. I think maintaining all the Beautiful Soup elements may be expensive 
-so lets also add some memory information to our script.
+the new process_pair function. I think maintaining all the Beautiful Soup elements may be expensive,
+so let's also add some memory information to our script.
 
 ```bash
-git checkout-part-3-part-4
+git checkout post-3-part-4
 ```
 
-We have conditionally added memory tracing (getting the data from the processes memory info as well as using tracemalloc).
+We have conditionally added memory tracing (getting the data from the process's memory info as well as using tracemalloc). 
 We do this conditionally as tracing the memory slows down the process considerably.
 
 ```python
@@ -242,7 +230,7 @@ We do this conditionally as tracing the memory slows down the process considerab
         start_memory = get_memory_usage()
 ```
 
-At the end of the program we dump out our usage.  
+At the end of the program, we dump out our usage.  
 
 ```python
     if memory:
@@ -254,8 +242,7 @@ At the end of the program we dump out our usage.
         print(f"Memory increase: {end_memory - start_memory:.2f} MB")
 ```
 
-If you run the training again, you can see that we use about 755MB of memory if we store all the 
-Beautiful Soup Elements in a List of Dictionaries 
+If you run the training again, you can see that we use about 755MB of memory if we store all the Beautiful Soup Elements in a List of Dictionaries 
 
 ```text
 Total time: 100.56s
@@ -267,7 +254,7 @@ Memory increase: 755.74 MB
 But if we move the parsing into the load_labeled_blocks (well actually the process_pair) function
 
 ```bash
-git checkout-part-3-part-5
+git checkout post-3-part-5
 ```
 
 ```python
@@ -310,7 +297,7 @@ improves things.  First lets pass in which element on the page each element is (
 page (its index divided by the number of elements on the page).
 
 ```bash
-git checkout-part-3-part-6
+git checkout post-3-part-6
 ```
 
 ```python
@@ -386,10 +373,10 @@ in half.
 
 ### Fixing the HTML Parsing
 
-Let's solve the problem of split ingredients.   Let's dig into some of the html, and see what our ingredients look like (this is from recipe_000027.html):
+Let's solve the problem of split ingredients. Let's dig into some of the HTML, and see what our ingredients look like (this is from recipe_000027.html):
 
 ```html
- <ul class="ingredient-list svelte-ar8gac">
+<ul class="ingredient-list svelte-ar8gac">
     <li style="display: contents">
         <span class="ingredient-quantity svelte-ar8gac"><!-- HTML_TAG_START -->3 <!-- HTML_TAG_END --></span>
         <span class="ingredient-text svelte-ar8gac">
@@ -404,18 +391,17 @@ Let's solve the problem of split ingredients.   Let's dig into some of the html,
     </li>
 ```
 
-And if we look at a bunch more, we can see that ingredients frequently spread across several elements (spans in the example), and
-if we set a breakpoint when we are doing the labelling, we can see that our ingredients are spread over multiple blocks:
+And if we look at a bunch more, we can see that ingredients frequently spread across several elements (spans in the example), and if we set a breakpoint when we are doing the labelling, we can see that our ingredients are spread over multiple blocks:
 
 <img alt="Debugging Blocks" src="/img/supervised/debug-labels.webp" style="border: 1px solid #000; margin: 0 10px 10px 0">
 
-So we need to change how we extract li items from the html.  
+So we need to change how we extract li items from the HTML.
 
 ```bash
-git checkout-part-3-part-7
+git checkout post-3-part-7
 ```
 
-we add the following to our parse_html.py
+We add the following to our parse_html.py:
 
 ```python
     # If the element is a <li> tag, combine its text and skip its children
@@ -545,25 +531,25 @@ see things are looking a lot better.
 ```
 So, it is important to remember that the classification report is not the be-all and end-all of 
 tuning -- it is very important but sometimes you need to run predict on a few files just to get an 
-idea of how things are going.  This change may not have improved the F1 score for ingredients but it 
+idea of how things are going. This change may not have improved the F1 score for ingredients but it 
 certainly improved the output.
 
-### Adding more Features
+### Adding More Features
 
-So, another thing we can look at, is that if we look at many of recipes html, we will see ingredients 
-and directions are frequently signaled by an h2 or h3 and the word ingredients or directions.  Lets add 
-some code to keep track of any headers we see with ingredients, or directions (or other frequently used
+Another thing we can look at is that if we look at many of the recipes' HTML, we will see ingredients
+and directions are frequently signaled by an h2 or h3 and the word ingredients or directions. Let's add s
+ome code to keep track of any headers we see with ingredients, or directions (or other frequently used 
 words that denote that the ingredients or directions are forthcoming):
 
-Checkout the changes that add this:
+Check out the changes that add this:
 
 ```bash
-git checkout-part-3-part-7
+git checkout post-3-part-8
 ```
 
-First we create a function in feature_extraction.py that checks if the current element is a header tag.  If 
-it is, it looks for ingredient or direction markers in the text.  If it finds one of those it returns a
-new heading.  If it doesnt it returns none, and if we aren't a header then it returns what the 
+First, we create a function in feature_extraction.py that checks if the current element is a header tag. If 
+it is, it looks for ingredient or direction markers in the text. If it finds one of those it returns a 
+new heading. If it doesn't, it returns none, and if we aren't a header then it returns what the 
 previous section_heading was.
 
 ```python
@@ -584,7 +570,7 @@ def get_section_header(current_section_heading, el):
     return current_section_heading
 ```
 
-Next, we pass the current_section_heading, to the extract_features function and add the following 
+Next, we pass the current_section_heading to the extract_features function and add the following 
 features to our features array.
 
 ```python
@@ -592,8 +578,8 @@ features to our features array.
     "is_under_current_direction_section": int(current_section_heading == "direction")
 ```
 
-Running the training data we can see that ingredient precision, recall and f1-score have all increased 
-slightly.     
+Running the training data we can see that ingredient precision, recall, and f1-score have all increased 
+slightly.
 
 ```text
               precision    recall  f1-score   support
@@ -608,21 +594,21 @@ slightly.
 weighted avg       0.91      0.73      0.79     42222
 ```
 
-HTML element classes and ids frequently have useful information in them, lets see if we add that to 
-the features if it helps us out.
+HTML element classes and ids frequently have useful information in them. Let's see if adding that to 
+the features helps us out.
 
 ```bash
 git checkout post-3-part-9 
 ```
 
-First turn the class and id into a string:
+First, turn the class and id into a string:
 
-```python    
+```python
     class_id_str = " ".join(str(x) for x in el.get("class", [])) + " " + str(el.get("id", ""))
     class_id_str = class_id_str.lower()
 ```
 
-then add that to the feature-set.
+Then add that to the feature set.
 
 ```python
     "class_has_ing_keyword": int(any(k in class_id_str for k in ing_keywords)),
@@ -645,11 +631,11 @@ and run the training set:
 weighted avg       0.91      0.74      0.79     42222
 ```
 
-Now we are cooking with gas, this helped all fields, even title.  
+Now we are cooking with gas; this helped all fields, even title.
 
-Lets look at the possibility of adding one more feature, itemprop is an attribute that can be placed 
-on tags and recipes frequently use "recipeIngredient" on the ingredient tag, and "recipeInstruction" 
-on the direction tag.   You can see this by going to data/html_pages directory and typing 
+Let's look at the possibility of adding one more feature: itemprop is an attribute that can be placed 
+on tags, and recipes frequently use "recipeIngredient" on the ingredient tag, and "recipeInstruction" 
+on the direction tag. You can see this by going to the data/html_pages directory and typing
 
 ```bash
 grep 'itemprop="recipeIngredient"' *
@@ -661,7 +647,7 @@ or on Windows command prompt:
 findstr "itemprop=\"recipeIngredient\"" *
 ```
 
-to see how many files actually are affected by this 
+To see how many files actually are affected by this
 
 ```bash
 grep -l 'itemprop="recipeIngredient"' * | wc -l
@@ -673,30 +659,28 @@ or on Windows command prompt:
 findstr /m "itemprop=\"recipeIngredient\"" * | find /c /v ""
 ```
 
-and we see that there are only about 300 of the 12,000 files actually have itemprops that support 
-recipeIngredient and recipeInstruction so it doesn't make sense to add this for only about 2% of 
+and we see that there are only about 300 of the 12,000 files that actually have itemprops that support 
+recipeIngredient and recipeInstruction, so it doesn't make sense to add this for only about 2% of 
 the training files.
 
-There are probably some features we could extract, and improve the classification score even
-more - but I think we are getting to series of diminishing returns and it is time to take a new approach.  
+There are probably some features we could extract and improve the classification score even 
+more—but I think we are getting to a series of diminishing returns and it is time to take a new approach.
 
+**Things to try**
 
-** Things to try **
-
-Try adding more features, see what happens.  Can you improve the accuracy by adding things like 
-adding a feature similar to our "class_has_ing_keyword" feature but getting the last 3 element 
-ancestors (parents)?  What other features could you add?
- 
+Try adding more features, see what happens. Can you improve the accuracy by adding things like 
+a feature similar to our "class_has_ing_keyword" feature but getting the last 3 element 
+ancestors (parents)? What other features could you add?
 
 ### Data Cleanup
 
-We did some very simple checking when we loaded the data, and just quickly glancing over the json files 
+We did some very simple checking when we loaded the data, and just quickly glancing over the JSON files 
 I noticed that a few of the recipe_*.json files had their source as 
-the [nytimes.com](https://cooking.nytimes.com) and knowing that the 
-[New York Times](https://nytimes.com) requires a subscription to view their recipes I suspected 
-that my check to see if the page was valid didn't catch all the invalid pages.  I also scanned 
+[nytimes.com](https://cooking.nytimes.com), and knowing that the 
+[New York Times](https://nytimes.com) requires a subscription to view their recipes, I suspected 
+that my check to see if the page was valid didn't catch all the invalid pages. I also scanned 
 a few of the recipe_*.json files and found that the data was bad: recipes had their ingredients 
-doubled and (for example recipe_00007.json has ingredients that looks like this: 
+doubled and (for example recipe_00007.json has ingredients that look like this:
 
 ```json
 {
@@ -731,16 +715,16 @@ doubled and (for example recipe_00007.json has ingredients that looks like this:
 }
 ```
 
-which is pretty annoying since **most** of the ingredients are doubled, but not all of them.  So I 
-wrote a quick script to delete all the recipes with doubled data in the json files and all the recipes
-where the HTML is missing.  You can find this in this tag
+which is pretty annoying since **most** of the ingredients are doubled, but not all of them. So I 
+wrote a quick script to delete all the recipes with doubled data in the JSON files and all the recipes 
+where the HTML is missing. You can find this in this tag
 
 
 ```bash
 git checkout post-3-part-10
 ```
 
-run it from the command line or the VS Code debugger and it will delete 1,028 recipes.  Unfortunately
+run it from the command line or the VS Code debugger and it will delete 1,028 recipes. Unfortunately, 
 if we now run the training data we see that our model has gotten worse with the improved data.
 
 
@@ -757,20 +741,20 @@ if we now run the training data we see that our model has gotten worse with the 
 weighted avg       0.91      0.72      0.78     42276
 ```
 
-** Things to try **
+**Things to try**
 
 We are running this against the first 1000 recipes very often and it would be good to know that they came 
-from a diverse collection of sites.  Write a script to grab all the json files and print out a 
+from a diverse collection of sites. Write a script to grab all the JSON files and print out a 
 distribution of the domains, also do this for the first thousand recipes and see what the distribution 
 is like. To really improve things, write a script that takes all those domains and produces a more 
-balenced list of the first 1000 recipes (precurse them with a '\_' so that they get read first
-(e.g. '\_recipe_00008.json' and the corresponding '\_recipe_00008.html')). 
+balanced list of the first 1000 recipes (prefix them with a '\_' so that they get read first 
+(e.g. '\_recipe_00008.json' and the corresponding '\_recipe_00008.html')).
 
-### Improving Labelling
+### Improving Labeling
 
-OK, Data Cleanup only made things worse (it will definately improve things in the long term) 
-but for now lets try a different strategy.  Let's try improving our labelling by seeing the string
-is simliar rather than exact matching on words in the string.  
+OK, Data Cleanup only made things worse (it will definitely improve things in the long term),
+but for now let's try a different strategy. Let's try improving our labeling by seeing if the string 
+is similar rather than exact matching on words in the string.
 
 ```bash
 git checkout post-3-part-11
@@ -814,7 +798,7 @@ def label_element(text: str, label_data: Dict[str, Any]) -> str:
 Even though this is "fuzzy" matching, it will remove a lot of false positives. We have gone from 
 substring matching, to "almost whole-string" matching. With strict “in” logic, partial matches 
 (e.g., "eggs" in "3 large eggs, beaten") would count as a match. This can lead to over-labeling—even 
-short fragments, but ith fuzzy logic, we’re comparing the whole text block to the whole ingredient
+short fragments, but with fuzzy logic, we’re comparing the whole text block to the whole ingredient
 line, not fragments. "eggs" vs. "3 large eggs, beaten" has a low similarity score (<0.8). 
 Only blocks that are almost identical to a label line are counted.
 
@@ -834,23 +818,21 @@ gone down considerably in direction and ingredient).
 weighted avg       0.95      0.86      0.89     42276
 ```
 
-This is clearly a marked improvement (an accuracy jump of over 10%), with the only downside is that 
-it takes a fair bit longer to label our data (from 6 seconds to 35 seconds) - but hey, no one ever 
-said training was fast.
+This is clearly a marked improvement (an accuracy jump of over 10%), with the only downside being that it takes a fair bit longer to label our data (from 6 seconds to 35 seconds)—but hey, no one ever said training was fast.
 
-** Things to try **
+**Things to try**
 
-Try changing the ratio for similarities, see what happens (remember to look at all the numbers).  Try 
-changing it for all the similiarities and just 1. Play with other similar alorithms, try
+Try changing the ratio for similarities, see what happens (remember to look at all the numbers). Try 
+changing it for all the similarities and just one. Play with other similar algorithms, try
 [Levenshtein](https://en.wikipedia.org/wiki/Levenshtein_distance), 
 [Damerau–Levenshtein](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance),
-and maybe even [Soundex](https://en.wikipedia.org/wiki/Soundex).  Why do you think these work better
+and maybe even [Soundex](https://en.wikipedia.org/wiki/Soundex). Why do you think these work better
 or worse than the [SequenceMatcher](https://docs.python.org/3/library/difflib.html#difflib.SequenceMatcher)?
 
 ### Balancing The Dataset
 
-The last technique we are going to show in this article is how to balence the dataset before 
-training.  But you say, we are already balencing the training set
+The last technique we are going to show in this article is how to balance the dataset before 
+training. But you say, we are already balancing the training set
 
 ```python
     model = make_pipeline(
@@ -868,13 +850,13 @@ less-skewed data. Starting with balanced data allows the classifier to see more 
 smoother and less dominated by the majority class.
 
 In practice: Mild imbalance + class_weight='balanced' = usually fine, however if there is a
-severe imbalance manually do the balencing ahead of time rather than doing it in the Pipeline.
+severe imbalance manually do the balancing ahead of time rather than doing it in the Pipeline.
 
 ```bash
 git checkout post-3-part-12
 ```
 
-We use [pandas](https://pandas.pydata.org) and the [resample](https://scikit-learn.org/stable/modules/generated/sklearn.utils.resample.html) function in sckit-learn to rebalance 
+We use [pandas](https://pandas.pydata.org) and the [resample](https://scikit-learn.org/stable/modules/generated/sklearn.utils.resample.html) function in scikit-learn to rebalance 
 the data.  This code   
 
 ```python
@@ -985,7 +967,3 @@ Evaluating...
    macro avg       0.68      0.82      0.74     42276
 weighted avg       0.96      0.95      0.95     42276
 ```
-
-
-
-
