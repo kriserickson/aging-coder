@@ -111,7 +111,10 @@ While the improvement from 0.68 to 0.69 accuracy is modest, it’s consistent. W
 
 ### Speed Up Loading Data
 
-Before diving deeper into feature evaluation, we noticed a significant bottleneck in our workflow: loading just 1000 labeled files was taking over 50 seconds, followed by another 20 seconds to train and evaluate the model. While Scikit-learn already handles training and prediction in parallel, our data loading process was entirely sequential. To improve scalability and speed up experimentation, we decided to parallelize the `load_labeled_blocks` function.
+Before diving deeper into feature evaluation, we noticed a significant bottleneck in our workflow: loading just 1000 labeled files was taking over 60 seconds, followed by another 20 seconds to train and evaluate the model. While 
+[Scikit-learn](https://scikit-learn.org/stable/computing/parallelism.html) already handles training and prediction
+in parallel, our data loading process was entirely sequential. To improve scalability and speed up experimentation, 
+we decided to parallelize the `load_labeled_blocks` function.
 
 For those following along, check out the next step in git:
 
@@ -119,7 +122,9 @@ For those following along, check out the next step in git:
 git checkout post-3-part-2
 ```
 
-To parallelize our data loading, we first refactor the logic that processes a single file into its own standalone function, `process_pair`. This function is responsible for reading both the JSON labels and corresponding HTML file, extracting labeled elements, and returning feature/label pairs.
+To parallelize our data loading, we first refactor the logic that processes a single file into its own 
+standalone function, `process_pair`. This function is responsible for reading both the JSON labels and 
+corresponding HTML file, extracting labeled elements, and returning feature/label pairs.
 
 ```python
 def process_pair(json_file_path: Path) -> Tuple[List[Dict[str, Any]], List[str]]:
@@ -204,15 +209,17 @@ In short, these features neither improved nor harmed the model's performance in 
 
 ### Adding More Features
 
-Next, let's assume that ingredients do have units, and they also have quantity, and sometimes quantity is a
-written number, sometimes it is a special character like ½ or ¼, and sometimes it is a plain number. So let's 
-add a feature for that, but first check out the next part tag.
+Let's enhance our feature set with a new signal: quantity detection. Ingredients typically contain a quantity—sometimes
+as a plain number (e.g., "2"), sometimes as a fraction (e.g., "1/2" or "½"), and occasionally as a written word 
+(e.g., "one" or "three"). To capture this, we'll add a feature that checks whether an element contains any of
+these forms. Before we do that, check out the next part tag:
 
 ```bash
 git checkout post-3-part-3
 ```
 
-So to our feature extraction dictionary we add:
+To implement this, we add a regex-based feature that detects whether the element contains a quantity—whether numeric,
+fractional, or spelled out. Here's how we add it to the feature extraction dictionary:
 
 ```python
 "contains_quantity_number": int(bool(re.search(r"\d+|\d+/\d+|½|¼|¾|⅓|⅔|\bone\b|\btwo\b|\bthree\b|\bfour\b|\bfive\b", elem_text))),
@@ -233,26 +240,34 @@ and run the test again.
 weighted avg       0.91      0.70      0.77     67682
 ```
 
-It is getting slightly better. But these are all pretty small wins (though all wins are important in 
-tuning). However, I feel that we have to now think about how recipes are structured on a web page. The 
-title comes first, then the ingredients (usually after an ingredients header), and then directions 
-(usually after the directions header). So, currently we aren't putting any weight on things like 
-where on the page the elements are, or whether we have seen an ingredient header yet. Unfortunately, since we
-are extracting the features in bulk for all recipe pages, we currently don't know their position on 
-the page. We are going to have to either store more data with the X_raw or extract the features in 
-the new process_pair function. 
+The scores are slightly better, which is encouraging—even small improvements can be meaningful when tuning models.
+But these incremental gains also suggest that we may be approaching the limits of what basic text-based 
+features alone can provide.
+
+At this point, it helps to consider the layout of a typical recipe page. Most follow a fairly predictable structure: 
+the title appears first, followed by ingredients (often introduced by a header), and then directions (also preceded
+by a heading). Our current feature set doesn’t consider any of that structure. We aren’t using positional information
+or recognizing when we’ve entered a new section of the page.
+
+Because we extract features in bulk across all pages, we lose track of each element's position within its 
+document. To improve on this, we need to either store more raw structural context alongside `X_raw`, or shift 
+feature extraction into the `process_pair` function so it can factor in things like order and page location.
 
 ### Measuring Memory Use
 
-I think maintaining all the Beautiful Soup elements may be expensive, so let's also add some memory 
-information to our script.
+Storing all the raw [Beautiful Soup](https://beautiful-soup-4.readthedocs.io/en/latest/) elements in memory 
+starts to get expensive—especially when processing large batches of files. To quantify the cost, we added
+memory usage tracking to our script. This helps us understand how much memory is being consumed during parsing 
+and feature extraction.
 
 ```bash
 git checkout post-3-part-4
 ```
 
-We have conditionally added memory tracing (getting the data from the process's memory info as well as using 
-tracemalloc). We do this conditionally as tracing the memory slows down the process considerably.
+To measure memory use, we conditionally enable tracing with both [`psutil`](https://pypi.org/project/psutil/) and Python’s built-in 
+[`tracemalloc`](https://docs.python.org/3/library/tracemalloc.html). These 
+tools give us detailed snapshots of current and peak memory use. We toggle this behavior with a `memory` flag to 
+avoid slowing things down unnecessarily during typical runs.
 
 ```python
     if memory:
@@ -266,7 +281,7 @@ tracemalloc). We do this conditionally as tracing the memory slows down the proc
         start_memory = get_memory_usage()
 ```
 
-At the end of the program, we dump out our usage.  
+At the end of the program, we dump out our usage.
 
 ```python
     if memory:
@@ -278,7 +293,9 @@ At the end of the program, we dump out our usage.
         print(f"Memory increase: {end_memory - start_memory:.2f} MB")
 ```
 
-If you run the training again, you can see that we use about 755MB of memory if we store all the Beautiful Soup Elements in a List of Dictionaries 
+Running the training with all Beautiful Soup elements preserved in memory gives us a clear picture of the cost: 
+nearly 755MB of memory usage just to hold the parsed content in a list of dictionaries. This quickly adds up 
+across thousands of recipes and becomes a bottleneck.
 
 ```text
 Total time: 100.56s
@@ -287,11 +304,18 @@ Memory usage from psutil: 906.82 MB
 Memory increase: 755.74 MB
 ```
 
-But if we move the parsing into the load_labeled_blocks (well actually the process_pair) function
+To reduce memory overhead, we move the HTML parsing step out of the main data-loading loop and into the `process_pair`
+function. This avoids holding entire Beautiful Soup objects in memory and instead extracts features immediately, 
+streamlining the process.
+
+Let's checkout the next branch which moves feature extraction into the process\_pair function.
 
 ```bash
 git checkout post-3-part-5
 ```
+
+To implement this change, we revise `process_pair` so that it extracts features on the fly while labeling each 
+element. This avoids returning raw HTML elements and instead returns preprocessed data that’s ready for model training.
 
 ```python
 def process_pair(json_file_path: Path) -> Tuple[List[Dict[str, Any]], List[str]]:
@@ -301,8 +325,9 @@ def process_pair(json_file_path: Path) -> Tuple[List[Dict[str, Any]], List[str]]
         features = extract_features(el)
 ```
 
-we also have to change our predict.py to handle the fact that extract_features now returns a single 
-Dictionary of features from a single element rather than a List of Dictionary from a List of elements.
+`extract_features` now handles one element at a time, rather than processing an entire list. To accommodate this
+change during inference, we modify `predict.py` to iterate over each element in the HTML, extract features 
+individually, and then compile them into a list for preprocessing.
 
 ```python
 def extract_structured_data(html_path: string):
@@ -316,7 +341,8 @@ def extract_structured_data(html_path: string):
     data = preprocess_data(all_features)
 ```
 
-Again a run of the tracing shows that we save a bunch of memory 
+After refactoring, we rerun the training and observe a significant drop in memory usage. This confirms that 
+extracting features inline and releasing Beautiful Soup objects early reduces memory overhead effectively
 
 ```text
 ️Total time: 43.95s
@@ -325,16 +351,24 @@ Memory usage from psutil: 812.58 MB
 Memory increase: 663.00 MB
 ```
 
-We also get a massive speed up by parallelizing the feature extraction, so this is really a win-win-win and now
-we can take advantage of knowing where in the document each element is.  
+We also see a major speed improvement thanks to parallelized feature extraction. Now that we're processing and 
+extracting features file-by-file, we can finally begin incorporating structural information—like where each element
+appears on the page.
 
-Let's update our process_pair function again to take the location on the page that the element is and see how that 
-improves things. First, let's pass in which element on the page each element is (its index) and its position on the
-page (its index divided by the number of elements on the page).
+To take advantage of the structural position of each element in the document, we update the `process_pair` function 
+to track where each element appears on the page. Specifically, we include two new features:
+
+* `element_index`: the position of the element in the list
+* `position_ratio`: its relative location in the page, expressed as a ratio from 0 to 1
 
 ```bash
 git checkout post-3-part-6
 ```
+
+In this step, we expand our feature set by adding contextual information about where an element appears on the 
+page. By recording both the absolute index and its relative position (as a ratio), we give the model clues 
+about document structure—like whether an element is near the top (likely a title), in the middle (possibly an
+ingredient), or toward the bottom (probably a direction).
 
 ```python
 def process_file_pair(json_file: Path, html_dir: Path) -> list[tuple[dict, str]]:
@@ -347,14 +381,15 @@ def process_file_pair(json_file: Path, html_dir: Path) -> list[tuple[dict, str]]
         features_labels.append((features, label))
 ```
 
-and
+we also update `extract_features` to include the new `element_index` and `position_ratio` features.
 
-```python    
+```python
     "element_index": idx,
     "position_ratio": idx / max(1, len(elements) - 1),    
 ```
 
-and running it gives us a much better result.  
+When we rerun the training with these new structural features included, the results show a clear improvement 
+across all classes.
 
 ```text
               precision    recall  f1-score   support
@@ -369,9 +404,9 @@ and running it gives us a much better result.
 weighted avg       0.91      0.73      0.79     67682
 ```
 
-All the F1 scores are better and there are no regressions so this is another win. If we look at our data though,
-it is still a little disappointing as there are way too many false positives **and** our ingredients are split
-in half.
+The improved F1 scores across all classes confirm this change as a clear win. However, when inspecting the
+predicted data, issues still remain. We're seeing too many false positives, and ingredients are often incorrectly 
+split into multiple entries. This suggests the model still struggles to understand multi-part text fragments as unified concepts.
 
 ```json
 {
@@ -407,9 +442,11 @@ in half.
 }
 ```
 
+
 ### Fixing the HTML Parsing
 
-Let's solve the problem of split ingredients. Let's dig into some of the HTML, and see what our ingredients look like (this is from recipe_000027.html):
+Let's solve the problem of split ingredients. Let's dig into some of the HTML, and see what our ingredients look 
+like (this is from recipe_000027.html):
 
 ```html
 <ul class="ingredient-list svelte-ar8gac">
