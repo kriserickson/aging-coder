@@ -445,8 +445,9 @@ split into multiple entries. This suggests the model still struggles to understa
 
 ### Fixing the HTML Parsing
 
-Let's solve the problem of split ingredients. Let's dig into some of the HTML, and see what our ingredients look 
-like (this is from recipe_000027.html):
+One persistent issue we've seen is that ingredients are often split into multiple blocks, making them hard to
+recognize and convert to text blocks accurately. Let's dig into some of the HTML, and see what our ingredients 
+look like (this is from recipe\_000027.html):
 
 ```html
 <ul class="ingredient-list svelte-ar8gac">
@@ -464,9 +465,10 @@ like (this is from recipe_000027.html):
     </li>
 ```
 
-And if we look at a bunch more, we can see that ingredients frequently spread across several elements (spans 
-in the example), and if we set a breakpoint when we are doing the labelling, we can see that our ingredients
-are spread over multiple blocks:
+Looking at additional examples, it's clear that ingredients are often fragmented across 
+multiple inline elements—like separate `<span>` tags. When we set a breakpoint during the 
+labeling process, we observe that each part of the ingredient ends up in a separate
+block, even though they logically belong together. As a result, are spread over multiple blocks:
 
 <img alt="Debugging Blocks" src="/img/supervised/debug-labels.webp" style="border: 1px solid #000; margin: 0 10px 10px 0">
 
@@ -476,7 +478,7 @@ So we need to change how we extract li items from the HTML.
 git checkout post-3-part-7
 ```
 
-We add the following to our parse_html.py:
+We add the following to our `parse_html.py`:
 
 ```python
     # If the element is a <li> tag, combine its text and skip its children
@@ -509,9 +511,12 @@ And then running the training model again we get:
 weighted avg       0.91      0.72      0.78     42222
 ```
 
-While our direction and title improved, our ingredients precision and f1 score actually got worse. Which 
-is weird since we did this to mostly improve how we get ingredients. However, if we run predict we will
-see things are looking a lot better.
+While both direction and title categories saw improved scores, ingredient precision and F1 dropped slightly—which 
+is surprising given that this update specifically targeted ingredient parsing. However, when we run predictions 
+on real examples, the ingredient outputs are significantly cleaner and better structured. So despite the dip 
+in metrics, the qualitative improvement is clear and valuable.
+
+So when we run predict again, we get:
 
 ```json
 {
@@ -604,10 +609,12 @@ see things are looking a lot better.
   ]
 }
 ```
-So, it is important to remember that the classification report is not the be-all and end-all of 
-tuning -- it is very important but sometimes you need to run predict on a few files just to get an 
-idea of how things are going. This change may not have improved the F1 score for ingredients but it 
-certainly improved the output.
+
+This illustrates why the classification report, while valuable, isn't the sole measure of model performance. Sometimes,
+the biggest improvements come through real-world inspection—where better-structured, more readable output matters more
+than a small bump in F1 score. In this case, the model's ability to produce coherent, complete ingredient lines is a 
+meaningful win despite what the metrics might suggest.
+
 
 ### Adding Even More Features
 
