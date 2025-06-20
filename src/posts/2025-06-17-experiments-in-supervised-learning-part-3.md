@@ -8,15 +8,21 @@ draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 
-Running on a recipe has produced terrible results. Ingredients include things like "Pin" and "Tweet," and many 
-ingredients are duplicated. Directions include irrelevant text like "This site uses Akismet to reduce spam." and 
-"Sign in." There are too many ingredients and too many directions (there are 10 ingredients for the recipe and 
-5 directions). Another problem is that ingredients are consistently broken across two lines ("2 tablespoons", 
-"finely chopped parsley"). The good news is that all the ingredients are in the ingredient array and all the 
-directions are in the direction array, but there are many false positives.
+In the [previous post](/posts/2025-06-14-experiments-in-supervised-learning-part-2) we built a simple model 
+to extract recipe data from a web page. But when we ran it on an actual recipe, the results were pretty rough: 
+it achieved just 65% accuracy, mislabeled social buttons like “Pin” and “Tweet” as ingredients, and frequently 
+duplicated ingredient entries. Directions included irrelevant text like “This site uses Akismet to reduce spam.”
+and “Sign in.” Running the model on a basic crab cake recipe produced 62 ingredients (there were only 10) 
+and 41 directions (instead of 5). Another recurring issue: ingredients were often split awkwardly across multiple
+lines—for example, “2 tablespoons” and “finely chopped parsley” appeared as separate items rather than one 
+cohesive phrase.
 
-First, let's get our project to the expected state. Since we are going to make a bunch of small changes in 
-this article, I have created tags for each part. Check out the tag if you want to follow along:
+The only good news? All the correct ingredients and directions were present in their respective arrays. But the 
+number of false positives made the output nearly unusable.
+
+In this article, we’re going to improve our model to the point where it’s nearly production-ready. To keep 
+things organized, we’ll be making a series of small, incremental changes—each with its own Git tag. If you’d like to
+follow along step by step, check out the corresponding tag at each stage.  First let's check out part-1:
 
 ```bash
 git checkout post-3-part-1
@@ -24,16 +30,27 @@ git checkout post-3-part-1
 
 ### Adding Features
 
-In the last post, we learned that we extract features to give to the trainer when training the model. Our 
-features were pretty generic, so let's see if we can improve them in step one of our training. Let's add the
-number of digits in the text ("num_digits"), whether the text contains a known unit like tablespoons 
-or millimeters ("contains_unit"), the number of commas in the text ("comma_count"), the number of
-periods in the text ("dot_count"), whether the tag is a heading ("is_heading"), and if it is a
-list item ("is_list_item"). The assumptions are that ingredients are more likely to have a unit,
-a digit, and are probably list items. Directions are more likely to contain commas and perhaps 
-more than one period. These names, by the way, are for us, the modelers of the data—they don't mean
-anything to the statistical models. In fact, only their positions are stored (so make sure that 
-when extracting features, the positions don't change).
+In the last post, we discussed how we extract features from HTML elements to provide input to our 
+classifier. Initially, those features were fairly basic. In this section, we're going to enrich them with more
+targeted signals that reflect the structure and semantics of recipe content.
+
+Here’s what we’re adding and why:
+
+* **`num_digits`**: Ingredient quantities often contain numbers (e.g., "2 cups"), so counting digits helps identify them.
+* **`contains_unit`**: Units like "tablespoons" or "ml" are strong indicators of ingredients.
+* **`comma_count`**: Directions tend to be sentence-like, and commas are good proxies for that structure.
+* **`dot_count`**: Similar to commas, periods indicate multi-sentence or complete instruction blocks.
+* **`is_heading`**: Headings (e.g., `<h2>Ingredients</h2>`) may signal section transitions, which could help disambiguate labels.
+* **`is_list_item`**: Ingredients and directions are frequently stored in `<li>` tags, so this helps distinguish them from other content.
+
+These feature names are just for our reference—the model never sees them. When passed into a machine learning 
+pipeline, each feature is automatically transformed into a numerical position within a vector. The model doesn’t
+know what "is\_list\_item" or "num\_digits" means; it just receives a list of numbers like `[0, 1, 5, 0, 2, ...]` 
+representing the feature values in a fixed order. This is why maintaining the exact same order and format for
+every training sample is crucial. If the feature order is inconsistent, the model will interpret the data 
+incorrectly, resulting in poor or unpredictable behavior.
+
+Here’s the updated `extract_features` function:
 
 ```python
 def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -46,7 +63,7 @@ def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "parent_tag": el.get("parent_tag", "None"),
             "raw": elem_text,
             "num_digits": sum(ch.isdigit() for ch in elem_text),
-            "contains_unit": int(any(re.search(r"\b" + re.escape(unit) + r"\b", elem_text.lower()) for unit in units)),
+            "contains_unit": int(any(re.search(r"\\b" + re.escape(unit) + r"\\b", elem_text.lower()) for unit in units)),
             "comma_count": elem_text.count(","),
             "dot_count": elem_text.count("."),
             "is_heading": int(tag in ["h1", "h2", "h3", "h4", "h5", "h6"]),
@@ -56,8 +73,8 @@ def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     ]
 ```
 
-And now we run the training data again (this is going to become a common refrain) and look at the 
-classification report:
+With these features in place, we re-run the training pipeline to see how much they improve the model. Here’s the 
+resulting classification report:
 
 ```text
                precision    recall  f1-score   support
@@ -72,7 +89,10 @@ classification report:
 weighted avg      0.91      0.69      0.76     67682
 ```
 
-If we compare this with the report from last time, we can see that things are slightly better:
+We see modest gains across most categories. In particular, `ingredient` precision and recall improved slightly. The 
+`none` label remains strong, though it continues to dominate the dataset.
+
+For comparison, here’s the previous run before we added these new features:
 
 ```text
               precision    recall  f1-score   support
@@ -87,13 +107,10 @@ If we compare this with the report from last time, we can see that things are sl
 weighted avg       0.91      0.68      0.75     67682
 ```
 
-For accuracy, 0.69 is better than 0.68. Not a lot better, but we have improved on ingredients, title, and 
-none — though directions have gotten slightly worse. We added a bunch of features; let's figure out which ones actually helped 
-us. Let's try running it without the is_heading and is_list_item features. But first, loading even 
-a subset (1000) of the items is taking a while (over 50 seconds on my machine, and another 20 seconds or so to train 
-and analyze the model). Scikit-learn is automatically parallelizing the training (fit) and prediction for us, so 
-we can't really speed up model creation, but reading 1000 JSON and HTML files is super-parallelizable, so 
-let's change the load_labeled_blocks to be parallelized.
+While the improvement from 0.68 to 0.69 accuracy is modest, it’s consistent. We see slightly better F1 scores for ingredients, title, and none. Direction slipped a bit, which suggests that not all added features were equally helpful.
+
+Before diving deeper into feature evaluation, we noticed that even loading a sample of 1000 files was taking a considerable amount of time—over 50 seconds to load, followed by another 20 seconds to train and evaluate. Scikit-learn already parallelizes training and prediction internally, so the bottleneck lies in data loading. To address this, we’ll next parallelize the `load_labeled_blocks` function so we can better scale our experiments.
+
 
 For those following along, check out the next step in git:
 
@@ -308,10 +325,10 @@ Memory increase: 663.00 MB
 ```
 
 We also get a massive speed up by parallelizing the feature extraction, so this is really a win-win-win and now
-we can take advantage of knowing the where in the document each element is.  
+we can take advantage of knowing where in the document each element is.  
 
-Lets update our process_pair function again to take the location on the page that the element is and see how that 
-improves things.  First lets pass in which element on the page each element is (its index) and its position on the
+Let's update our process_pair function again to take the location on the page that the element is and see how that 
+improves things. First, let's pass in which element on the page each element is (its index) and its position on the
 page (its index divided by the number of elements on the page).
 
 ```bash
@@ -351,7 +368,7 @@ and running it gives us a much better result.
 weighted avg       0.91      0.73      0.79     67682
 ```
 
-All the F1 scores are better and there are no regressions so this is another win.   If we look at our data though,
+All the F1 scores are better and there are no regressions so this is another win. If we look at our data though,
 it is still a little disappointing as there are way too many false positives **and** our ingredients are split
 in half.
 
@@ -454,8 +471,8 @@ And then running the training model again we get:
 weighted avg       0.91      0.72      0.78     42222
 ```
 
-While our direction and title improved, our ingredients precision and f1 score actually got worse.  Which 
-is wierd since we did this to mostly improve how we get ingredients.  However, if we run predict we will
+While our direction and title improved, our ingredients precision and f1 score actually got worse. Which 
+is weird since we did this to mostly improve how we get ingredients. However, if we run predict we will
 see things are looking a lot better.
 
 ```json
@@ -557,8 +574,8 @@ certainly improved the output.
 ### Adding More Features
 
 Another thing we can look at is that if we look at many of the recipes' HTML, we will see ingredients
-and directions are frequently signaled by an h2 or h3 and the word ingredients or directions. Let's add s
-ome code to keep track of any headers we see with ingredients, or directions (or other frequently used 
+and directions are frequently signaled by an h2 or h3 and the word ingredients or directions. Let's add 
+some code to keep track of any headers we see with ingredients, or directions (or other frequently used 
 words that denote that the ingredients or directions are forthcoming):
 
 Check out the changes that add this:
@@ -847,7 +864,7 @@ This is clearly a marked improvement (an accuracy jump of over 10%), with the on
 * Play with other similar algorithms, try [Levenshtein](https://en.wikipedia.org/wiki/Levenshtein_distance), 
 [Damerau–Levenshtein](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance),
 and maybe even [Soundex](https://en.wikipedia.org/wiki/Soundex). 
-* Think about these work better or worse than the [SequenceMatcher](https://docs.python.org/3/library/difflib.html#difflib.SequenceMatcher)?
+* Think about whether these work better or worse than the [SequenceMatcher](https://docs.python.org/3/library/difflib.html#difflib.SequenceMatcher)?
 
 ### Balancing the Dataset
 
@@ -1011,13 +1028,13 @@ A 95% accuracy with strong F1 scores across all labels confirms this pre-balanci
 
 - Play with different `ratio_none_to_minor` values and see how aggressively you can downsample "none" without degrading performance.
 - Try setting `min_target_per_class` to a fixed number (e.g., 1000) instead of computing it dynamically.
-- Introduce [SMOTE \(Synthetic Minority Over-sampling Technique\)](https://www.sciencedirect.com/science/article/abs/pii/S0020025519306838#:~:text=The%20Synthetic%20Minority%20over-sampling,one%20its%20K-nearest%20neighbors.)  for upsampling minority classes (a great article on doing this is in python can be found [here](https://medium.com/@corymaklin/synthetic-minority-over-sampling-technique-smote-7d419696b88c).
+- Introduce [SMOTE \(Synthetic Minority Over-sampling Technique\)](https://www.sciencedirect.com/science/article/abs/pii/S0020025519306838#:~:text=The%20Synthetic%20Minority%20over-sampling,one%20its%20K-nearest%20neighbors.)  for upsampling minority classes (a great article on doing this in Python can be found [here](https://medium.com/@corymaklin/synthetic-minority-over-sampling-technique-smote-7d419696b88c).
 - Run experiments with more extreme imbalances to measure how robust your model is to skew.
 - Try combining class\_weight='balanced' with a pre-balanced dataset to see if that produces further gains.
 
 ### Summary
 
-Lets train our model now on the full dataset:
+Let's train our model now on the full dataset:
 
 ```text
               precision    recall  f1-score   support
@@ -1082,9 +1099,7 @@ and then run it against our test recipe:
 
 It is now getting pretty close (with a pretty small 55kb model).
 
-We have greatly improved our model over the course of this post.  We have gone from having an 65% accuracy, to a 96% accuracy.
+We have greatly improved our model over the course of this post. We have gone from having 65% accuracy, to 96% accuracy.
 
-We have learned how to add more features, improve the labeling, clean up the data, and also balence the none label in
+We have learned how to add more features, improve the labeling, clean up the data, and also balance the none label in
 a more accurate way.
-
-
