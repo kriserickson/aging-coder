@@ -109,8 +109,9 @@ weighted avg       0.91      0.68      0.75     67682
 
 While the improvement from 0.68 to 0.69 accuracy is modest, it’s consistent. We see slightly better F1 scores for ingredients, title, and none. Direction slipped a bit, which suggests that not all added features were equally helpful.
 
-Before diving deeper into feature evaluation, we noticed that even loading a sample of 1000 files was taking a considerable amount of time—over 50 seconds to load, followed by another 20 seconds to train and evaluate. Scikit-learn already parallelizes training and prediction internally, so the bottleneck lies in data loading. To address this, we’ll next parallelize the `load_labeled_blocks` function so we can better scale our experiments.
+### Speed Up Loading Data
 
+Before diving deeper into feature evaluation, we noticed that even loading a sample of 1000 files was taking a considerable amount of time—over 50 seconds to load, followed by another 20 seconds to train and evaluate. Scikit-learn already parallelizes training and prediction internally, so the bottleneck lies in data loading. To address this, we’ll next parallelize the `load_labeled_blocks` function so we can better scale our experiments.
 
 For those following along, check out the next step in git:
 
@@ -167,8 +168,10 @@ def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
     return X, y
 ```
 
-If we run training now, we can see that loading the files (at least on my computer) takes about 1/10th the 
-time, and we can also see that "is_heading" and "is_list_item" are basically doing nothing.
+Lets see if "is_heading" and "is_list_item" actually add anything (and test our newly paralelized code), lets remove
+those features and and ifwe run training now, we can see that loading the files (at least on my computer) takes about 
+1/10th the time (6 seconds instead of 60 secons), and we can also see that "is_heading" and "is_list_item" are 
+basically doing nothing.
 
 ```text
               precision    recall  f1-score   support
@@ -183,7 +186,7 @@ time, and we can also see that "is_heading" and "is_list_item" are basically doi
 weighted avg       0.91      0.70      0.76     67682
 ```
 
-Interpretation
+**Interpretation of removing is_heading and is_list_item"
 
 direction: Slight improvement in f1 (0.27 → 0.26) with is_heading and is_list_item.
 
@@ -205,7 +208,12 @@ No evidence of harm: Performance didn't decrease.
 No major gain: These features didn’t provide a significant improvement, but also didn’t hurt. Sometimes, features 
 like this help only in more nuanced situations or with more data.
 
-###
+**Things to try**
+
+* Can you think of any other ways of speeding up this loading (we will add another later in this article)
+* How does removing other features improve or worsen the model?
+
+### Adding More Features
 
 Next, let's assume that ingredients do have units, and they also have quantity, and sometimes quantity is a
 written number, sometimes it is a special character like ½ or ¼, and sometimes it is a plain number. So let's 
@@ -571,7 +579,7 @@ tuning -- it is very important but sometimes you need to run predict on a few fi
 idea of how things are going. This change may not have improved the F1 score for ingredients but it 
 certainly improved the output.
 
-### Adding More Features
+### Adding Even More Features
 
 Another thing we can look at is that if we look at many of the recipes' HTML, we will see ingredients
 and directions are frequently signaled by an h2 or h3 and the word ingredients or directions. Let's add 
