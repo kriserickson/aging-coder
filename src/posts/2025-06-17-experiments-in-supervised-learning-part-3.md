@@ -615,13 +615,12 @@ the biggest improvements come through real-world inspection—where better-struc
 than a small bump in F1 score. In this case, the model's ability to produce coherent, complete ingredient lines is a 
 meaningful win despite what the metrics might suggest.
 
-
 ### Adding Even More Features
 
-Another thing we can look at is that if we look at many of the recipes' HTML, we will see ingredients
-and directions are frequently signaled by an h2 or h3 and the word ingredients or directions. Let's add 
-some code to keep track of any headers we see with ingredients, or directions (or other frequently used 
-words that denote that the ingredients or directions are forthcoming):
+As we continue refining our model, it's worth examining structural cues in the HTML of recipe pages. In many cases,
+ingredients and directions are introduced by heading tags—typically `<h2>` or `<h3>`—that contain keywords like
+"ingredients" or "directions." To take advantage of this pattern, we'll add features that track when we're under a 
+heading that likely signals a new section—such as ingredients or directions:
 
 Check out the changes that add this:
 
@@ -629,10 +628,9 @@ Check out the changes that add this:
 git checkout post-3-part-8
 ```
 
-First, we create a function in feature_extraction.py that checks if the current element is a header tag. If 
-it is, it looks for ingredient or direction markers in the text. If it finds one of those it returns a 
-new heading. If it doesn't, it returns none, and if we aren't a header then it returns what the 
-previous section_heading was.
+We start by adding a helper function to `feature_extraction.py` that tracks which section of the page we're in. It 
+checks whether an element is a heading tag and, if so, scans its text for keywords like `ingredient` or `direction`. Based 
+on that, it updates the current section context—otherwise, it leaves it unchanged.
 
 ```python
 def get_section_header(current_section_heading, el):
@@ -652,16 +650,16 @@ def get_section_header(current_section_heading, el):
     return current_section_heading
 ```
 
-Next, we pass the current_section_heading to the extract_features function and add the following 
-features to our features array.
+We then pass the updated `current_section_heading` to the `extract_features` function, allowing it to track which
+section an element belongs to. This lets us include two new features in our output:
 
 ```python
     "is_under_current_ingredient_section": int(current_section_heading == "ingredient"),
     "is_under_current_direction_section": int(current_section_heading == "direction")
 ```
 
-Running the training data we can see that ingredient precision, recall, and f1-score have all increased 
-slightly.
+After rerunning the training with these new section-aware features, we see a modest but consistent improvement in 
+ingredient precision, recall, and F1 score.
 
 ```text
               precision    recall  f1-score   support
@@ -676,8 +674,9 @@ slightly.
 weighted avg       0.91      0.73      0.79     42222
 ```
 
-HTML element classes and ids frequently have useful information in them. Let's see if adding that to 
-the features helps us out.
+HTML class names and IDs often carry subtle semantic cues—words like 'ingredient', 'step', or 'title' can hint at
+an element's purpose. Including these signals as features allows the model to better infer an element’s role and 
+improve its classification accuracy.
 
 ```bash
 git checkout post-3-part-9 
@@ -698,7 +697,7 @@ Then add that to the feature set.
     "class_has_title_keyword": int(any(k in class_id_str for k in title_keywords))
 ```
 
-and run the training set: 
+and run the training set:
 
 ```text
               precision    recall  f1-score   support
@@ -715,9 +714,10 @@ weighted avg       0.91      0.74      0.79     42222
 
 Now we are cooking with gas; this helped all fields, even title.
 
-Let's look at the possibility of adding one more feature: itemprop is an attribute that can be placed 
-on tags, and recipes frequently use "recipeIngredient" on the ingredient tag, and "recipeInstruction" 
-on the direction tag. You can see this by going to the data/html_pages directory and typing
+Let's consider one more potential feature: the `itemprop` attribute. In recipe pages, it's often used to
+semantically label content—most notably with values like "recipeIngredient" on ingredient tags and "recipeInstruction" 
+on direction tags. To evaluate how often this occurs, we can inspect our dataset by running the following 
+in the `data/html_pages` directory:
 
 ```bash
 grep 'itemprop="recipeIngredient"' *
@@ -741,17 +741,19 @@ or on Windows command prompt:
 findstr /m "itemprop=\"recipeIngredient\"" * | find /c /v ""
 ```
 
-and we see that there are only about 300 of the 12,000 files that actually have itemprops that support 
-recipeIngredient and recipeInstruction, so it doesn't make sense to add this for only about 2% of 
-the training files.
+Only about 300 of the 12,000 files in our dataset contain itemprops using recipeIngredient or recipeInstruction. Since 
+this represents just 2% of the training data, adding a feature based on it would have limited impact and likely 
+not justify the added complexity.
 
-There are probably some features we could extract and improve the classification score even 
-more—but I think we are getting to a series of diminishing returns and it is time to take a new approach.
+We could continue exploring additional features to squeeze out marginal gains in classification performance. However, 
+the improvements are becoming increasingly incremental, suggesting we've reached the point of diminishing returns. It 
+may be more fruitful now to explore different modeling approaches or structural changes.
 
 **Things to try**
 
-* Try adding more features, and see what happens. 
-* Can you improve the accuracy by adding things like a feature similar to our "class_has_ing_keyword" feature but getting the last 3 element ancestors (parents)?
+* Experiment with adding new features—such as HTML tag patterns, sibling elements, or nearby punctuation—and observe their impact on precision, recall, and F1 score. Small changes in structure or context awareness can sometimes yield surprising improvements.
+* Can you improve the accuracy by adding things like a feature similar to our "class\_has\_ing\_keyword" feature but getting the last 3 element ancestors (parents)?
+
 
 ### Data Cleanup
 
