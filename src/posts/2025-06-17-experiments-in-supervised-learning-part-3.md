@@ -111,7 +111,7 @@ While the improvement from 0.68 to 0.69 accuracy is modest, it’s consistent. W
 
 ### Speed Up Loading Data
 
-Before diving deeper into feature evaluation, we noticed that even loading a sample of 1000 files was taking a considerable amount of time—over 50 seconds to load, followed by another 20 seconds to train and evaluate. Scikit-learn already parallelizes training and prediction internally, so the bottleneck lies in data loading. To address this, we’ll next parallelize the `load_labeled_blocks` function so we can better scale our experiments.
+Before diving deeper into feature evaluation, we noticed a significant bottleneck in our workflow: loading just 1000 labeled files was taking over 50 seconds, followed by another 20 seconds to train and evaluate the model. While Scikit-learn already handles training and prediction in parallel, our data loading process was entirely sequential. To improve scalability and speed up experimentation, we decided to parallelize the `load_labeled_blocks` function.
 
 For those following along, check out the next step in git:
 
@@ -119,9 +119,7 @@ For those following along, check out the next step in git:
 git checkout post-3-part-2
 ```
 
-To parallelize, we create (or more to the point, extract from our old load_labeled_blocks) the function 
-to get the elements from the file:
-
+To parallelize our data loading, we first refactor the logic that processes a single file into its own standalone function, `process_pair`. This function is responsible for reading both the JSON labels and corresponding HTML file, extracting labeled elements, and returning feature/label pairs.
 
 ```python
 def process_pair(json_file_path: Path) -> Tuple[List[Dict[str, Any]], List[str]]:
@@ -140,10 +138,13 @@ def process_pair(json_file_path: Path) -> Tuple[List[Dict[str, Any]], List[str]]
     return X, y
 ```
 
-Next, we get a ProcessPoolExecutor and submit each of the JSON files to it. This returns us an array of 
-futures (promises, if you are used to JavaScript). As each future is completed, we get the result and 
-extend our blocks and our labels (extend flattens the array as it merges; the old code appended each 
-block one at a time as it was processing the file).
+We then use a [`ProcessPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor) to 
+submit each JSON file to a separate worker process. This allows us to process many files concurrently, taking full
+advantage of multiple CPU cores. Each call to `executor.submit` returns a future object, which we collect in a 
+list. As these futures complete, we retrieve their results and extend our master feature (`X`) and label (`y`)
+lists. Using `extend` is key here: since each future returns a list of multiple elements, `extend` ensures we 
+flatten those lists into a single sequence. Previously, we appended one file’s elements at a time, making 
+this a significant performance improvement.
 
 ```python
 def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
@@ -168,10 +169,7 @@ def load_labeled_blocks(limit=None) -> Tuple[List[Dict[str, Any]], List[str]]:
     return X, y
 ```
 
-Lets see if "is_heading" and "is_list_item" actually add anything (and test our newly paralelized code), lets remove
-those features and and ifwe run training now, we can see that loading the files (at least on my computer) takes about 
-1/10th the time (6 seconds instead of 60 secons), and we can also see that "is_heading" and "is_list_item" are 
-basically doing nothing.
+To evaluate the impact of our parallelized loader and assess the usefulness of the `is_heading` and `is_list_item` features, we conducted a simple experiment: we removed both features from our training set and re-ran the pipeline to test the hypothesis that `is_heading` and `is_list_item` were contributing meaningfully to classification accuracy, and to confirm the performance boost from parallelizing the data loader. The performance boost in loading was dramatic—dropping from roughly 60 seconds down to just 6. As for classification performance, the results were nearly identical to the previous run, suggesting that these features may not be pulling their weight:
 
 ```text
               precision    recall  f1-score   support
@@ -186,32 +184,23 @@ basically doing nothing.
 weighted avg       0.91      0.70      0.76     67682
 ```
 
-**Interpretation of removing is_heading and is_list_item"
+**Interpreting the Results**
 
-direction: Slight improvement in f1 (0.27 → 0.26) with is_heading and is_list_item.
+Removing `is_heading` and `is_list_item` had very limited impact on the model's performance:
 
-ingredient, none: No change.
+* **Direction**: Slight drop in F1 score (from 0.27 to 0.26)
+* **Ingredient / None**: No meaningful change
+* **Title**: Slight decrease in F1 score (from 0.14 to 0.13)
+* **Overall accuracy**: Increased slightly (from 0.69 to 0.70), likely within margin of error
 
-title: Slight improvement with features (0.14 → 0.13).
-
-accuracy: Slightly higher without the extra features (0.70 vs. 0.69), but the difference is minimal.
-
-Overall macro and weighted F1: Unchanged.
-
-What does this mean?
-
-Adding is_heading and is_list_item had only a very minor effect—a slight bump in direction and title f1,
-but a tiny drop in accuracy (possibly just noise).
-
-No evidence of harm: Performance didn't decrease.
-
-No major gain: These features didn’t provide a significant improvement, but also didn’t hurt. Sometimes, features 
-like this help only in more nuanced situations or with more data.
+In short, these features neither improved nor harmed the model's performance in any noticeable way. Their effect appears negligible in the current dataset, though they may still prove useful in more nuanced cases or when trained on a larger corpus.
 
 **Things to try**
 
-* Can you think of any other ways of speeding up this loading (we will add another later in this article)
-* How does removing other features improve or worsen the model?
+* Can you think of additional ways to speed up data loading? (Hint: we’ll introduce another later in this article.)
+* Try running the full corpus of data with and without the `is_heading` and `is_list_item` to see if it proves useful on a larger corpus.
+* Try removing or isolating other features and running train.py to understand their contribution. Removing a feature helps identify if it's essential, while isolating a feature (e.g., training with just that feature) reveals how informative it is on its own.
+
 
 ### Adding More Features
 
@@ -251,15 +240,19 @@ title comes first, then the ingredients (usually after an ingredients header), a
 where on the page the elements are, or whether we have seen an ingredient header yet. Unfortunately, since we
 are extracting the features in bulk for all recipe pages, we currently don't know their position on 
 the page. We are going to have to either store more data with the X_raw or extract the features in 
-the new process_pair function. I think maintaining all the Beautiful Soup elements may be expensive,
-so let's also add some memory information to our script.
+the new process_pair function. 
+
+### Measuring Memory Use
+
+I think maintaining all the Beautiful Soup elements may be expensive, so let's also add some memory 
+information to our script.
 
 ```bash
 git checkout post-3-part-4
 ```
 
-We have conditionally added memory tracing (getting the data from the process's memory info as well as using tracemalloc). 
-We do this conditionally as tracing the memory slows down the process considerably.
+We have conditionally added memory tracing (getting the data from the process's memory info as well as using 
+tracemalloc). We do this conditionally as tracing the memory slows down the process considerably.
 
 ```python
     if memory:
