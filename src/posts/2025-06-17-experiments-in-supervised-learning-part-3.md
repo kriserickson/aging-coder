@@ -8,9 +8,15 @@ draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 
-Running on a recipe has produced terrible results. Ingredients include things like "Pin" and "Tweet," and many ingredients are duplicated. Directions include irrelevant text like "This site uses Akismet to reduce spam." and "Sign in." There are too many ingredients and too many directions (there are 10 ingredients for the recipe and 5 directions). Another problem is that ingredients are consistently broken across two lines ("2 tablespoons", "finely chopped parsley"). The good news is that all the ingredients are in the ingredient array and all the directions are in the direction array, but there are many false positives.
+Running on a recipe has produced terrible results. Ingredients include things like "Pin" and "Tweet," and many 
+ingredients are duplicated. Directions include irrelevant text like "This site uses Akismet to reduce spam." and 
+"Sign in." There are too many ingredients and too many directions (there are 10 ingredients for the recipe and 
+5 directions). Another problem is that ingredients are consistently broken across two lines ("2 tablespoons", 
+"finely chopped parsley"). The good news is that all the ingredients are in the ingredient array and all the 
+directions are in the direction array, but there are many false positives.
 
-First, let's get our project to the expected state. Since we are going to make a bunch of small changes in this article, I have created tags for each part. Check out the tag if you want to follow along:
+First, let's get our project to the expected state. Since we are going to make a bunch of small changes in 
+this article, I have created tags for each part. Check out the tag if you want to follow along:
 
 ```bash
 git checkout post-3-part-1
@@ -18,7 +24,16 @@ git checkout post-3-part-1
 
 ### Adding Features
 
-In the last post, we learned that we extract features to give to the trainer when training the model. Our features were pretty generic, so let's see if we can improve them in step one of our training. Let's add the number of digits in the text ("num_digits"), whether the text contains a known unit like tablespoons or millimeters ("contains_unit"), the number of commas in the text ("comma_count"), the number of periods in the text ("dot_count"), whether the tag is a heading ("is_heading"), and if it is a list item ("is_list_item"). The assumptions are that ingredients are more likely to have a unit, a digit, and are probably list items. Directions are more likely to contain commas and perhaps more than one period. These names, by the way, are for us, the modelers of the data—they don't mean anything to the statistical models. In fact, only their positions are stored (so make sure that when extracting features, the positions don't change).
+In the last post, we learned that we extract features to give to the trainer when training the model. Our 
+features were pretty generic, so let's see if we can improve them in step one of our training. Let's add the
+number of digits in the text ("num_digits"), whether the text contains a known unit like tablespoons 
+or millimeters ("contains_unit"), the number of commas in the text ("comma_count"), the number of
+periods in the text ("dot_count"), whether the tag is a heading ("is_heading"), and if it is a
+list item ("is_list_item"). The assumptions are that ingredients are more likely to have a unit,
+a digit, and are probably list items. Directions are more likely to contain commas and perhaps 
+more than one period. These names, by the way, are for us, the modelers of the data—they don't mean
+anything to the statistical models. In fact, only their positions are stored (so make sure that 
+when extracting features, the positions don't change).
 
 ```python
 def extract_features(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -165,16 +180,19 @@ Overall macro and weighted F1: Unchanged.
 
 What does this mean?
 
-Adding is_heading and is_list_item had only a very minor effect—a slight bump in direction and title f1, but a tiny drop in accuracy (possibly just noise).
+Adding is_heading and is_list_item had only a very minor effect—a slight bump in direction and title f1,
+but a tiny drop in accuracy (possibly just noise).
 
 No evidence of harm: Performance didn't decrease.
 
-No major gain: These features didn’t provide a significant improvement, but also didn’t hurt. Sometimes, features like this help only in more nuanced situations or with more data.
+No major gain: These features didn’t provide a significant improvement, but also didn’t hurt. Sometimes, features 
+like this help only in more nuanced situations or with more data.
 
 ###
 
-Next, let's assume that ingredients do have units, and they also have quantity, and sometimes quantity is a written number, sometimes it is a special character like ½ or ¼, and sometimes it is a plain number. 
-So let's add a feature for that, but first check out the next part tag.
+Next, let's assume that ingredients do have units, and they also have quantity, and sometimes quantity is a
+written number, sometimes it is a special character like ½ or ¼, and sometimes it is a plain number. So let's 
+add a feature for that, but first check out the next part tag.
 
 ```bash
 git checkout post-3-part-3
@@ -391,7 +409,9 @@ Let's solve the problem of split ingredients. Let's dig into some of the HTML, a
     </li>
 ```
 
-And if we look at a bunch more, we can see that ingredients frequently spread across several elements (spans in the example), and if we set a breakpoint when we are doing the labelling, we can see that our ingredients are spread over multiple blocks:
+And if we look at a bunch more, we can see that ingredients frequently spread across several elements (spans 
+in the example), and if we set a breakpoint when we are doing the labelling, we can see that our ingredients
+are spread over multiple blocks:
 
 <img alt="Debugging Blocks" src="/img/supervised/debug-labels.webp" style="border: 1px solid #000; margin: 0 10px 10px 0">
 
@@ -668,9 +688,8 @@ more—but I think we are getting to a series of diminishing returns and it is t
 
 **Things to try**
 
-Try adding more features, see what happens. Can you improve the accuracy by adding things like 
-a feature similar to our "class_has_ing_keyword" feature but getting the last 3 element 
-ancestors (parents)? What other features could you add?
+* Try adding more features, and see what happens. 
+* Can you improve the accuracy by adding things like a feature similar to our "class_has_ing_keyword" feature but getting the last 3 element ancestors (parents)?
 
 ### Data Cleanup
 
@@ -743,10 +762,11 @@ weighted avg       0.91      0.72      0.78     42276
 
 **Things to try**
 
-We are running this against the first 1000 recipes very often and it would be good to know that they came 
+* We are running this against the first 1000 recipes very often and it would be good to know that they came 
 from a diverse collection of sites. Write a script to grab all the JSON files and print out a 
 distribution of the domains, also do this for the first thousand recipes and see what the distribution 
-is like. To really improve things, write a script that takes all those domains and produces a more 
+is like. 
+* To really improve things, write a script that takes all those domains and produces a more 
 balanced list of the first 1000 recipes (prefix them with a '\_' so that they get read first 
 (e.g. '\_recipe_00008.json' and the corresponding '\_recipe_00008.html')).
 
@@ -822,42 +842,55 @@ This is clearly a marked improvement (an accuracy jump of over 10%), with the on
 
 **Things to try**
 
-Try changing the ratio for similarities, see what happens (remember to look at all the numbers). Try 
-changing it for all the similarities and just one. Play with other similar algorithms, try
-[Levenshtein](https://en.wikipedia.org/wiki/Levenshtein_distance), 
+* Try changing the ratio for similarities, see what happens (remember to look at all the numbers)
+* Try changing it for all the similarities and just one. 
+* Play with other similar algorithms, try [Levenshtein](https://en.wikipedia.org/wiki/Levenshtein_distance), 
 [Damerau–Levenshtein](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance),
-and maybe even [Soundex](https://en.wikipedia.org/wiki/Soundex). Why do you think these work better
-or worse than the [SequenceMatcher](https://docs.python.org/3/library/difflib.html#difflib.SequenceMatcher)?
+and maybe even [Soundex](https://en.wikipedia.org/wiki/Soundex). 
+* Think about these work better or worse than the [SequenceMatcher](https://docs.python.org/3/library/difflib.html#difflib.SequenceMatcher)?
 
-### Balancing The Dataset
+### Balancing the Dataset
 
-The last technique we are going to show in this article is how to balance the dataset before 
-training. But you say, we are already balancing the training set
+The final technique we're going to introduce in this article is explicit dataset balancing *before* training.
+
+Now, you might be thinking: *“Wait—don’t we already balance the data using **`class_weight='balanced'`**?”*
 
 ```python
-    model = make_pipeline(
-        build_transformer(),
-        StandardScaler(with_mean=False),
-        LogisticRegression(solver='lbfgs', max_iter=1000, class_weight='balanced')
-    )
+model = make_pipeline(
+    build_transformer(),
+    StandardScaler(with_mean=False),
+    LogisticRegression(solver='lbfgs', max_iter=1000, class_weight='balanced')
+)
 ```
 
-it clearly says class_weight='balanced'. And yes, this does help a lot, however, if the imbalance
-is extreme (e.g. 40x as many “none” as “ingredient”), gradient descent may still get stuck in a 
-“none-predicting” local minimum. Regularization and solver convergence are often better on 
-less-skewed data. Starting with balanced data allows the classifier to see more varied 
-“positive” examples in each epoch (not drowned by “none”). The optimization surface is 
-smoother and less dominated by the majority class.
+Yes, and that does help. Scikit-learn will scale the loss contribution of each class to compensate for imbalance. However,
+this doesn’t always go far enough—especially when the imbalance is extreme. For example, when `"none"` outnumbers 
+`"ingredient"` by 40 to 1, the classifier can still get stuck in a local minimum where it learns to predict `"none"` 
+for nearly everything. You’ll technically get a high accuracy (since "none" is so common), but the model will 
+perform terribly on the classes you actually care about.
 
-In practice: Mild imbalance + class_weight='balanced' = usually fine, however if there is a
-severe imbalance manually do the balancing ahead of time rather than doing it in the Pipeline.
+Balancing the dataset **before training** gives each class a fighting chance. It ensures the model sees a more 
+diverse set of examples during each epoch—especially important for the rarer labels. This also leads to smoother 
+optimization and more stable convergence during training, which can be especially helpful for models 
+using regularization.
+
+So, here's the practical rule of thumb:
+
+> - If your imbalance is mild, `class_weight='balanced'` is usually good enough.
+> - If your imbalance is severe, do some pre-balancing manually before the model ever sees the data.
 
 ```bash
 git checkout post-3-part-12
 ```
 
-We use [pandas](https://pandas.pydata.org) and the [resample](https://scikit-learn.org/stable/modules/generated/sklearn.utils.resample.html) function in scikit-learn to rebalance 
-the data.  This code   
+To do that, we use [pandas](https://pandas.pydata.org) along with scikit-learn’s [`resample`](https://scikit-learn.org/stable/modules/generated/sklearn.utils.resample.html) function. The `balance_training_data` function performs two things:
+
+1. **Downsamples** the `"none"` class so it doesn’t dominate the training data (we cap it at 3× the total number of minority-class rows).
+2. **Upsamples** any rare label if its count falls below 33% of the *mean* minority class count—giving it enough representation to learn meaningful patterns.
+
+This isn’t a strict balancing (we’re not forcing equal class counts), but rather a gentle reshaping of the class distribution to give minority classes more breathing room, without completely distorting the dataset.
+
+Here is the code:
 
 ```python
 def balance_training_data(
@@ -915,27 +948,31 @@ def balance_training_data(
     return x_bal, y_bal
 ```
 
-Basically downsamples the none class, however it would upsample the other labels if they dropped 
-below 33% of the mean average.  Next we balence our training data:
+We run this balancing step *before* preprocessing the features or fitting the model. Here's where it's
+applied in the training pipeline:
 
 ```python
-    X_train_bal, y_train_bal = balance_training_data(X_train, y_train)
+X_train_bal, y_train_bal = balance_training_data(X_train, y_train)
 
-    validate_data(X_train_bal, y_train_bal)
+validate_data(X_train_bal, y_train_bal)
 
-    print("Preprocessing data...")
-    X_train_proc = preprocess_data(X_train_bal)
-    X_test_proc = preprocess_data(X_test)
+print("Preprocessing data...")
+X_train_proc = preprocess_data(X_train_bal)
+X_test_proc = preprocess_data(X_test)
 
-    print("Training model...")
-    model = make_pipeline(
-        build_transformer(),
-        StandardScaler(with_mean=False),
-        LogisticRegression(solver='lbfgs', max_iter=1000)
-    )
+print("Training model...")
+model = make_pipeline(
+    build_transformer(),
+    StandardScaler(with_mean=False),
+    LogisticRegression(solver='lbfgs', max_iter=1000)
+)
 
-    model.fit(X_train_proc, y_train_bal)
+model.fit(X_train_proc, y_train_bal)
 ```
+
+This gives us a model that not only scores better, but is far less likely to drown out the classes that matter.
+
+After applying balancing and retraining the model, we see a major boost in performance across all categories. Here's the output:
 
 ```text
 Splitting train/test...
@@ -967,3 +1004,87 @@ Evaluating...
    macro avg       0.68      0.82      0.74     42276
 weighted avg       0.96      0.95      0.95     42276
 ```
+
+A 95% accuracy with strong F1 scores across all labels confirms this pre-balancing step was well worth it. The model is now much more attentive to the minority classes while still maintaining excellent performance on the majority class.
+
+**Things to try**
+
+- Play with different `ratio_none_to_minor` values and see how aggressively you can downsample "none" without degrading performance.
+- Try setting `min_target_per_class` to a fixed number (e.g., 1000) instead of computing it dynamically.
+- Introduce [SMOTE \(Synthetic Minority Over-sampling Technique\)](https://www.sciencedirect.com/science/article/abs/pii/S0020025519306838#:~:text=The%20Synthetic%20Minority%20over-sampling,one%20its%20K-nearest%20neighbors.)  for upsampling minority classes (a great article on doing this is in python can be found [here](https://medium.com/@corymaklin/synthetic-minority-over-sampling-technique-smote-7d419696b88c).
+- Run experiments with more extreme imbalances to measure how robust your model is to skew.
+- Try combining class\_weight='balanced' with a pre-balanced dataset to see if that produces further gains.
+
+### Summary
+
+Lets train our model now on the full dataset:
+
+```text
+              precision    recall  f1-score   support
+
+   direction       0.62      0.77      0.69     10145
+  ingredient       0.73      0.87      0.79     21425
+        none       0.98      0.97      0.98    422414
+       title       0.58      0.62      0.60      4242
+
+    accuracy                           0.96    458226
+   macro avg       0.73      0.81      0.76    458226
+weighted avg       0.96      0.96      0.96    458226
+```
+
+and then run it against our test recipe:
+
+```json
+{
+  "title": "Maryland Crab Cakes",
+  "ingredients": [
+    "For the Crab Cakes",
+    "2 large eggs",
+    "2½ tablespoons mayonnaise, best quality such as Hellmann's or Duke's",
+    "1½ teaspoons Dijon mustard",
+    "1 teaspoon Worcestershire sauce",
+    "1 teaspoon Old Bay seasoning",
+    "¼ teaspoon salt",
+    "¼ cup finely diced celery, from one stalk",
+    "2 tablespoons finely chopped fresh parsley",
+    "1 pound lump crab meat (see note below)",
+    "½ cup panko",
+    "Vegetable or canola oil, for cooking",
+    "For the Quick Tartar Sauce",
+    "1 cup mayonnaise, best quality such as Hellmann's or Duke's",
+    "1½ tablespoons sweet pickle relish",
+    "1 teaspoon Dijon mustard",
+    "1 tablespoon minced red onion",
+    "1-2 tablespoons lemon juice, to taste",
+    "Salt and freshly ground black pepper, to taste",
+    "For the Crab Cakes",
+    "For the Quick Tartar Sauce",
+    "Sugar: 1 g"
+  ],
+  "directions": [
+    "To begin, combine the eggs, mayonnaise, Dijon mustard, Worcestershire, Old Bay, salt, celery, and parsley in a bowl.",
+    "Mix well to combine.",
+    "Add the crab meat, making sure to check for any hard and sharp cartilage as you go, along with the panko.",
+    "Shape into 6 large cakes about ½ cup each, and place on a foil-lined baking sheet for easy cleanup. Then cover and refrigerate for at least 1 hour. This step is really important to help the crab cakes set, otherwise they may fall apart a bit when you cook them.",
+    "Preheat a large nonstick pan to medium heat and coat with oil. When the oil is hot, place crab cakes in the pan and cook until golden brown, about 3 to 5 minutes.",
+    "Flip and cook 3 to 5 minutes more, or until golden. Be careful as the oil may splatter.",
+    "Whisk well, then cover and chill until ready to serve.",
+    ", plus at least 1 hour to let the crab cakes set",
+    "Combine the eggs, mayonnaise, Dijon mustard, Worcestershire, Old Bay, salt, celery, and parsley in a large bowl and mix well. Add the crab meat (be sure to check the meat for any hard and sharp cartilage) and panko; using a rubber spatula, gently fold the mixture together until just combined, being careful not to shred the crab meat. Shape into 6 cakes (each about ½ cup) and place on the prepared baking sheet. Cover and refrigerate for at least 1 hour. This helps them set.",
+    "Preheat a large nonstick pan over medium heat and coat with oil. When the oil is hot, place the crab cakes in the pan and cook until golden brown, 3 to 5 minutes per side. Be careful as oil may splatter. Serve the crab cakes warm with the tartar sauce.",
+    "In a small bowl, whisk together the mayonnaise, relish, mustard, onion, and lemon juice. Season with salt and pepper, to taste. Cover and chill until ready to serve.",
+    "Make-Ahead Instructions: The crab cakes can be formed, covered, and refrigerated a day ahead of time before cooking. The tartar sauce can be made and refrigerated up to 2 days in advance.",
+    "Note: If you can only find jumbo lump crab meat, you may need to break the pieces up a bit. If the clumps are too large, the crab cakes won't hold together well.",
+    "Note: The nutritional information does not include the tartar sauce."
+  ]
+}
+```
+
+It is now getting pretty close (with a pretty small 55kb model).
+
+We have greatly improved our model over the course of this post.  We have gone from having an 65% accuracy, to a 96% accuracy.
+
+We have learned how to add more features, improve the labeling, clean up the data, and also balence the none label in
+a more accurate way.
+
+
