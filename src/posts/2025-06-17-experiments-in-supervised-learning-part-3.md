@@ -1070,7 +1070,7 @@ A 95% accuracy with strong F1 scores across all labels confirms this pre-balanci
 
 Let's train our model now on the full dataset. You can either launch the script using Visual Studio Code's `launch.json` or simply run
 
-```
+```bash
 python train.py
 ```
 
@@ -1091,7 +1091,7 @@ weighted avg       0.96      0.96      0.96    458226
 
 Next, let’s evaluate the model on a real example by running a prediction against our test recipe:
 
-```
+```bash
 python predict.py "../data/html/crab-cakes.html"
 ```
 
