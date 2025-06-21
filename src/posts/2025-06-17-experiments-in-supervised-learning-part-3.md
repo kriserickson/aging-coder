@@ -2,8 +2,8 @@
 layout: post
 category: AI 
 title: "Experiments in Supervised Learning Part 3"
-imagefeature:
-description: 
+imagefeature: blog/supervised-part-3.webp
+description:
 draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
