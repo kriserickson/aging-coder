@@ -590,12 +590,12 @@ So we got the title, but we have **way** too many false positives on the ingredi
 
 ### Next Steps
 
-In the next phase, we’ll:
+In the next [installment](/posts/2025-06-23-experiments-in-supervised-learning-part-3), we’ll:
 
 - Refine feature engineering
 - Add balancing to give equal attention to minority classes
 - Investigate why categories like "title" are being so heavily misclassified
 
-We have what would could call "Supervised Machine Learning", it's not very good, but it is a start. Now the real tuning (and fun) begins. Stay tuned!
+We have what would could call "Supervised Machine Learning", it's not very good, but it is a start. Now the real tuning (and fun) begins. 
 
 *I'd like to thank [Hussein Jafferjee](https://github.com/inssein) for doing some last-minute proof-reading and making some very helpful suggestions on what to clarify in this article*
