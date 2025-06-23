@@ -4,7 +4,6 @@ category: AI
 title: "Experiments in Supervised Learning Part 3"
 imagefeature: blog/supervised-part-3.webp
 description:
-draft: true
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
 ---
 
