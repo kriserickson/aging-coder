@@ -1,6 +1,8 @@
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const rssPlugin = require('@11ty/eleventy-plugin-rss');
 const dateFilter = require('nunjucks-date');
+const markdownIt = require("markdown-it");
+const markdownItKatex = require("markdown-it-katex");
 
 const isBuild = process.env.ELEVENTY_RUN_MODE === 'build';
 
@@ -130,6 +132,13 @@ module.exports = function(eleventyConfig) {
         }
         return `<a class="external-link" href="${snippet.data.raw_permalink}">View raw markdown</a>`;
     });
+
+    // Add Katex support for math rendering in markdown
+    const options = {
+        html: true
+    };
+    const mdLib = markdownIt(options).use(markdownItKatex);
+    eleventyConfig.setLibrary("md", mdLib);
 
     return {
         dir: {

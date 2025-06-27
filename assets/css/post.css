@@ -470,22 +470,18 @@ code {
 }
 
 .post-template .intro-effect-sliced.modify .bg-img:first-child {
-    -webkit-transform: translateY(-100%);
     transform: translateY(-100%);
 }
 
 .post-template .intro-effect-sliced.modify .bg-img:last-child {
-    -webkit-transform: translateY(100%);
     transform: translateY(100%);
 }
 
 .post-template .intro-effect-sliced .notepad-post-title {
-    -webkit-transform: translateX(-50%) translateY(-50%) scale(0.7);
     transform: translateX(-50%) translateY(-50%) scale(0.7);
 }
 
 .post-template .intro-effect-sliced.modify .notepad-post-title {
-    -webkit-transform: translateX(-50%) translateY(-50%) scale(1);
     transform: translateX(-50%) translateY(-50%) scale(1);
 }
 
@@ -503,13 +499,11 @@ code {
 }
 
 .post-template .intro-effect-sliced .notepad-post-content > div {
-    -webkit-transform: translateY(200px);
     transform: translateY(200px);
     opacity: 0;
 }
 
 .post-template .intro-effect-sliced.modify .notepad-post-content > div {
-    -webkit-transform: translateY(0);
     transform: translateY(0);
     opacity: 1;
 }
@@ -999,7 +993,7 @@ iframe {
 }
 
 .CodeRay pre {
-    margin: 0px;
+    margin: 0;
     padding: 1em;
 }
 
@@ -1008,7 +1002,7 @@ div.CodeRay {
 
 span.CodeRay {
     white-space: pre;
-    border: 0px;
+    border: 0;
     padding: 2px
 }
 
@@ -1048,7 +1042,7 @@ table.CodeRay td {
 }
 
 .CodeRay span.line-numbers {
-    padding: 0px 4px
+    padding: 0 4px
 }
 
 .CodeRay .code {
@@ -1427,5 +1421,12 @@ pre[class*="language-"] {
     margin-bottom: 1.5rem;
 }
 
+.katex-display {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
 
-
+[aria-hidden="true"] {
+    display: none;
+}
