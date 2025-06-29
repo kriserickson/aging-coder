@@ -13,7 +13,7 @@ When developing and evaluating different machine learning models, rapid iteratio
 from feature engineering to focused model evaluation. At this stage, we want to make it as fast as possible to rerun 
 training and testing cycles, particularly since feature extraction can become a bottleneck if performed repeatedly on
 the same data. To save time (often 30 seconds or more per run), we can serialize and cache extracted features so that 
-model evaluations proceed much faster.  We will use the pickle serialize our data, you can follow along by doing
+model evaluations proceed much faster.  We will use the [pickle](https://docs.python.org/3/library/pickle.html) library to serialize our data (which is a binary serialization format and not related to [PickleBall](https://en.wikipedia.org/wiki/Pickleball) in any way), you can follow along by doing
 
 ```bash
 git checkout post-4-part-1
