@@ -1055,13 +1055,15 @@ Evaluating...
 weighted avg       0.96      0.95      0.95     42276
 ```
 
-A 95% accuracy with strong F1 scores across all labels confirms this pre-balancing step was well worth it. The model is now much more attentive to the minority classes while still maintaining excellent performance on the majority class.
+A 95% accuracy with strong F1 scores across all labels confirms this pre-balancing step was well worth it. 
+The model is now much more attentive to the minority classes while still maintaining excellent performance on the majority class.
 
 **Things to try**
 
 - Play with different `ratio_none_to_minor` values and see how aggressively you can downsample "none" without degrading performance.
 - Try setting `min_target_per_class` to a fixed number (e.g., 1000) instead of computing it dynamically.
-- Introduce [SMOTE \(Synthetic Minority Over-sampling Technique\)](https://www.sciencedirect.com/science/article/abs/pii/S0020025519306838#:~:text=The%20Synthetic%20Minority%20over-sampling,one%20its%20K-nearest%20neighbors.)  for upsampling minority classes (a great article on doing this in Python can be found [here](https://medium.com/@corymaklin/synthetic-minority-over-sampling-technique-smote-7d419696b88c).
+- Introduce [SMOTE \(Synthetic Minority Over-sampling Technique\)](https://www.sciencedirect.com/science/article/abs/pii/S0020025519306838#:~:text=The%20Synthetic%20Minority%20over-sampling,one%20its%20K-nearest%20neighbors.)  for upsampling minority classes (a great 
+- article on doing this in Python can be found [here](https://medium.com/@corymaklin/synthetic-minority-over-sampling-technique-smote-7d419696b88c).
 - Run experiments with more extreme imbalances to measure how robust your model is to skew.
 - Try combining class\_weight='balanced' with a pre-balanced dataset to see if that produces further gains.
 
@@ -1094,7 +1096,8 @@ Next, let’s evaluate the model on a real example by running a prediction again
 python predict.py "../data/html/crab-cakes.html"
 ```
 
-and the prediction results look strong—while not perfect, with some lingering quirks in the ingredient list and slight duplication in the directions, the overall structure and accuracy are significantly improved;
+and the prediction results look strong—while not perfect, with some lingering quirks in the ingredient list and 
+slight duplication in the directions, the overall structure and accuracy are significantly improved;
 
 ```json
 {
@@ -1142,10 +1145,23 @@ and the prediction results look strong—while not perfect, with some lingering 
 }
 ```
 
-At this point, our model is performing impressively well—especially considering its compact size of just 55KB. The predictions are structurally sound and capture most of the relevant content with high accuracy. While there's still room for minor refinements, we're well within striking distance of production-ready quality.
+At this point, our model is performing impressively well—especially considering its compact size of just 55KB. The 
+predictions are structurally sound and capture most of the relevant content with high accuracy. While there's still 
+room for minor refinements, we're well within striking distance of production-ready quality.
 
-Over the course of this post, we've dramatically improved our model—from an early-stage accuracy of just 65% to a robust 96%. This transformation reflects significant gains in both precision and consistency across all label types, driven by iterative experimentation and thoughtful engineering.
+Over the course of this post, we've dramatically improved our model—from an early-stage accuracy of just 65% to a 
+robust 96%. This transformation reflects significant gains in both precision and consistency across all label types, 
+driven by iterative experimentation and thoughtful engineering.
 
-Along the way, we explored techniques for enriching our feature set with structural and semantic cues, enhanced our labeling logic using similarity-based matching, performed data cleaning to remove corrupted or incomplete samples, and implemented smarter strategies for rebalancing the 'none' class—ensuring it doesn't dominate model training. Each of these steps contributed meaningfully to the model's overall robustness and precision.
+Along the way, we explored techniques for enriching our feature set with structural and semantic cues, enhanced our 
+labeling logic using similarity-based matching, performed data cleaning to remove corrupted or incomplete samples, 
+and implemented smarter strategies for rebalancing the 'none' class—ensuring it doesn't dominate model training. Each of 
+these steps contributed meaningfully to the model's overall robustness and precision.
 
-Looking ahead, the final post in this series will focus on pushing the model's performance even further. We'll explore and experiment with alternative model classifiers other than LogisticRegression.  And examine the cost benefits of other model classifiers.  We will look into the cost-benefits of using larger training sets, and look into what it costs memory and time wise to run our prediction.  Once we've taken the model as far as we can, we’ll turn our attention to production-readiness: packaging the trained model, building a lightweight prediction service, and designing an API that accepts raw recipe HTML and returns structured JSON with title, ingredients, and directions—ready for integration into real-world applications.
+Looking ahead, [the final post](/posts/2025-06-28-experiments-in-supervised-learning-part-4) in this series will focus 
+on pushing the model's performance even further. We'll explore and experiment with alternative model classifiers other 
+than LogisticRegression.  And examine the cost benefits of other model classifiers.  We will look into the cost-benefits 
+of using larger training sets, and look into what it costs memory and time wise to run our prediction.  Once we've
+taken the model as far as we can, we’ll turn our attention to production-readiness: packaging the trained model, 
+building a lightweight prediction service, and designing an API that accepts raw recipe HTML and returns structured 
+JSON with title, ingredients, and directions—ready for integration into real-world applications.
