@@ -824,7 +824,7 @@ a big step toward making your machine learning work actually usable and impactfu
 
 If you want to containerize your service, you can do that quite easily:
 
-```
+```bash
 $ git checkout post-4-part-6
 ```
 
@@ -868,7 +868,7 @@ CMD ["gunicorn", "predict_service:app", "-w", "4", "-k", "uvicorn.workers.Uvicor
 
 Note, unless you want to add a TON of training data to your container, be sure to create a .dockerignore file as well
 
-```
+```.git
 # Directories to ignore
 models/
 data/
@@ -879,19 +879,19 @@ data/
 
 Now build the docker file:
 
-```
+```bash
 $ docker build -t recipe-parser:latest .
 ```
 
 And run it
 
-```
+```bash
 $ docker run -p 8000:8000 recipe-parser:latest
 ```
 
 You can then test it again with the same curl command
 
-```
+```bash
 $ curl -X POST -F "html=@data\html\crab-cakes.html" http://127.0.0.1:8000/predict
 ```
 
