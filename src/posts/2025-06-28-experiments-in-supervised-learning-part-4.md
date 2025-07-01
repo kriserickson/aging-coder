@@ -203,9 +203,13 @@ $$
 P(\text{c}=1 \mid x) = \sigma(w_1 x_1 + w_2 x_2 + \ldots + w_n x_n + b)
 $$
 
-In this equation, the x variables represent the TF-IDF features extracted from each input. Each feature is multiplied by a learned weight (produced by the solver), and a bias term  is added to the sum. The bias serves as a baseline probability—essentially, it represents the model's prediction when all input features are zero.
+In this equation, the x variables represent the TF-IDF features extracted from each input. Each feature is multiplied 
+by a learned weight (produced by the solver), and a bias term is added to the sum. The bias serves as a baseline 
+probability—essentially, it represents the model's prediction when all input features are zero.
 
-But what about the solver? We know it produces the weights and bias—but how does it actually accomplish this? The answer: it searches for the set of parameters that minimizes the loss function (a measure of how incorrect the model's predictions are). This approach is fundamental to all solvers used in logistic regression.
+But what about the solver? We know it produces the weights and bias—but how does it actually accomplish this? The 
+answer: it searches for the set of parameters that minimizes the loss function (a measure of how incorrect the 
+model's predictions are). This approach is fundamental to all solvers used in logistic regression.
 
 **How Does It Work?**
 
@@ -214,29 +218,23 @@ But what about the solver? We know it produces the weights and bias—but how do
 3. Compute the gradient (i.e., “If I change each parameter a little, how does the loss change?”).
 4. Figure out a direction to step in for each parameter to make the loss go down, using information
    about the curvature of the loss function (second derivatives, also called the 
-   [Hessian](https://en.wikipedia.org/wiki/Hessian_matrix).
+   [Hessian](https://en.wikipedia.org/wiki/Hessian_matrix)).
 5. Update all parameters in a way that’s smarter and usually faster than just following the steepest
    descent (simple [gradient descent](https://en.wikipedia.org/wiki/Gradient_descent)).
-6. Repeat steps 2-5 until the changes are tiny (the model is “converged”), or you reach a max number of steps.
+6. Repeat steps 2–5 until the changes are tiny (the model is “converged”), or you reach a max number of steps.
 
-How exactly does lbfgs do this?  That is math above my understanding of calculus and linear algebra, but as long
-as we understanding what it is doing we don't really need to understand exactly how it does it, but if you want a much
+How exactly does lbfgs do this?  That is math above my understanding of calculus and linear algebra. However, as long
+as we have an understanding what the solver is doing we don't really need to understand exactly how it does it, but if you want a much
 deeper explanation of Solvers look at [Scikit-learn solvers explained](https://medium.com/@arnavr/scikit-learn-solvers-explained-780a17bc322d).
 I tried swapping out the various solvers (liblinear, [newtoncg](https://en.wikipedia.org/wiki/Newton%27s_method),
-[newton-cholesky](https://en.wikipedia.org/wiki/Cholesky_decomposition)) and they produced the same results but were
+[newton-cholesky](https://en.wikipedia.org/wiki/Cholesky_decomposition)). They produced the same results but were
 either or slower or used a lot more memory (sag and saga never worked on the small dataset, as expected, but I wasn't
-patient enough after waiting a couple of hours for it work on the full dataset).
+patient enough after waiting a couple of hours for it to work on the full dataset).
 
 So how does lbfgs actually work under the hood? The answer involves some advanced calculus and linear algebra—territory
 that isn’t required for practical use, as long as you have a general understanding of what it accomplishes. If 
 you’re curious about the mathematical details, I recommend this 
 breakdown: [Scikit-learn solvers explained](https://medium.com/@arnavr/scikit-learn-solvers-explained-780a17bc322d).
-
-For my experiments, I tried swapping out a variety of solvers (liblinear, 
-[newtoncg](https://en.wikipedia.org/wiki/Newton%27s_method), and
-[newton-cholesky](https://en.wikipedia.org/wiki/Cholesky_decomposition)). All produced similar results, but some were 
-noticeably slower or used much more memory. The 'sag' and 'saga' solvers never worked well on the small dataset
-(as expected), and I wasn't patient enough to wait several hours for them to finish processing on the full dataset.
 
 ### RandomForestClassifier
 
@@ -293,7 +291,7 @@ diverse and not overly correlated with one another.
 During prediction, the model runs each sample through every tree in the forest. Each tree makes its own classification, 
 and the class that receives the most "votes" across all trees becomes the final prediction. If desired, 
 RandomForestClassifier can also output the probability distribution over all classes (rather than just a 
-single predicted label), though this pipeline, only the top class is returned.
+single predicted label); though this pipeline, only the top class is returned.
 
 But this improved accuracy comes at a significant cost: increased disk space and memory usage during prediction. Fortunately, 
 we can manage model size by carefully tuning a few key parameters.
@@ -383,20 +381,20 @@ Model saved to model.joblib with a size of 13.337 MB
 ```
 
 This is an effective balance between model accuracy and size—striking a practical trade-off for real-world use. In 
-summary: RandomForestClassifier can greatly improve results, but requires careful parameter tuning to avoid 
+summary: RandomForestClassifier can greatly improve results but requires careful parameter tuning to avoid 
 ballooning model sizes.
 
 ### ExtraTreesClassifier
 
 Another option is the 
 [`ExtraTreesClassifier`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html). While 
-we won’t focus much on it here—since it tends to produce extremely large models—it’s worth a brief mention.
+we will focus little on it here—since it tends to produce extremely large models—it’s worth a brief mention.
 
 The `ExtraTreesClassifier` (short for Extremely Randomized Trees) is another ensemble method, closely related to 
 `RandomForestClassifier`. Both build a forest of decision trees using random subsets of data (bootstrapping), but 
 ExtraTrees introduces an extra layer of randomness: at each split in a tree, it chooses the split threshold completely 
 at random from possible values, rather than searching for the most optimal split among selected features. This approach 
-can speed up training, but also tends to increase the overall model size.
+can speed up training but also tends to increase the overall model size.
 
 ```python
 model = make_pipeline(
@@ -614,7 +612,7 @@ After trying out a variety of classifiers, some key differences stand out. If yo
 fast, produces tiny models, and gives you interpretable results, LogisticRegression is a fantastic place to start. It's
 hard to beat for simple, linearly separable problems or as a quick baseline.
 
-But if your data is more complicated and you want a model that can capture those nonlinear patterns, 
+But if your data is more complicated, and you want a model that can capture those nonlinear patterns, 
 RandomForestClassifier is like the Swiss Army knife of classifiers. It delivers strong, reliable performance on a
 wide range of problems—just be prepared for much bigger model files. And if you want even more randomness (sometimes 
 at the cost of accuracy and definitely at the cost of file size), ExtraTreesClassifier is worth a look, but it’s
@@ -632,7 +630,7 @@ In short, start with LogisticRegression if you want speed and simplicity, try Ra
 don’t care about size, and reach for GradientBoosting or HistGradientBoosting when you want a compact, high-performing 
 model that scales well.
 
-### Final Code Improvements - Post Processing
+### Final Code Improvements—Post Processing
 
 Even after all our modeling work, a few annoying artifacts slip through. For example, you’ll sometimes find things 
 like "Sugar: 1 g" or "Carbohydrates: 9 g" showing up as ingredients—this happens almost 30,000 times in our dataset! 
@@ -701,7 +699,7 @@ still get confused and misclassify these lines, because their features can look 
 ingredients—especially in a generic machine learning pipeline.
 
 The goal is for your model to generalize, not memorize specific quirks. If you hard-code a rule in your training 
-data like “never predict ingredient if the text is ‘For the X’,” you risk your model missing legitimate ingredients 
+data like “never predict ingredient if the text is ‘For the X,’” you risk your model missing legitimate ingredients 
 in new or different formats. It’s better to keep your model focused on learning the general concept of what makes an
 ingredient, rather than [overfitting](https://en.wikipedia.org/wiki/Overfitting) to a handful of edge cases.
 
@@ -711,14 +709,14 @@ it out instantly, with zero impact on your machine learning logic.
 
 **Things to try**
 
-* Try running `python src/predict.py --memory ../data/html_pages/recipe_00004.html` on `recipe_00004.html` and  several 
+* Try running `python src/predict.py --memory ../data/html_pages/recipe_00004.html` on `recipe_00004.html` and several 
 other recipes from the data\_html folder—or any other recipes you’re curious about. As you review the outputs, see if 
 you spot any other abnormal artifacts (like repeated directions or ingredient doubling) that could be cleaned up 
 with more post-processing rules.
 * Now, try running `python src/predict.py --memory ../data/html/recipe_00038.html`. You'll notice that the extracted 
 title is "Gluten-Free Chocolate Cake Cookies," but it should actually be "Gluten-Free Angel Food Cake Recipe." When 
 you see issues like this, consider: is it something best solved by improving your model, or can you handle it more 
-effectively with post-processing give that we literally have the correct recipe name in the html's \<title/> tag.
+effectively with post-processing given that we literally have the correct recipe name in the HTML's \<title/> tag.
 
 ### Creating a Prediction Service
 
@@ -731,7 +729,7 @@ git checkout post-4-part-6
 
 To make this work efficiently, we need to refactor how we use `predict.py` and the `extract_structured_data` 
 function. Rather than reloading the model for every request (which would quickly bog down our web service), we'll load 
-the model once at startup and reuse it for each incoming request. Also, instead of reading HTML files from disk within 
+the model once at startup and reuse it for each incoming request. Also, instead of reading HTML files from the disk within 
 our prediction code, we'll pass in the HTML text directly—giving our service the flexibility to accept any 
 HTML input it receives.
 
@@ -804,7 +802,7 @@ $ uvicorn predict_service:app --host 127.0.0.1 --port 8000
 
 One of the best parts about FastAPI is that it automatically gives you a user-friendly, interactive API 
 explorer at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs), making it easy to experiment with your 
-endpoint right in the browser but it also lets you know that it is up and running. You can also test it out from 
+endpoint right in the browser, but it also lets you know that it is up and running. You can also test it out from 
 the command line (in the root of our project):
 
 ```bash
@@ -899,7 +897,7 @@ If you want to run this on your own VPS, you can set up Nginx as a reverse proxy
 or supervisord to make sure your Uvicorn process stays running. The specific steps will depend on your hosting 
 environment, but one of FastAPI’s strengths is that it’s flexible enough to fit almost any deployment setup you need.
 
-We can see, that with just a handful of changes and the help of FastAPI, we can turn a machine learning model
+We can see that with just a handful of changes and the help of FastAPI, we can turn a machine learning model
 into a real web API. You can run it locally, deploy it in a Docker container, or set it up on a server with 
 Nginx for internet access. This unlocks tons of potential: you can connect the model to other apps, let
 teammates test it, or even expose it as a public API. The key is that your work isn’t just stuck in a 
@@ -958,12 +956,12 @@ Over the four parts, we have covered:
 web-scraped HTML into structured blocks annotated as titles, ingredients, directions, or “none.”
 2. **Feature Engineering & Preprocessing:** Guidance is given on designing and balancing features so that 
 machine learning models can learn to distinguish recipe sections, with detailed Python code examples.
-3. **Initial Model Training & Evaluation:** Baseline models are built and evaluated using scikit-learn, with c
-lassification metrics like precision, recall, and F1-score interpreted.
+3. **Initial Model Training & Evaluation:** Baseline models are built and evaluated using scikit-learn, with 
+classification metrics like precision, recall, and F1-score interpreted.
 4. **Advanced Model Comparison & Deployment:** A thorough comparison of advanced classifiers, hyperparameter tuning, 
 post-processing to handle edge cases, and, finally, serving the trained model as a robust web API are all demonstrated.
 
 This all began as a thought experiment—wondering how much easier it would have been to build a smarter parser for 
-my Recipe Folder website if today’s supervised learning tools had been around a decade ago. Along the way, I learned a
+my Recipe Folder website if today’s supervised learning tools were around a decade ago. Along the way, I learned a
 ton writing these articles, and I hope that if you’ve made it this far, you’ve picked up something useful too.
 
