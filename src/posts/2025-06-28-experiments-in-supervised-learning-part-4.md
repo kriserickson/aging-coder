@@ -893,6 +893,10 @@ You can then test it again with the same curl command
 $ curl -X POST -F "html=@data\html\crab-cakes.html" http://127.0.0.1:8000/predict
 ```
 
+**Note:** Just as the `predict_service.py` isn't production ready, this Docker file isn't ready for prime time too.  There
+should be a [builder and runner](https://docs.docker.com/build/building/multi-stage/) and this should be using
+the [best practices as proscribed by FastApi](https://fastapi.tiangolo.com/deployment/docker/#create-the-fastapi-code).
+
 If you want to run this on your own VPS, you can set up Nginx as a reverse proxy and use something like systemd 
 or supervisord to make sure your Uvicorn process stays running. The specific steps will depend on your hosting 
 environment, but one of FastAPI’s strengths is that it’s flexible enough to fit almost any deployment setup you need.
