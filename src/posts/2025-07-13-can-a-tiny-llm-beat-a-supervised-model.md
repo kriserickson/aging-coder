@@ -56,18 +56,26 @@ $ git clone git@github.com:kriserickson/recipe-parser.git
 if you haven't already, and then checkout this post and install the new requirements (there are a bunch)
 
 ```bash
-$ git checkout post-5-part-1
+$ git checkout llm-post-1-part-1
 $ pip install -r requirements.txt
 ```
 
-If you'd like to follow along with this section of the tutorial, you'll need to create a `.env` file in your project directory with the following content:
+If you'd like to follow along with this section of the tutorial, you'll need to create a `.env` by copying the current `.env.example` 
+file to `.env` or just creating a new one and replacing the `OPENAI_API_KEY` with the value you generate from OpenAI (this
+will require putting at least $10 into an [OpenAI account](https://platform.openai.com/signup) - there are plenty of 
+tutorials on how to do this all over the web):
 
 ```dotenv
 # Add your OpenAI API key here
 OPENAI_API_KEY=sk-REPLACE_ME
 ```
 
-Now lets run our simple open-ai model -- yes the code is more complicated than it needs to be, but having a lot of options will be useful as this will be the basis for most of our tests.  Whenever you're using a commercial LLM, it's crucial to keep an eye on token usage—both to manage costs and to avoid hitting provider limits. OpenAI makes this process straightforward with the [TikToken](https://pypi.org/project/tiktoken/#description) library, which lets you quickly and accurately estimate the number of input tokens your prompt will consume.
+Now lets run our simple open-ai model -- yes the code contains a lot more code than is required for sending
+a simple query to OpenAI, but having a some options and a few utilities
+will be useful and we will use a lot of this code in our other tests.  Whenever you're using a 
+commercial LLM, it's crucial to keep an eye on token usage—both to manage costs and to avoid hitting provider 
+limits. OpenAI makes this process straightforward with the [TikToken](https://pypi.org/project/tiktoken/#description) 
+library, which lets you quickly and accurately estimate the number of input tokens your prompt will consume.
 
 ```python
 def count_tokens(token_prompt: str, token_model: str) -> int:
@@ -104,15 +112,173 @@ Lets try running the script and see how many tokens it takes for a medium size h
 ```bash
 $ cd llm-src
 $ python open-ai.py recipe_00010.html
-Prompt token count: 94394
+Prompt token count: 94240
 Continue and send to OpenAI? (y/n):
 ```
 
-That’s an unexpectedly high token count for a single recipe! In previous posts, we were careful to focus only on the relevant HTML—ignoring scripts, styles, links, images, comments, and empty tags. Let’s apply that same cleaning approach here to reduce unnecessary tokens and keep things efficient.
+That’s an unexpectedly high token count for a single recipe!  Just for fun lets run it:
 
-```bash
-$ git checkout post-5-part-2
+```text
+Sending prompt to OpenAI...
+
+--- OpenAI Response ---
+
+```json
+{
+  "name": "Homemade Ragu Sauce",
+  "description": "This ragu sauce is packed with ground beef, pork and bacon, then simmered to perfection for a flavorful and comforting meal.",
+  "image": "https://www.tasteofhome.com/wp-content/uploads/2025/01/Homemade-Ragu-Sauce_EXPS_TOHD24_47366_SoniaBozzo_social.jpg",
+  "author": "Joy Manning",
+  "prepTime": "PT25M",
+  "cookTime": "PT2H00M",
+  "totalTime": "PT2H25M",
+  "recipeYield": "10 servings (7-1/2 cups)",
+  "ingredients": [
+    "1 pound ground beef",
+    "1/2 pound ground pork",
+    "1/4 pound bacon strips, diced",
+    "2 medium onions, chopped",
+    "2 celery ribs, chopped",
+    "2 small carrots, chopped",
+    "4 garlic cloves, minced",
+    "1 cup dry red wine or beef broth",
+    "1 can (28 ounces) crushed tomatoes",
+    "1 can (15 ounces) tomato sauce",
+    "2 tablespoons tomato paste",
+    "2 bay leaves",
+    "2 teaspoons sugar",
+    "1 teaspoon salt",
+    "1/2 teaspoon dried thyme",
+    "1/2 teaspoon dried oregano",
+    "1/2 teaspoon each ground cumin, nutmeg and pepper",
+    "1/2 cup heavy whipping cream",
+    "2 tablespoons butter",
+    "2 tablespoons minced fresh parsley",
+    "1/2 cup grated Parmesan cheese",
+    "Hot cooked pasta"
+  ],
+  "instructions": [
+    {
+      "step": 1,
+      "title": "Cook the meat and vegetables",
+      "text": "In a Dutch oven, cook the ground beef, ground pork, diced bacon, chopped onions, chopped celery and chopped carrots over medium heat. Stir frequently and cook until the meat is browned and no longer pink, about 10 minutes. Drain any excess fat from the pan.",
+      "image": "https://www.tasteofhome.com/wp-content/uploads/2024/11/Ragu-Sauce_TOHD24_47366_SoniaBozzo_2.jpg?fit=700,1024"
+    },
+    {
+      "step": 2,
+      "title": "Add the garlic and deglaze",
+      "text": "Add the minced garlic to the Dutch oven and cook for two minutes, stirring constantly to prevent burning. Pour in the dry red wine or beef broth, and use a wooden spoon to scrape up any browned bits from the bottom of the pan. Let the liquid cook down until reduced by half, four to five minutes.",
+      "image": "https://www.tasteofhome.com/wp-content/uploads/2024/11/Ragu-Sauce_TOHD24_47366_SoniaBozzo_3.jpg?fit=700,1024"
+    },
+    {
+      "step": 3,
+      "title": "Simmer the sauce",
+      "text": "Stir in the crushed tomatoes, tomato sauce, tomato paste, bay leaves, sugar, salt, thyme, oregano, cumin, nutmeg and pepper. Bring the mixture to a boil, then reduce the heat to low and simmer uncovered. Cook for 1 hour and 30 minutes to 2 hours, stirring occasionally, until the sauce thickens and the flavors meld together. Discard the bay leaves, then stir in the heavy cream, butter and minced fresh parsley. Cook for an additional two minutes. Stir in the grated Parmesan cheese, then serve the sauce over hot, cooked pasta.",
+      "image": "https://www.tasteofhome.com/wp-content/uploads/2024/11/Ragu-Sauce_TOHD24_47366_SoniaBozzo_4.jpg?fit=700,1024"
+    }
+  ],
+  "nutrition": {
+    "calories": "308 calories",
+    "fatContent": "19g fat (9g saturated fat)",
+    "cholesterolContent": "70mg cholesterol",
+    "sodiumContent": "800mg sodium",
+    "carbohydrateContent": "15g carbohydrate (7g sugars, 3g fiber)",
+    "proteinContent": "18g protein"
+  },
+  "video": {
+    "name": "Homemade Ragu Sauce",
+    "description": "Check out this video for how to make Homemade Ragu Sauce.",
+    "thumbnailUrl": [
+      "http://content.jwplatform.com/v2/media/k1ofc2O6/poster.jpg?width=720"
+    ],
+    "uploadDate": "2023-06-21 20:05:49",
+    "contentUrl": "http://content.jwplatform.com/videos/k1ofc2O6-gTFJI986.mp4"
+  },
+  "reviews": [
+    {
+      "author": "Rebecca967",
+      "datePublished": "2025-02-07",
+      "reviewBody": "Better than a restaurant!  I followed the recipe exactly as written and it turned out great.  I will definitely keep this in the rotation!  Easy to make and really delicious.",
+      "rating": 5
+    },
+    {
+      "author": "Tanya189",
+      "datePublished": "2022-02-04",
+      "reviewBody": "I made this recipe today with a few adjustments and OMG WOW this was fantastic! I omitted step 3 - cream and butter in a pasta sauce? IDK, didn't sound right to me. I let this simmer for 4-5 hours on low heat. I added mozzarella stuff meatballs to it. Served over pasta this was insanely good. I would highly recommend making this - even if you do include step 3 lol...",
+      "rating": 5
+    },
+    {
+      "author": "Joanne0424",
+      "datePublished": "2025-02-02",
+      "reviewBody": "this post violated our policy",
+      "rating": 1
+    },
+    {
+      "author": "BlueCorn",
+      "datePublished": "2019-01-17",
+      "reviewBody": "Awesome! Makes a lot of sauce. I use pancetta instead of bacon, and I use wine not broth. My family loves it! Freezes very well.",
+      "rating": 5
+    },
+    {
+      "author": "RedQuill",
+      "datePublished": "2021-03-23",
+      "reviewBody": "This was very good sausce, I replaced the ground pork by using hot and spicy ground pork to kick it up a notch, and i used wine instead of broth. I passed on using the heavy cream and butter. I will make this again as it freezes really well. Best with fresh posta.",
+      "rating": 5
+    },
+    {
+      "author": "PurpleFish",
+      "datePublished": "2011-11-09",
+      "reviewBody": "I halfed the recipe (just wife & I). Used petite diced tomatoes (15 oz); could not find crushed in that size. I used wine. Served with warm garlic bread. Excellent flavor.",
+      "rating": 5
+    },
+    {
+      "author": "GreenCherries",
+      "datePublished": "2011-08-10",
+      "reviewBody": "YUM!  We left the bacon out since we didn't have any on hand, and I don't even think it's necessary.  Also doubled the oregano since we had no thyme.  So delicious!  We served with Sweet Spinach Salad, also in the recipe finder.~ Theresa",
+      "rating": 5
+    },
+    {
+      "author": "RedPalmtree",
+      "datePublished": "2011-01-23",
+      "reviewBody": "THis is wonderful!! Everyone that tastes it loves it too!!  Thank you!",
+      "rating": 5
+    },
+    {
+      "author": "GoldTree",
+      "datePublished": "2010-03-08",
+      "reviewBody": "Great recipe!",
+      "rating": 5
+    },
+    {
+      "author": "OrangeQuill",
+      "datePublished": "2010-02-26",
+      "reviewBody": "I have always wanted to make a homeade sauce and so I tried this one as my first and my whole family loved it.  Very good - can't wait to make spaghetti for supper again!!  Thank You!",
+      "rating": 5
+    },
+    {
+      "author": "CyanBucket",
+      "datePublished": "2011-07-31",
+      "reviewBody": "I LOVE this recipe, and have made it many times now.  It is rich and meaty and has many \"layers of flavor\".  I have found that it freezes well too, so I usually make a double batch.  Enjoy.  :)",
+      "rating": 5
+    },
+    {
+      "author": "GoldTrumpet",
+      "datePublished": "2010-03-17",
+      "reviewBody": "I made this twice so far for dinner guests and everyone raved about it. Easily feeds 4-6 people and you'll still have leftovers for another meal. A new favorite in my recipe box - thanks for an excellent homemade recipe!",
+      "rating": 5
+    },
+    {
+      "author": "PurpleToast",
+      "datePublished": "2013-08-30",
+      "reviewBody": "I've been making this recipe since I first saw it published. I only tried it with the red wine once and didn't care for it but I'm not a red wine drinker. I make it in double batches so I can freeze or can it to have later   It's
+
+Time elapsed: 39.83 seconds
+Memory usage: 113.59 MB -> 122.96 MB (Δ 9.37 MB)
 ```
+Yikes, that took 39.83 seconds, and we ended up with an incomplete answer - not great. In previous posts, we were 
+careful to focus only on the relevant HTML—ignoring scripts, styles, links, images, comments, and empty tags. 
+
+Let’s apply that same cleaning approach here to reduce unnecessary tokens and keep things efficient.
 
 The cleaning function is pretty straight-forward (comments removed for brevity):
 
@@ -135,11 +301,11 @@ def clean_html(html: str) -> str:
     return str(soup)
 ```
 
-Now lets try again, and continue with
+Now lets try again, and continue with adding --clean-html=true
 
 ````bash
-$ python open-ai.py recipe_00010.html
-Prompt token count: 18013
+$ python open-ai.py recipe_00010.html --clean-html=true
+Prompt token count: 17859
 Continue and send to OpenAI? (y/n):
 Sending prompt to OpenAI...
 
@@ -203,50 +369,27 @@ Sending prompt to OpenAI...
   "reheating": "Reheat in a saucepan over low to medium heat, stirring occasionally until heated through, adding water or broth if needed."
 }
 ```
+
+Time elapsed: 6.78 seconds
+Memory usage: 113.05 MB -> 122.83 MB (Δ 9.78 MB)
+
 ````
 
-which compares pretty well with our supervised model—an impressive result considering we didn’t provide the AI with any specific examples, formatting hints, or prior task demonstrations. This approach is known as [zero-shot learning](https://www.ibm.com/think/topics/zero-shot-learning) or zero-shot inference, where the model is expected to generalize and perform a task it has never explicitly been trained or prompted to do before, using only its pre-learned knowledge.
+which compares pretty well (although a little slower) with our supervised model—an impressive result considering we 
+didn’t provide the AI with any specific examples, formatting hints, or prior task demonstrations. This approach is 
+known as [zero-shot learning](https://www.ibm.com/think/topics/zero-shot-learning) or zero-shot inference, where 
+the model is expected to generalize and perform a task it has never explicitly been trained or prompted to do 
+before, using only its pre-learned knowledge.  Since even the super cheap `gpt-4.1-nano` is a very good model, our
+results were pretty good.
 
-```bash
-$ python predict.py ../data/html_pages/recipe_00010.html
-{
-  "title": "Ragu Sauce",
-  "ingredients": [
-    "1 pound ground beef",
-    "1/2 pound ground pork",
-    "1/4 pound bacon strips, diced",
-    "2 medium onions, chopped",
-    "2 celery ribs, chopped",
-    "2 small carrots, chopped",
-    "4 garlic cloves, minced",
-    "1 cup dry red wine or beef broth",
-    "1 can (28 ounces) crushed tomatoes",
-    "1 can (15 ounces) tomato sauce",
-    "2 tablespoons tomato paste",
-    "2 bay leaves",
-    "2 teaspoons sugar",
-    "1 teaspoon salt",
-    "1/2 teaspoon dried thyme",
-    "1/2 teaspoon dried oregano",
-    "1/2 teaspoon each ground cumin, nutmeg and pepper",
-    "1/2 cup heavy whipping cream",
-    "2 tablespoons butter",
-    "2 tablespoons minced fresh parsley",
-    "1/2 cup grated Parmesan cheese",
-    "Hot cooked pasta"
-  ],
-  "directions": [
-    "In a Dutch oven, cook the beef, pork, bacon, onions, celery and carrots over medium heat until meat is no longer pink; drain. Add garlic; cook 2 minutes longer. Add wine; cook until liquid is reduced by half, 4-5 minutes.",
-    "Stir in the tomatoes, tomato sauce, tomato paste, bay leaves, sugar and seasonings. Bring to a boil. Reduce heat; simmer, uncovered, until thickened, stirring occasionally, 1-1/2 to 2 hours.",
-    "Discard bay leaves. Add the cream, butter and parsley; cook 2 minutes longer. Stir in cheese. Serve with pasta."
-  ]
-}
+This cost us less than a penny (17,984 tokens ÷ 1 million tokens × \$0.10 = \$0.0018).  Although this will add up 
+over time, but we should keep it in mind when pricing the cost of running our own LLM.  Given the average number of
+tokens in our colleciton of recipes, we can assume we will be able to be able to process 500 recipes for around \$1.  
 
-```
-
-This cost us less than a penny (17,984 tokens ÷ 1 million tokens × \$0.10 = \$0.0018).  Obviously this will add up over time, but we should keep it in mind when pricing the cost of running our own LLM.  Given the average number of tokens in our colleciton of recipes, we can assume we will be able to be able process 500 recipes for \$1.  
-
-To help the model produce more accurate and well-structured output, we can provide it with a concrete example of the desired format—an approach known as [one-shot or few-shot learning](https://www.geeksforgeeks.org/machine-learning/zero-shot-vs-one-shot-vs-few-shot-learning/). By including a sample input-output pair, we effectively prime the model to better understand the task and align its response accordingly, which significantly improves performance.
+To help the model produce more accurate and well-structured output, we can provide it with a concrete example of 
+the desired format—an approach known as [one-shot or few-shot learning](https://www.geeksforgeeks.org/machine-learning/zero-shot-vs-one-shot-vs-few-shot-learning/). By 
+including a sample input-output pair, we effectively prime the model to better understand the task and align its 
+response accordingly, which significantly improves performance.
 
 ```python
     if args.few_shot:
@@ -273,7 +416,7 @@ Output:
 if we run with the --few-shot=true things get even better:
 
 ```bash
-python open-ai.py recipe_00010.html --few-shot=true
+python open-ai.py recipe_00010.html --few-shot=true --clean-html=true
 Prompt token count: 18013
 Sending prompt to OpenAI...
 
@@ -312,22 +455,49 @@ Sending prompt to OpenAI...
   ]
 }
 
-Time elapsed: 4.97 seconds
+Time elapsed: 5.73 seconds
+Memory usage: 113.02 MB -> 122.60 MB (Δ 9.58 MB)
 ```
 
-A few interesting quirks to watch for: without the example prompt, the model often wraps the JSON output in triple backticks. Even with the example included, this behavior can persist intermittently—so make sure your post-processing logic accounts for it. Performance-wise, it takes nearly 5 seconds per call, which is significantly slower than our supervised local model: about 1.5 seconds for inference alone or roughly 3 seconds when including model loading time on consumer-grade hardware.
+A few interesting quirks to watch for: without the example prompt, the model often wraps the JSON output in 
+triple backticks. Even with the example included, this behavior can persist intermittently—so make sure your 
+post-processing logic accounts for it. Performance-wise, it takes around 5 seconds per call, which is 
+slower than our supervised local model: about 1.5 seconds for inference alone or roughly 3 seconds when including 
+model loading time on consumer-grade hardware.
+
+**Things to try**
+
+* See if you can get a full result for the uncleaned HTML with zero shot inference by increasing the amount of tokens.
+* What does playing with the temperature do (especially if you don't give it examples).  
+* Can you figure out why do we get different token counts for the same file?
+* Experiment with the [top_p](https://medium.com/@1511425435311/understanding-openais-temperature-and-top-p-parameters-in-language-models-d2066504684f) 
+   parameter, what does it do?
 
 ## Ollama time
 
-Now that we’ve confirmed it works with ChatGPT via the OpenAI API, the next step is to replicate the task locally using Ollama—a streamlined tool for running LLMs directly on your own machine. Start by [installing Ollama](https://ollama.com/download), and then launch the Phi-4-mini model, which is a solid starting point among today’s capable small-scale LLMs.
+Now that we’ve confirmed it works with ChatGPT via the OpenAI API, the next step is to replicate the task locally 
+using Ollama—a streamlined tool for running LLMs directly on your own machine. Start by [installing Ollama](https://ollama.com/download), and
+then launch the Phi-4-mini model, which is a solid starting point among today’s capable small-scale LLMs.
 
+First start the ollama server, making sure it has the phi4-mini LLM available.
 ```bash
 $ ollama run phi4-mini
-$ git checkout post-5-part-3
+```
+While it is running you can play with it a bit (if you haven't run an LLM in Ollama), or just exit:
+
+```bash
+>>> /bye
+```
+
+Now lets try parsing a recipe with it:
+
+```bash
+$ git checkout llm-post-1-part-2
 $ python ollama.py recipe_00010.html --few-shot=true
 ```
 
-BTW, I struggled with the defaults of this, as the first few attempts produced very bad results (it basically made up recipes) until I changed `"num_ctx": 20000,` - which is the number of input tokens allowed.  I.e. here is script with num\_ctx not set:
+And here is the result (note: this was the result but you will probably get very different results, sometimes I
+get that a recipe isn't contained, etc):
 
 ```bash
 python ollama.py recipe_00010.html --few-shot=true --model=phi4-mini
@@ -352,12 +522,16 @@ Please note that there might be additional information such as preparation time 
 Time elapsed: 8.47 seconds
 ```
 
-It’s unclear where the hamburger recipe came from—the only reference to "hamburger" in the HTML was in the UI’s hamburger menu icon. Even more puzzling, the model ignored the explicit instruction to return the data in JSON format. This highlights how sensitive LLMs can be to configuration: without the right parameters, such as adequate context length, models can hallucinate wildly irrelevant outputs. (In this case, it appears Ollama’s default context window is only 8192 tokens.) Setting the input token size to 20,000 fixed this.
+It’s unclear where the hamburger recipe came from—the only reference to "hamburger" in the HTML was in the UI’s 
+hamburger menu icon. Even more puzzling, the model ignored the explicit instruction to return the data in JSON 
+format. This highlights how sensitive LLMs can be to configuration: without the right parameters, such as adequate 
+context length, models can hallucinate wildly irrelevant outputs. (In this case, it appears Ollama’s default context 
+window is only 8192 tokens.) Setting the input token size to 20,000 fixed this.
 
 Lets try it again with a token size of 20,000 (num_ctx):
 
 ```bash
-python ollama.py recipe_00010.html --few-shot=true --model=phi4-mini
+python ollama.py recipe_00010.html --few-shot=true --model=phi4-mini --num-ctx=20000
 Prompt word count: 4658
 Sending prompt to Ollama...
 
@@ -410,6 +584,13 @@ is almost always much higher than the word count.  We probably could have used t
 but without knowing for certain the algorithm that phi-4 uses to encode their tokens 
 (each model frequently uses slightly different variations on the BPE algorithm) this would 
 be just a guess.  
+
+**Things to try**
+
+* There are tons of [models that ollama](https://ollama.com/search) gives you access to, try some other models.
+* See if top_p and temperature make much of a difference with the various models and is there a way to increase
+the speed with these parameters?
+* Play around with our example, or add multiple examples - does this speed up or slow down the inference.
 
 ## Trying a Tiny LLM Out of the Box
 
