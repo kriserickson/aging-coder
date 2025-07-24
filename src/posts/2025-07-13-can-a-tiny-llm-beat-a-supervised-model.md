@@ -2,7 +2,7 @@
 layout: post
 category: AI 
 title: "Can a Tiny LLM Beat A Supervised Model?"
-imagefeature:
+imagefeature: blog/llm-vs-supervised.webp
 description: 
 draft: true
 tags: ["Programming", "LLM", "AI"]
