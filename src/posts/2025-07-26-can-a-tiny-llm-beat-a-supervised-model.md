@@ -4,7 +4,7 @@ category: AI
 title: "Can a Tiny LLM Beat A Supervised Model?"
 imagefeature: blog/llm-vs-supervised.webp
 description: 
-draft: true
+draft: false
 tags: ["Programming", "LLM", "AI"]
 ---
 
@@ -89,22 +89,22 @@ def count_tokens(token_prompt: str, token_model: str) -> int:
 With this function in place, we can assemble our prompt and precisely estimate its token count before making any API calls to OpenAI.
 
 ```python
- html_path = get_html_path(args.html_file)
+html_path = get_html_path(args.html_file)
 
-    with open(html_path, 'r', encoding='utf-8') as f:
-        recipe_html = f.read()
+with open(html_path, 'r', encoding='utf-8') as f:
+  recipe_html = f.read()
 
-    prompt = f"""Extract the recipe as JSON from the webpage HTML:
-{example}    
+prompt = f"""Extract the recipe as JSON from the webpage HTML:
+   {example}    
 ### Input:
-{recipe_html}
+   {recipe_html}
 ### Output:
 """
 
-    model = args.model
-    token_count = count_tokens(prompt, model)
-    print(f"Prompt token count: {token_count}")
-    proceed = input("Continue and send to OpenAI? (y/n): ").strip().lower()
+ model = args.model
+ token_count = count_tokens(prompt, model)
+ print(f"Prompt token count: {token_count}")
+ proceed = input("Continue and send to OpenAI? (y/n): ").strip().lower()
 ```
 
 Lets try running the script and see how many tokens it takes for a medium size html page:
@@ -413,7 +413,7 @@ Output:
 """
 ```
 
-if we run with the --few-shot=true things get even better:
+if we run with the `--few-shot=true` things get even better:
 
 ```bash
 python open-ai.py recipe_00010.html --few-shot=true --clean-html=true
@@ -594,20 +594,20 @@ the speed with these parameters?
 
 ## Trying a Tiny LLM Out of the Box
 
-Now lets write some python code to do what Ollama is doing.  We will take the same 
-Phi-4-mini (4-bit quantized) on the same task.  
+Now let’s write some python code to do what Ollama is doing.  We will take the same
+Phi-4-mini (4-bit quantized) on the same task.
 
 Update to the latest version
 
 ```bash
-$ git checkout post-5-part-4
+$ git checkout llm-post-1-part-3
 $ pip install -r requirements.txt
 ```
 
 Note: you may have some problems getting pytorch (hereafter referred to as torch) working.
 You will note I haven't pinned any of the torch libraries in requirements.txt as
 the version you will want to use will vary depending on which version of Cuda you have
-Ôinstalled) with Cuda. You will need to have a reasonable Nvidia GPU (or a lot of 
+(installed) with Cuda. You will need to have a reasonable Nvidia GPU (or a lot of
 patience) to run these demos, you can find out about your nvidia card by running
 
 ```cmd
@@ -635,14 +635,13 @@ For me, to install the cuda version of torch for cuda 12.6, I installed it with 
 $ pip uninstall torch torchvision torchaudio
 $ pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
-There are lots resources on the web for getting torch and cuda installed properly (or just 
+
+There are lots resources on the web for getting torch and cuda installed properly (or just
 ask your favorite LLM though it might have problems with installing the most recent versions
 as its training data may be out of date).
 
-
-
-Once torch is installed you can the phi-4-mini locally, we are using the Hugging Face 
-ransformers library to do basically what Ollama is providing for us:
+Once torch is installed you can the phi-4-mini locally, we are using the Hugging Face
+transformers library to do basically what Ollama is providing for us:
 
 ```python
   bnb_config = BitsAndBytesConfig(
@@ -675,12 +674,14 @@ ransformers library to do basically what Ollama is providing for us:
     )
 ```
 
-then we can run the code: 
+then we can run the code:
 
-```bash
+````bash
 python transformers-raw-inference.py recipe_00010.html
-Loading checkpoint shards: [00:04<00:00,  2.23s/it] Loaded model in 7.42 sec
-Generating... (prompt tokens: 18133)
+Loading checkpoint shards: 100%
+Loaded model in 9.15 sec, model size: 2708.63 MB device: cuda:0
+Generating... (prompt tokens: 18130)
+
 Processed inference in 1175.23 sec
 Extract the recipe as JSON from the webpage HTML:
 
@@ -743,7 +744,7 @@ Extract the recipe as JSON from the webpage HTML:
   ],
   "author": {
     "name": "Joy Manning",
-    "bio": "Joy is a James Beard Award nominee, former restaurant critic, author, recipe editor and self-taught cook. She’s currently the editor at Edible Philly, and has written for several publications including Prevention, Food &amp; Wine, Eating Well, Women’s Health, Shape, The Washington Post, Men’s Health and Allrecipes."
+    "bio": "Joy is a James Beard Award nominee, former restaurant critic, author, recipe editor and self-taught cook. She’s currently the editor at Edible Philly, and has written for several publications including Prevention, Food & Wine, Eating Well, Women’s Health, Shape, The Washington Post, Men’s Health and Allrecipes."
     },
   "reviews": [
     {
@@ -752,13 +753,18 @@ Extract the recipe as JSON from the webpage HTML:
     }
   ]
 }
-```
-Yikes—that took a while. And keep in mind, this was after I had already downloaded the model; if you’re starting from scratch, expect it to take even longer. Even though we provided the model with a sample output, it still returned extra data—like reviews and author bios—that varied slightly with each run. While we can tolerate this additional information, it raises the question: why is it taking so long in the first place?
+````
 
-To get a clearer picture, let’s test a smaller HTML file with the OpenAI model. For context, the larger recipe\_00010.html—at 18,013 tokens—took 4.97 seconds to process on OpenAI’s fastest and most compact model.
+That’s a long time—even after the model was already downloaded. This suggests there’s a fundamental performance bottleneck when running the model locally.
+
+To better understand how prompt size affects performance, I ran a second test—this time using OpenAI's fastest model on a much smaller HTML file.
+
+The original file, `recipe_00010.html`, contained 18,013 tokens and took **1,175 seconds** to process locally with Phi-4-mini. In contrast, OpenAI’s model completed the same task in just **4.97 seconds**.
+
+Next, I tried a smaller HTML file—`recipe_00092.html`—with a prompt size of only **1,485 tokens**. OpenAI processed this in just **1.72 seconds**:
 
 ```bash
-python open-ai.py recipe_00092.html --few-shot=true 
+python open-ai.py recipe_00092.html --few-shot=true --clean-html=true
 Prompt token count: 1485
 Continue and send to OpenAI? (y/n): y
 Sending prompt to OpenAI...
@@ -785,12 +791,36 @@ Sending prompt to OpenAI...
 Time elapsed: 1.72 seconds
 ```
 
-I ran a few benchmarks and found that a minimal 8-token prompt (like "what is 4 \* 4") typically completes in about 1 second. So when comparing the 1,485-token input against the 18,013-token recipe, we see a roughly 3.2-second delta in inference time on OpenAI’s infrastructure. Running that same smaller prompt through the Phi model locally clocked in at 92 seconds—still not fast, but considerably better than the 1,175 seconds (nearly 20 minutes!) required for the longer input. Clearly, token count plays a major role in performance. Most libraries, including Ollama, enforce an 8,000–10,000 token limit by default—likely for good reason, as we’ll explore in the next section.
+To round things out, I also ran a trivial 8-token prompt (e.g., "what is 4 \* 4") through OpenAI and Phi:
 
-The obvious question is: why is the Python script using Hugging Face’s transformers library so much slower than Ollama—sometimes by a factor of 30? The short answer is that transformers isn't optimized for large context windows out of the box. To make matters worse, I was running this on Windows, which limited my ability to enable advanced optimizations like [FlashAttention2](https://huggingface.co/docs/transformers/v4.53.1/perf_infer_gpu_one#flashattention).
+* OpenAI: \~1.0 second
+* Phi-4-mini: < 0.5 second
 
-I eventually got FlashAttention working through [WSL](https://learn.microsoft.com/en-us/windows/wsl/about), and also experimented with [vLLM](https://docs.vllm.ai/en/stable/), which is designed for high-throughput inference. Unfortunately, vLLM only works on Linux/WSL and still didn’t come close to Ollama’s performance. I suspect the overhead of running inside WSL negated many of the potential gains of optimizations like FlashAttention and [PagedAttention](https://blog.vllm.ai/2023/06/20/vllm.html).
+Here’s the full comparison:
 
+| Prompt Size   | OpenAI Inference Time | Phi-4-mini Inference Time |
+| ------------- | --------------------- | ------------------------- |
+| 8 tokens      | \~1.0 sec             | < 0.5 sec                 |
+| 1,485 tokens  | \~1.72 sec            | 92 sec                    |
+| 18,013 tokens | \~4.97 sec            | 1,175 sec (\~20 mins)     |
+
+These numbers highlight two key takeaways:
+
+1. **Token count directly impacts latency**, even on highly optimized infrastructure like OpenAI’s.
+2. **Local inference performance drops off steeply** as token size increases—especially when using general-purpose libraries like Hugging Face Transformers without hardware-specific tuning.
+
+Tools like Ollama—and even many transformer frameworks—enforce a context limit of 8,000 to 10,000 tokens, not just for memory concerns, but to avoid these dramatic slowdowns in processing time. There’s a good reason for that—as we’ll explore in the next section.
+
+The obvious question is: why is the Python script using Hugging Face’s transformers library so much slower than
+Ollama—sometimes by a factor of 30? The short answer is that transformers isn't optimized for large context windows
+out of the box. To make matters worse, I was running this on Windows, which limited my ability to enable
+advanced optimizations like [FlashAttention2](https://huggingface.co/docs/transformers/v4.53.1/perf_infer_gpu_one#flashattention).
+
+I eventually got FlashAttention working through [WSL](https://learn.microsoft.com/en-us/windows/wsl/about), and
+also experimented with [vLLM](https://docs.vllm.ai/en/stable/), which is designed for
+high-throughput inference. Unfortunately, vLLM only works on Linux/WSL and still didn’t come close
+to Ollama’s performance. I suspect the overhead of running inside WSL negated many of the potential gains of
+optimizations like FlashAttention and [PagedAttention](https://blog.vllm.ai/2023/06/20/vllm.html).
 
 ### So how does Ollama manage to perform so efficiently?
 
@@ -802,18 +832,28 @@ Hugging Face Transformers are designed with research flexibility in mind, target
 
 ### The Elephant in the Room
 
-The inherent problem of parsing recipes from web pages lies in the underlying algorithm for the
-[Self-Attention](https://en.wikipedia.org/wiki/Attention_Is_All_You_Need) mechanism of LLMs. As detailed in the seminal paper [Attention Is All You Need](https://arxiv.org/html/1706.03762v7)—which as an asside is suprisingly accessible even without a deep understanding of Math or Data Science—we can see in [Table 1](https://arxiv.org/html/1706.03762v7#S4.T1) that the complexity of Self-Attention is O(N² × d), where N is
-the number of tokens in our prompt.&#x20;
+The inherent problem of parsing recipes from web pages lies in the underlying algorithm for the [Self-Attention](https://en.wikipedia.org/wiki/Attention_Is_All_You_Need) mechanism of LLMs. Self-Attention is the backbone of transformer models—it allows every token in the input to consider the context of every other token when making predictions. This is what gives LLMs their remarkable ability to understand nuance, maintain long-range dependencies, and synthesize information across paragraphs.
 
-&#x20;If you are familiar with [BigO notation](https://en.wikipedia.org/wiki/Big_O_notation) you will know that any algorithm that is
+But this power comes at a cost. As detailed in the seminal paper [Attention Is All You Need](https://arxiv.org/html/1706.03762v7)—which as an aside is surprisingly accessible even without a deep understanding of math or data science—we can see in [Table 1](https://arxiv.org/html/1706.03762v7#S4.T1), reproduced below, that the complexity of Self-Attention is O(N² × d), where N is
+the number of tokens in our prompt.
+
+If you are familiar with [BigO notation](https://en.wikipedia.org/wiki/Big_O_notation) you will know that any algorithm that is
 [quadratic or polynomial](https://en.wikipedia.org/wiki/Time_complexity#Table_of_common_time_complexities)  like this scale poorly. As the token count increases, the computational cost rises dramatically:
 
 * 1,000 tokens = \~1,000,000 attention pairs
 * 4,000 tokens = \~16,000,000 attention pairs
 * 18,000 tokens = \~324,000,000 attention pairs
 
-This exponential growth explains why large prompts are so slow to process and require so much memory.
+Here’s a comparison of different layer types from the paper:
+
+| Layer Type                  | Complexity per Layer | Sequential Operations | Maximum Path Length |
+| --------------------------- | -------------------- | --------------------- | ------------------- |
+| Self-Attention              | O(n² · d)            | O(1)                  | O(1)                |
+| Recurrent                   | O(n · d²)            | O(n)                  | O(n)                |
+| Convolutional               | O(k · n · d²)        | O(1)                  | O(logₖ(n))          |
+| Self-Attention (restricted) | O(r · n · d)         | O(1)                  | O(n/r)              |
+
+This exponential growth explains why large prompts are so slow to process and require so much memory. You can imagine it like a crowded room where every person has to whisper a message to every other person—not once, but in multiple layers of interaction. The longer the input, the more overwhelming that communication overhead becomes.&#x20;
 
 ### Possibilities To Address Large Input Prompts
 
@@ -821,17 +861,49 @@ So how can we mitigate the growing time and memory demands of Self-Attention wit
 
 1. We can optimize the input by identifying only the relevant portions of the HTML and feeding those to the LLM. However, as we refine the clean\_html function, it will inevitably grow in complexity. At some point, we may find ourselves reaching for another LLM—or even a supervised model—to help extract cleaner input, effectively circling back to the original problem of how to identify a recipe in HTML.
 2. We can try using a different attention mechanism. While [Self-Attention](https://www.ibm.com/think/topics/self-attention) is the most common mechanism, it struggles with large input sizes. To address this, several alternatives have been developed in recent years:
-    * [Cross Attention](https://www.geeksforgeeks.org/nlp/cross-attention-mechanism-in-transformers/): Typically used in translation and image tasks, where the encoder attends to both input and output sequences. However, it's less applicable for recipe extraction.
-    * [Longformer](https://arxiv.org/pdf/2004.05150), [Big Bird](https://arxiv.org/pdf/2007.14062), [Performer](https://arxiv.org/pdf/2009.14794), and [Linear Transformers](https://arxiv.org/pdf/2006.16236): Each introduces methods to reduce the quadratic scaling of attention, making them more efficient for longer inputs.
-3. We could break the input text into smaller, more manageable chunks and process each one independently through the LLM. To make this work, the prompt would need to be adapted to return nothing unless it contains titles, ingredients, or directions. Once processed, the individual results could be deduplicated and merged. One enhancement to this approach is using a[ ](https://www.geeksforgeeks.org/dsa/window-sliding-technique/)[sliding window](https://www.geeksforgeeks.org/dsa/window-sliding-technique/)  instead of fixed-size chunks, which helps preserve context across overlaps. Another possible refinement is to carry forward the result of each chunk as part of the prompt for the next, giving the model continuity between passes..
+
+   * [Cross Attention](https://www.geeksforgeeks.org/nlp/cross-attention-mechanism-in-transformers/): Typically used in translation and image tasks, where the encoder attends to both input and output sequences. However, it's less applicable for recipe extraction.
+   * [Longformer](https://arxiv.org/pdf/2004.05150), [Big Bird](https://arxiv.org/pdf/2007.14062), [Performer](https://arxiv.org/pdf/2009.14794), and [Linear Transformers](https://arxiv.org/pdf/2006.16236): Each introduces methods to reduce the quadratic scaling of attention, making them more efficient for longer inputs.
+3. We could break the input text into smaller, more manageable chunks and process each one independently through the LLM. To make this work, the prompt would need to be adapted to return nothing unless it contains titles, ingredients, or directions. Once processed, the individual results could be deduplicated and merged. One enhancement to this approach is using a [sliding window](https://www.geeksforgeeks.org/dsa/window-sliding-technique/) instead of fixed-size chunks, which helps preserve context across overlaps. Another possible refinement is to carry forward the result of each chunk as part of the prompt for the next, giving the model continuity between passes.
 4. Use a Retrieval-Augmented Generation (RAG) strategy: split the HTML document into smaller chunks (e.g., 512 tokens), embed each chunk using an embedding model, and retrieve the most relevant segments based on a structured query. This approach allows the LLM to focus only on semantically meaningful parts of the document when generating structured output—such as a recipe—rather than processing the entire HTML at once.
 
 While retrieval-augmented generation (RAG) seemed like a promising way to work around the token limits of small models, in practice it didn’t offer much benefit in this case. Using a SentenceTransformer embedder, I expected to extract a relevant subset of text from the HTML page based on the prompt query. But since the embedder wasn’t trained with any awareness of HTML structure or recipe semantics, it failed to isolate useful regions. The end result? The retrieved text was roughly as long and just as noisy as the original HTML chunk I would have included in the prompt anyway.
 
 That’s not to say RAG is inherently flawed—but domain context matters a lot. When your embedder doesn’t “understand” what it’s retrieving from, the whole point of the architecture breaks down. Perhaps with a fine-tuned embedder or a structured pre-processor that respects HTML tags or common recipe patterns, the system could have done a better job. Similarly, I didn’t experiment with alternative attention mechanisms or document splitting strategies, both of which could help the base model focus better on relevant information.
 
-So where does that leave us? If you have high-quality labeled data—and time to build on it—supervised learning still provides the best control and reliability. You can iterate, diagnose failures, and tailor outputs tightly to your task. But not everyone has a clean dataset, nor the appetite for annotation. That’s where SaaS solutions shine: a few API calls can get you results that are “good enough,” without the overhead of training pipelines or model debugging. When time is scarce or domain specificity isn’t critical, they’re often the practical choice.
+### Conclusion
 
-Looking ahead, there’s still room for improvement. Training or fine-tuning embedders on domain-specific corpora, adding structural hints to your inputs (like visual cues from rendered HTML), or even creating hybrid pipelines that combine RAG with light supervision are all worth exploring. LLMs are flexible tools, but to get the most out of them—especially in edge cases like recipe extraction—you still need to engineer the right fit between model, data, and task.
+So where does this leave us?
 
+Parsing recipe data from unstructured HTML is a surprisingly tough task for even modern LLMs, primarily due to the sheer size of the prompt required—even when the HTML is reduced to its most relevant parts. This project set out to evaluate whether a small, local model like Phi-4-mini could realistically manage this workload, and how it compares to hosted models like those behind OpenAI’s API or packaged tools like Ollama. The ultimate goal was to run these extractions entirely on our own servers, without relying on external APIs or cloud-based inference—but that goal was not achieved.
 
+The results were mixed but instructive.
+
+* **OpenAI’s hosted model** remains the benchmark in terms of raw responsiveness, accuracy, and overall usability. It handled both small and large prompts quickly and reliably, and required zero tuning or infrastructure beyond the API key. For occasional or low-throughput workloads, it offers a near-perfect solution. However, the cost structure and dependency on an external service provider make it a less attractive option for high-volume, real-time, or privacy-sensitive applications where full local control is desired.
+* **Ollama** was the closest local option to meeting our goals, but still fell short. While it could handle large prompts more efficiently than Hugging Face Transformers, its performance was not nearly fast enough to serve as the backend for a web service—especially when running on commodity hardware. Inference times were measured in minutes, not seconds, making it unsuitable for anything near real-time interaction. That said, Ollama does offer a well-optimized C++ backend (`llama.cpp`), lower memory usage via quantization, and an easy-to-use interface. For exploratory work, experimentation, or running modest batch jobs without cloud costs, it still has real appeal—but it wasn’t enough for our production needs.
+* **Hugging Face Transformers**, while offering unparalleled flexibility and access to a wide ecosystem of models and tooling, struggled significantly with inference speed at scale—particularly in a Windows environment. Even with quantization and GPU acceleration, long prompts took over 20 minutes to process, far exceeding the already slow performance of Ollama and completely outpaced by OpenAI's hosted solutions. These limitations are likely due to a combination of Python-based execution overhead, lack of low-level optimizations, and suboptimal hardware utilization in consumer setups. While Transformers is still an essential tool for research and custom workflows, it currently lacks the out-of-the-box performance needed for responsive, large-context inference on local hardware.
+
+We also explored alternative techniques like Retrieval-Augmented Generation (RAG), input chunking, and specialized attention mechanisms, all aimed at reducing the burden of long prompts. These approaches hold promise—but they also come with their own tradeoffs. RAG, for example, can be highly effective in knowledge-base scenarios or domains where large, structured corpora can be queried for contextually relevant passages. But for one-shot HTML documents like recipes—where the content is isolated, unindexed, and often poorly structured—RAG does little to reduce prompt size or noise. Chunking, meanwhile, demands careful prompt design to avoid fragmenting information or duplicating outputs, and even then, the results can be inconsistent without strong heuristics or supervision.
+
+In the end, the question isn’t just “what works”—it’s **what’s good enough for the job at hand**. We set out hoping to use an LLM entirely on our own infrastructure, without depending on any SaaS LLM provider. But with current tooling and hardware, that goal appears out of reach—at least without investing heavily in high-end GPUs or cloud-based compute from providers like AWS or Azure, which quickly becomes cost-prohibitive.
+
+If you need precision, traceability, and control, supervised learning still reigns supreme. But if you’re experimenting, prototyping, or working in a messy domain like web scraping, using a commercial LLM like OpenAI’s APIs lets you move fast and get usable results with far less infrastructure burden and the need for coding and training a supervised model—albeit at the cost of long-term control and potentially higher operational expenses.
+
+### Looking Ahead
+
+This wasn’t the blog I expected to write (and because of that it has taken a lot longer than I expected to finish). I initially set out thinking I’d be able to find a small LLM that could be refined—either through distillation, fine-tuning, reinforcement learning, or techniques like LoRA—and gradually evolve it into something useful (and give some insight into how to use these LLM tuning techniques).
+
+Each of these methods has its appeal:
+
+* **[Distillation](https://snorkel.ai/blog/llm-distillation-demystified-a-complete-guide/)** compresses a large model into a smaller one while retaining much of its performance.
+* **[Fine-tuning](https://developers.google.com/machine-learning/crash-course/llm/tuning)** allows targeted improvements on a specific task or domain, albeit with significant resource requirements.
+* **[Reinforcement Learning with Human Feedback (RLHF)](https://aws.amazon.com/what-is/reinforcement-learning-from-human-feedback/)** has powered models like ChatGPT to align outputs with human preferences ([Ouyang et al., 2022](https://arxiv.org/abs/2203.02155)).
+* **[LoRA (Low-Rank Adaptation)](https://zohaib.me/a-beginners-guide-to-fine-tuning-llm-using-lora/)** provides a lightweight way to fine-tune only a subset of model parameters, enabling faster and cheaper domain adaptation ([Hu et al., 2021](https://arxiv.org/abs/2106.09685)).
+
+That may still be worth pursuing, and I might yet go down that path in future blog posts to see how far we can push a compact model. But what became clear over the course of this experiment is that these techniques, while powerful, don’t overcome the fact that LLMs are inherently brute-force tools. Their strengths lie in scale, and adapting them without serious infrastructure still remains a steep hill to climb.
+
+But what became clear over the course of this experiment is that LLMs are, at their core, brute-force tools. They’re capable of remarkable feats, but they achieve them through scale, not surgical precision. In contrast, supervised learning remains the scalpel in the machine learning toolbox—more work to set up, but vastly more targeted and predictable when data is well-labeled.
+
+There’s still room for improvement. Local inference will benefit from ongoing research into efficient attention (like FlashAttention and Linear Transformers), as well as smarter chunking strategies that preserve semantic context. Similarly, domain-specific embedders could dramatically improve retrieval-based methods like RAG.
+
+LLMs are flexible—but that flexibility is also a liability when you’re working at the edge of what’s feasible. I came into this process assuming I’d be able to fine-tune or adapt a small model using LoRA, reinforcement learning, or distillation and build something practical and efficient. But what I found was that LLMs, for all their flexibility, rely heavily on brute-force scale to work well. Performance isn’t just about model size or architecture—it's about how well the **model, data, and toolchain** align with your goals, and how much infrastructure you're willing to bring to the table to get there.
