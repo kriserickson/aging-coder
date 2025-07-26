@@ -798,11 +798,18 @@ To round things out, I also ran a trivial 8-token prompt (e.g., "what is 4 \* 4"
 
 Here’s the full comparison:
 
+<div style="
+    display: flex;
+    justify-content: center;
+">
+
 | Prompt Size   | OpenAI Inference Time | Phi-4-mini Inference Time |
 | ------------- | --------------------- | ------------------------- |
 | 8 tokens      | \~1.0 sec             | < 0.5 sec                 |
 | 1,485 tokens  | \~1.72 sec            | 92 sec                    |
 | 18,013 tokens | \~4.97 sec            | 1,175 sec (\~20 mins)     |
+
+</div>
 
 These numbers highlight two key takeaways:
 
@@ -846,12 +853,19 @@ If you are familiar with [BigO notation](https://en.wikipedia.org/wiki/Big_O_not
 
 Here’s a comparison of different layer types from the paper:
 
+<div style="
+    display: flex;
+    justify-content: center;
+">
+
 | Layer Type                  | Complexity per Layer | Sequential Operations | Maximum Path Length |
 | --------------------------- | -------------------- | --------------------- | ------------------- |
 | Self-Attention              | O(n² · d)            | O(1)                  | O(1)                |
 | Recurrent                   | O(n · d²)            | O(n)                  | O(n)                |
 | Convolutional               | O(k · n · d²)        | O(1)                  | O(logₖ(n))          |
 | Self-Attention (restricted) | O(r · n · d)         | O(1)                  | O(n/r)              |
+
+</div>
 
 This exponential growth explains why large prompts are so slow to process and require so much memory. You can imagine it like a crowded room where every person has to whisper a message to every other person—not once, but in multiple layers of interaction. The longer the input, the more overwhelming that communication overhead becomes.&#x20;
 
