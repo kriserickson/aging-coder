@@ -4,8 +4,8 @@ category: Programming
 title: "Clustering the Cookbook: A Taste of Unsupervised Learning"
 imagefeature: blog/unsupervised.webp
 description: 
-draft: true
 tags: ["Programming", "ML", "Unsupervised Learning", "AI"]
+date: 2025-08-25
 ---
 ## Introduction to Unsupervised Learning
 
