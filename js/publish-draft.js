@@ -55,7 +55,39 @@ function updateFrontMatter(content, today) {
   }
 }
 
-// Function to publish a draft: remove 'draft: true' and set today's date
+// Ensure a unique filename by appending incremental suffix before extension if needed
+function getUniqueFileName(dir, desiredName) {
+  const ext = path.extname(desiredName);
+  const base = desiredName.slice(0, -ext.length);
+  let candidate = desiredName;
+  let i = 2;
+  while (fs.existsSync(path.join(dir, candidate))) {
+    candidate = `${base}-${i}${ext}`;
+    i += 1;
+  }
+  return candidate;
+}
+
+// Maybe rename file to use today's date in the filename (YYYY-MM-DD-...)
+function maybeRenameWithDatePrefix(fileName, today) {
+  const datePrefixRe = /^(\d{4}-\d{2}-\d{2})-(.+)$/;
+  const m = fileName.match(datePrefixRe);
+  if (!m) return fileName; // no date prefix
+  const [, oldDate, rest] = m;
+  if (oldDate === today) return fileName; // already correct
+
+  // keep extension and rest intact
+  const desiredName = `${today}-${rest}`;
+  const finalName = getUniqueFileName(postsDir, desiredName);
+
+  const oldPath = path.join(postsDir, fileName);
+  const newPath = path.join(postsDir, finalName);
+  fs.renameSync(oldPath, newPath);
+  console.log(`Renamed file: ${fileName} -> ${finalName}`);
+  return finalName;
+}
+
+// Function to publish a draft: remove 'draft: true' and set today's date, and rename file if needed
 function publishDraft(fileName) {
   const filePath = path.join(postsDir, fileName);
   const orig = fs.readFileSync(filePath, 'utf-8');
@@ -63,7 +95,10 @@ function publishDraft(fileName) {
 
   const updated = updateFrontMatter(orig, today);
   fs.writeFileSync(filePath, updated, 'utf-8');
-  console.log(`Published: ${fileName} (date set to ${today})`);
+
+  // After writing, ensure filename date matches front-matter date
+  const finalName = maybeRenameWithDatePrefix(fileName, today);
+  console.log(`Published: ${finalName} (date set to ${today})`);
 }
 
 // Main function to run the script
@@ -76,11 +111,11 @@ async function run() {
   }
 
   if (drafts.length === 1) {
-        // If there's only one draft, publish it directly
+    // If there's only one draft, publish it directly
     console.log(`One draft found: ${drafts[0]}`);
     publishDraft(drafts[0]);
   } else {
-        // If multiple drafts, prompt the user to select one
+    // If multiple drafts, prompt the user to select one
     const prompt = inquirer.createPromptModule();
     try {
       const answers = await prompt([
