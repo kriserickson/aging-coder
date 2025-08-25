@@ -2,7 +2,7 @@
 layout: post
 category: Programming 
 title: "Clustering the Cookbook: A Taste of Unsupervised Learning"
-imagefeature:
+imagefeature: blog/unsupervised.webp
 description: 
 draft: true
 tags: ["Programming", "ML", "Unsupervised Learning", "AI"]
