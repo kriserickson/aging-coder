@@ -15,7 +15,7 @@ eleventyExcludeFromCollections: true
         <pubDate>{{ site.time | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}</pubDate>
         <ttl>1800</ttl>
 
-        {% for post in collections.posts %}
+        {% for post in collections.feedPosts %}
         <item>
             <title>{{ post.data.title  }}</title>
             <link>{{ site.url }}{{ post.url }}</link>

@@ -9,24 +9,24 @@ tags: ["Programming", "ML", "Unsupervised Learning", "AI"]
 ---
 ## Introduction to Unsupervised Learning
 
-[Unsupervised learning](https://www.ibm.com/think/topics/unsupervised-learning) refers to the class of machine learning methods that find patterns in unlabeled data without any predefined targets or categories.  Unlike [supervised learning](https://www.ibm.com/think/topics/supervised-learning) (see the [previous series on supervised learning](/posts/2025-06-13-experiments-in-supervised-learning), where models learn from labeled examples, unsupervised algorithms discover hidden structures in the data on their own. Common goals of unsupervised learning include clustering (grouping similar data points together) and dimensionality reduction (compressing data features while retaining important information).  This post will focus on clustering, and we can use the Recipe Folder database to suggest recipes with similar ingredients to other recipes.  Basically we want to be able to send a recipe name, and then suggest recipes that have similar ingredients. 
+[Unsupervised learning](https://www.ibm.com/think/topics/unsupervised-learning) refers to the class of machine learning methods that find patterns in unlabeled data without any predefined targets or categories.  Unlike [supervised learning](https://www.ibm.com/think/topics/supervised-learning) (see the [previous series on supervised learning](/posts/2025-06-13-experiments-in-supervised-learning)), where models learn from labeled examples, unsupervised algorithms discover hidden structures in the data on their own. Common tools of unsupervised learning include clustering (grouping similar data points together) and dimensionality reduction (compressing data features while retaining important information).  This post will focus on clustering, and we’ll use the Recipe Folder database (once again, see the [previous](/posts/2025-06-13-experiments-in-supervised-learning) [posts](/posts/2025-06-14-experiments-in-supervised-learning-part-2) on [supervised](/posts/2025-06-23-experiments-in-supervised-learning-part-3) [learning](/posts/2025-06-28-experiments-in-supervised-learning-part-4)) to suggest recipes with similar ingredients. Basically, we want to send a recipe name and get back recipes with similar ingredients. 
 
-** What we are going to do **
-- Offline modeling: Use a Jupyter notebook for data loading and heavy preprocessing (text cleaning, vectorization, clustering) using scikit-learn (e.g., TfidfVectorizer, KMeans).
+**What we're going to do**
+
+- Offline modeling: Use a [Jupyter](https://en.wikipedia.org/wiki/Project_Jupyter) notebook for data loading and heavy preprocessing (text cleaning, vectorization, clustering) using [scikit-learn](https://scikit-learn.org/stable/index.html) (e.g., TfidfVectorizer, KMeans).
 - Recipe embeddings: Represent each recipe by a TF‑IDF vector derived from its ingredients, so that recipes with many common ingredients end up with similar vectors.
-- Clustering: Apply an unsupervised clustering (KMeans) on these vectors to group similar recipes. Recipes in the same cluster will hopefully share key ingredients, which helps organize the search space.
-- Semantic search API: Build a FastAPI endpoint that loads the trained vectorizer and cluster model. Given a query recipe name, the API will vectorize the query and use cosine similarity to find recipes with very different names but similar ingredients. Because the search is done in this vector space, we don’t require exact keyword matches – e.g. “butternut soup” will still match “butternut squash soup” or “pumpkin soup” if those recipes have overlapping ingredients, even if the titles differ.
-- Also, since we haven't really dived into them before, we are going to use a Jupyter Notebook to build the models and data that we will use to build another FastAPI endpoint that takes a recipe name and returns a list of recipes that have similar ingredients.
+- Clustering: Apply an unsupervised clustering (k-means) on these vectors to group similar recipes. Recipes in the same cluster will hopefully share key ingredients, which helps organize the search space.
+- Also, since we haven't really dived into them before, we are going to talk about how to setup and use a [Jupyter Notebook](https://jupyter.org) to build the models.  
 
 If none of the above makes any sense to you now, don't worry, it should all be clear by the end of this article.
 
 ### Jupyter Notebooks
 
-If you are familiar with Jupyter notebooks you can skip this section, but if you are a newcomer to python and aren't quite sure about them -- read on.  
+If you are familiar with Jupyter notebooks you can skip to the [next section](#setting-up-the-data), but if you are a newcomer to python and aren't quite sure about them -- read on.  
 
-Why are they so darned useful?  First of all, you can easily inject markup into it to document it a little more clearly (some IDEs support this in comments, but not everyone uses an IDE with access to this), and second it saves the output of graphs and the like directly in the document.  So it is a great way to share code with co-works or in this case, with people reading a blog post and hopefully following along from the repository on GitHub.
+Why are they so darned useful?  First, you can easily inject markup into it to document it a little more clearly (some IDEs support this in comments, but not everyone uses an IDE with access to this).  Second, it saves the output of graphs and the like directly in the document.  So it is a great way to share code with co-workers or in this case, with people reading a blog post and hopefully following along from the repository on GitHub.
 
-To get Jupyter notebooks running lets check out the project (this is a branch of the original [recipe-parser project on GitHub](https://github.com/kriserickson/recipe-parser)).  To check it out (if you haven't already):
+To get Jupyter notebooks running, let's check out the project (this is a branch of the original [recipe-parser project on GitHub](https://github.com/kriserickson/recipe-parser)).  To clone it (if you haven't already):
 
 ```bash
 git clone https://github.com/kriserickson/recipe-parser.git
@@ -55,9 +55,9 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-Now, it depends what IDE you are using to know how to procede next.  If you are using PyCharm, Jupyter should be ready to go out-of-the-box - no-plugins needed and the default settings should be good.  If you are using VS Code you will have to install the [Jupyter Extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).  
+Now, it depends what IDE you are using to know how to proceed next.  If you are using PyCharm, Jupyter should be ready to go out-of-the-box - no-plugins needed and the default settings should be good.  If you are using VS Code you will have to install the [Jupyter Extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).  
 
-### Setting up the data
+### Setting Up the Data
 
 Lets begin by setting up the data.   We do this in the `/notebooks/unsupervised.ipynb` notebook, see the code below.   First, we iterate through all the of the recipes stored in the potential_labels directory (see the [previous articles](/posts/2025-06-13-experiments-in-supervised-learning) to see why this is in potential_labels and understand why some of the other files are here).  We open the file, parse out the json and create a new object that contains the title, the filename and the ingredients, we then dump that into the `ingredients.jsonl` file.  We use [jsonl](https://jsonlines.org) for simplicity, as [Pandas](https://pandas.pydata.org) handles `jsonl` files very quickly.
 
@@ -103,7 +103,7 @@ with jsonl_path.open('w', encoding='utf-8') as out_f:
 print(f'Wrote {written} records to {jsonl_path}')
 ```
 
-We now have a file of ingredients, titles, and the their filename.  The next section we are going to iterate over all the recipes, clean up the ingredient data and converts it into a single string per recipe.  It then fits and transforms those ingredients into a TF‑IDF document–term matrix, which will be used in a future cell of the Notebook to cluster the terms with KMeans.  
+We now have a file of ingredients, titles, and the their filename.  The next section we are going to iterate over all the recipes, clean up the ingredient data, and converts it into a single string per recipe.  It then fits and transforms those ingredients into a TF‑IDF document–term matrix, which will be used in a future cell of the Notebook to cluster the terms with k-means.  
 
 Lets break the cell down into a few sections (all of the following is in one cell, but to make
 it more understandable we are going to break the cell into a bunch of sections which may appear
@@ -126,9 +126,11 @@ for rec in rows:
     filenames.append(str(rec.get("source_file")))
 ```
 
-First we load the recipe rows, the code to do that just uses pandas to load each line into a record and cleans out any JSON that isn't an object or is null.  We then iterate over every row, and get the ingredients, text and filenames and append them to individual arrays.  
+### Cleaning the Data
 
-To clean clean the text we use the following code:
+First we load the recipe rows, the code to do that just uses pandas to load each line into a record and cleans out any JSON that isn't an object or is null.  We then iterate over every row, and get the ingredients, text, and filenames and append them to individual arrays.  
+
+To clean the text we use the following code:
 
 ```python
 def build_ingredients_text_from_record(rec: Dict[str, Any]) -> str:
@@ -165,7 +167,10 @@ def _clean_tokens(text: str) -> str:
     return re.sub(r'\s+', ' ', ' '.join(toks)).strip()
 ```
 
-Since we don't want to deal with anything other than letters, numbers and spaces, the first thing we do is strip anything else out of th e string.  Then we split the string into words and drop any words that are obviously measurements (since those are not things we want to look at).   We also drop any standalone numbers.
+
+Since we don't want to deal with anything other than letters, numbers, and spaces, the first thing we do is strip anything else out of the string.  Then we split the string into words and drop any words that are obviously measurements (since those are not things we want to look at).   We also drop any standalone numbers.
+
+### Vectorizing the Data
 
 Finally we create the TF‑IDF document–term matrix:
 
@@ -203,12 +208,14 @@ The next thing we do with our `vectorizer` is to fit our array of ingredients in
 
 `X = vectorizer.fit_transform(texts)` - This Tokenizes each document, removes the stop words, builds unigrams and bigrams. Computes document frequency for each candidate feature. Applies min_df/max_df and finalizes the vocabulary_ and idf_. transform: Computes TF for each feature in each document. Multiplies by IDF to get TF–IDF weights. L2-normalizes each row. Returns X, a scipy.sparse.csr_matrix of shape (n_documents, n_features), where columns align with vectorizer.get_feature_names_out().
 
-Now we want to use KMeans to cluster our recipes into k clusters so that the within-cluster varience is minimized. This will allow us to quickly find the recipes with the most similar ingredients.  The once challenge of KMeans Clustering is how to find the the best K (number of clusters) to cluster.  
+### Clustering the Data (Step 1, Determining K or the Number of Clusters)
+
+Now we want to use k-means to cluster our recipes into k clusters so that the within-cluster variance is minimized. This will allow us to quickly find the recipes with the most similar ingredients.  The one challenge of k-means clustering is how to find the best K (number of clusters) to cluster.  
 
 One of the ways to find the best K is called the Elbow Method, which is a technique for determining the optimal number of clusters (K) in KMeans clustering by analyzing how the within-cluster sum of squares (WCSS) changes as you increase K. What it measures: WCSS (Within-Cluster Sum of Squares): The sum of squared distances between each point and its cluster centroid. Lower WCSS means points are closer to their cluster centers.
 How it works:
 
-- Run K-means for different values of K (e.g., 1 to 25)
+- Run k-means for different values of K (e.g., 1 to 25)
 - Calculate WCSS for each K value`
 - Plot K vs WCSS
 - Look for the "elbow" - the point where WCSS stops decreasing dramatically.
@@ -232,14 +239,129 @@ plt.title("Elbow Method for K Selection")
 plt.show()
 ```
 
-Running this takes a few seconds, but eventually you will see a graph that looks like: 
+Running this takes a few minutes, but eventually you will see a graph that looks like: 
 
-<div>
-<img src="/img/unsupervised/elbow.png">
-</div>
+![Elbow Method for Recipe Ingredients](/img/unsupervised/elbow.png)
 
-While the drop off is not as steep as we would like to see, it seems that somewhere between 
+While the drop off is not as steep as we would like to see, it seems that somewhere between 8 and 10 clusters is a 
+good place to start.  There is another technique called the Silhouette Coefficient that can be used to find the best K, 
+so let's quickly look at that.  The Silhouette Coefficient is a measure of how well samples are clustered. 
+The Silhouette Coefficient is calculated for each sample and the best value is the one with the highest silhouette 
+coefficient:
 
+```python
+from sklearn.decomposition import TruncatedSVD
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
 
+# reduce to ~100 dims for clustering/metrics
+truncation = 100
 
+n_comp = min(truncation, X.shape[1]-1)
+X_svd = TruncatedSVD(n_components=n_comp, random_state=42).fit_transform(X)
 
+ks = list(range(2, 25))
+sil_scores = []
+for k in ks:
+    km = KMeans(n_clusters=k, random_state=42, n_init=10, max_iter=500)
+    labels = km.fit_predict(X_svd)
+    sil = silhouette_score(X_svd, labels)
+    sil_scores.append(sil)
+
+plt.plot(ks, sil_scores, marker='o')
+plt.xlabel("K")
+plt.ylabel("Silhouette score")
+plt.title(f"Silhouette vs K (truncated at {truncation})")
+plt.grid(True)
+plt.show()
+```
+
+The code is very similar to our elbow graph code, except that for our silhouette graph we truncate the data to 100 components to denoise, speed up, and make distance computations more stable on high‑dim sparse TF‑IDF data. TruncatedSVD (LSA) projects TF‑IDF into a dense lower‑dim space that preserves the main semantic directions while removing noise and ultra‑sparse dimensions.  While we could do the same for our elbow graph, it doesn't affect the results much (although it does speed up the computation).
+
+After reducing the data to 100 dimensions, we then run the k-means algorithm, generate the silhouette score for each calculation, and plot them.  But what is a silhouette score?  It is a measure of how well samples are clustered on a range from -1 -> 1.
+
+- ~+1 = well-matched to its own cluster, far from other clusters.
+- 0 = on or near the boundary between clusters.
+- ~–1 = possibly assigned to the wrong cluster.
+
+The overall score is just the **average silhouette value across all points**.  The silhouette score asks, for every point: “Am I closer to my own cluster than to the next nearest cluster?” Then it averages that across all points. If the answer is strongly “yes,” you get a high score. If clusters overlap, the score is low.
+
+![Silhouette vs K](/img/unsupervised/silhouette.png)
+
+What you hope to see in a Silhouette graph is an obvious place in the graph where K is optimal.  We can safely ignore values < 5, as they rarely produce good clusters; and our elbow chart shows continuous improvement beyond K=2.  The best our graph shows for a trunction of 100 is a value of 20. However, if you experiment a bit with how much you truncate the date, you can see that different truncations (25, 50, 100, 150, 200) will give you different results, however 20 does appear to be consistently one of the best K values. 
+
+### Clustering the data (Step 2 - Fitting the model and saving artifacts)
+
+Now that we have determined the best K value, we can use KMeans to cluster our data.  We will use the same code as before, but we will use the best K value we found in the previous step and we will also get the labels.
+
+```python
+k = 20  # From the silhouette method and the elbow method k at 20 is the sweet spot.
+kmeans = KMeans(n_clusters=k, random_state=42, n_init=10, max_iter=500)
+labels = kmeans.fit_predict(X) 
+
+print(f"Clustered into {k} groups.")
+```
+
+Now, through the magic of Jupyter notebooks, let's verify that we are getting some good results.  
+
+```python
+import random
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+top_n = 5
+
+rnd = random.Random()
+idx = rnd.randrange(len(titles))
+query_title = titles[idx]
+
+sims = cosine_similarity(X[idx], X).flatten()  # works with sparse X
+sims[idx] = -1.0  # exclude self
+top_idx = np.argsort(sims)[::-1][:top_n]
+
+print(f"Query (index {idx}): {query_title}\nTop {top_n} similar recipes:")
+for rank, i in enumerate(top_idx, start=1):
+    fname = filenames[i] if 'filenames' in globals() else None
+    print(f"{rank}. [{i}] {titles[i]} (score={sims[i]:.4f})" + (f" — file: {fname}" if fname else ""))
+```
+
+If we run this cell, we should see something like:
+
+```text
+Query (index 17843): Instant Pot® Ribs
+Top 5 similar recipes:
+1. [16008] Baby Back Pork Ribs (score=0.4227) — file: recipe_16293.json
+2. [15406] Instant Pot Ribs with White Barbecue Sauce (score=0.3035) — file: recipe_15691.json
+3. [6410] Smoky Baby Back Ribs in the Crock-Pot (score=0.2995) — file: recipe_06437.json
+4. [7473] Beef Bone Broth Recipe (score=0.2907) — file: recipe_07527.json
+5. [7767] Crock Pot Baby Back Ribs (score=0.2632) — file: recipe_07825.json
+```
+
+This looks pretty good.  We can see that the top 5 recipes are similar to the query recipe.  We are using the
+cosine_similarity function in scikit-learn to measure the similarity between the query and each of the top 5 recipes.  
+The higher the similarity, the more similar the recipes are (in our FastAPI service we will see that we can use
+a faster shortcut than cosine similarity, but here for simplicity we will use cosine similarity). 
+
+Now that we know that our we can save all the artifacts we have into our models directory.  We will save the k-means, the titles, the filenames, and the cluster assignments.
+
+```python
+# Save artifacts
+with open(project_root / "models/kmeans_model.pkl", "wb") as f:
+    pickle.dump(kmeans, f)
+
+with open(project_root / "models/recipe_titles.pkl", "wb") as f:
+    pickle.dump(titles, f)
+
+with open(project_root / "models/recipe_filenames.pkl", "wb") as f:   # <-- new
+    pickle.dump(filenames, f)
+
+# Optionally: save the X matrix (can be large)
+dump(X, project_root / "models/tfidf_matrix.joblib")   # joblib handles sparse matrices efficiently
+```
+
+### Conclusion
+
+In this post we learned how to use unsupervised learning to cluster recipes into groups.  We used the k-means algorithm to cluster our data and then used the cosine similarity to find the top 5 recipes that are most similar to the query recipe.  We also learned how to use Jupyter notebooks to quickly experiment with different values of K and see how the results change. 
+
+In the next post we will look into creating a FastAPI endpoint that loads the trained vectorizer and cluster model. Given a query recipe name, the API will vectorize the query and use cosine similarity to find recipes with very different names but similar ingredients.

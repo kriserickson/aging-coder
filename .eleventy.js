@@ -1,9 +1,10 @@
+const fs = require('node:fs');
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const rssPlugin = require('@11ty/eleventy-plugin-rss');
 const dateFilter = require('nunjucks-date');
 const markdownIt = require("markdown-it");
 const markdownItKatex = require("markdown-it-katex");
-
+const markdownItAnchor = require("markdown-it-anchor");
 const isBuild = process.env.ELEVENTY_RUN_MODE === 'build';
 
 function getPosts(collectionApi) {
@@ -58,12 +59,33 @@ module.exports = function(eleventyConfig) {
 
             // Return undefined if no pagination (use default Eleventy behavior)
             return data.permalink;
-        }
+        },
+
     });
 
     eleventyConfig.addCollection('posts', function(collectionApi) {
         const posts = getPosts(collectionApi);
         return posts.reverse();
+    });
+
+    // New: pre-rendered content for feed entries (avoids templateContent cycles)
+    eleventyConfig.addCollection('feedPosts', function(collectionApi) {
+        const md = markdownIt({ html: true }).use(markdownItKatex).use(markdownItAnchor);
+        return getPosts(collectionApi)
+            .map((item) => {
+                const raw = fs.readFileSync(item.inputPath, 'utf8');
+                // Strip top YAML front matter
+                const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
+                const markdown = fm.test(raw) ? raw.replace(fm, '') : raw;
+                const html = md.render(markdown);
+                return {
+                    url: item.url,
+                    date: item.date,
+                    data: item.data,
+                    content: html
+                };
+            })
+            .reverse();
     });
 
     eleventyConfig.addCollection('categories', function(collectionApi) {
@@ -134,10 +156,12 @@ module.exports = function(eleventyConfig) {
     });
 
     // Add Katex support for math rendering in markdown
-    const options = {
+    const mdLib = markdownIt({
         html: true
-    };
-    const mdLib = markdownIt(options).use(markdownItKatex);
+    })
+            .use(markdownItKatex)
+            .use(markdownItAnchor);
+
     eleventyConfig.setLibrary("md", mdLib);
 
     return {

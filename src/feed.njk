@@ -14,12 +14,12 @@ eleventyExcludeFromCollections: true
   <author>
     <name>{{ site.owner.name }}</name>
   </author>
-  {%- for post in collections.posts %}
+  {%- for post in collections.feedPosts %}
     <entry>
       <title>{{ post.data.title }}</title>
       <link href="{{ site.url }}{{ post.url }}" />
       <updated>{{ post.date | dateToRfc3339 }}</updated>
-      <id>{{ absolutePostUrl }}</id>
+      <id>{{ site.url }}{{ post.url }}</id>
       <content type="html">{{ post.content  }}</content>
     </entry>
   {%- endfor %}

@@ -469,7 +469,7 @@ multiple inline elements—like separate `<span>` tags. When we set a breakpoint
 labeling process, we observe that each part of the ingredient ends up in a separate
 block, even though they logically belong together. As a result, are spread over multiple blocks:
 
-<img alt="Debugging Blocks" src="/img/supervised/debug-labels.webp" style="border: 1px solid #000; margin: 0 10px 10px 0">
+![Debugging Blocks](/img/supervised/debug-labels.webp)
 
 So we need to change how we extract li items from the HTML.
 
