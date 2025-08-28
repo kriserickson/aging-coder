@@ -131,53 +131,8 @@ def similar_recipes(
 
     # 1) Try fuzzy title match
     best_idx, match_score = _best_title_index(query, cutoff=fuzzy_cutoff)
-    if best_idx is not None and match_score >= fuzzy_cutoff:
-        query_index = int(best_idx)
-        query_vector = X[query_index]
-
-        # Determine cluster for that recipe
-        if hasattr(kmeans, "labels_"):
-            cluster_id = int(kmeans.labels_[query_index])
-        else:
-            cluster_id = int(kmeans.predict(query_vector)[0])
-
-        candidate_indexes = cluster_to_indices.get(cluster_id, np.array([], dtype=np.int32))
-        if candidate_indexes.size == 0:
-            candidate_indexes = np.arange(X.shape[0], dtype=np.int32)
-
-        candidate_indexes = candidate_indexes[candidate_indexes != query_index]
-        if candidate_indexes.size == 0:
-            return SimilarResponse(
-                query=query,
-                cluster=cluster_id,
-                total_candidates=0,
-                results=[],
-                matched_title=titles[query_index],
-                matched_filename=(filenames[query_index] if filenames and filenames[query_index] else None),
-            )
-
-        candidate_matrix = X[candidate_indexes]
-        top_local, sims = _cosine_sim_rank(query_vector, candidate_matrix, top_k=min(top_k, candidate_matrix.shape[0]), use_sklearn=USE_SKLEARN_COSINE)
-        results = _format_results(candidate_indexes, sims, top_local)
-        return SimilarResponse(
-            query=query,
-            cluster=cluster_id,
-            total_candidates=int(candidate_matrix.shape[0]),
-            results=results,
-            matched_title=titles[query_index],
-            matched_filename=(filenames[query_index] if filenames and filenames[query_index] else None),
-        )
-
-    return SimilarResponse(
-        query=query,
-        cluster=0,
-        total_candidates=0,
-        results=[],
-        matched_title=None,
-        matched_filename=None,
-    )
-```
-
+```    
+   
 It takes a few options as arguments, but we are mostly interested in the `recipe_name` argument.  The `recipe_name` argument is the name of the recipe that we want to find similar recipes for.  
 
 We then try to find a good match for the recipe name using the fuzzy title match.  
@@ -200,8 +155,50 @@ def _best_title_index(name: str, cutoff: float = 0.35) -> tuple[int | None, floa
     return int(idx), float(score) / 100.0    
 ```
 
-The `_best_title_index` function takes a name.  The cutoff value is the minimum score that a match must have to be considered a good match.  The function then uses the [rapidfuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#rapidfuzz.process.extractOne) extractOne function to find the best match for the name in the titles dictionary.  The scorer in rapidfuzz is a partial token sort ratio which combines partial matching with word reordering which we hope will be good for matching recipe titles.  There are a bunch of other scorers available in [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html#partial-token-sort-ratio), so try experimenting with the various options  
+The `_best_title_index` function takes a name.  The cutoff value is the minimum score that a match must have to be considered a good match.  The function then uses the [rapidfuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#rapidfuzz.process.extractOne) extractOne function to find the best match for the name in the titles dictionary.  The scorer in rapidfuzz is a partial token sort ratio which combines partial matching with word reordering which we hope will be good for matching recipe titles.  There are a bunch of other scorers available in [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html#partial-token-sort-ratio), so try experimenting with the various options.
 
+```python
+  if best_idx is not None and match_score >= fuzzy_cutoff:
+        query_vector = X[best_idx]
 
+        # Determine cluster for that recipe
+        cluster_id = int(kmeans.labels_[best_idx])
+        
+        candidate_indexes = cluster_to_indices.get(cluster_id, np.array([], dtype=np.int32))
+        if candidate_indexes.size == 0:
+            candidate_indexes = np.arange(X.shape[0], dtype=np.int32)
+
+        candidate_indexes = candidate_indexes[candidate_indexes != best_idx]
+        if candidate_indexes.size == 0:
+            return SimilarResponse(
+                query=recipe_name,
+                cluster=cluster_id,
+                total_candidates=0,
+                results=[],
+                matched_title=titles[best_idx],
+                matched_filename=(filenames[best_idx] if filenames and filenames[best_idx] else None),
+            )
+
+        candidate_matrix = X[candidate_indexes]
+        top_local, sims = _cosine_sim_rank(query_vector, candidate_matrix, top_k=min(top_k, candidate_matrix.shape[0]), use_sklearn=USE_SKLEARN_COSINE)
+        results = _format_results(candidate_indexes, sims, top_local)
+        return SimilarResponse(
+            query=recipe_name,
+            cluster=cluster_id,
+            total_candidates=int(candidate_matrix.shape[0]),
+            results=results,
+            matched_title=titles[best_idx],
+            matched_filename=(filenames[best_idx] if filenames and filenames[best_idx] else None),
+        )
+
+    return SimilarResponse(
+        query=recipe_name,
+        cluster=0,
+        total_candidates=0,
+        results=[],
+        matched_title=None,
+        matched_filename=None,
+    )
+```
 
 If a good match is found, we use the TF-IDF vector for that recipe as the query vector and return recipes similar by ingredients.  If no good match is found, we return an empty result set.
