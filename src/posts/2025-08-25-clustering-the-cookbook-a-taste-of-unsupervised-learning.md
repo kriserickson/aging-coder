@@ -4,7 +4,7 @@ category: Programming
 title: "Clustering the Cookbook: A Taste of Unsupervised Learning"
 imagefeature: blog/unsupervised.webp
 description: 
-tags: ["Programming", "ML", "Unsupervised Learning", "AI"]
+tags: ["Programming", "ML", "Unsupervised Learning"]
 date: 2025-08-25
 ---
 ## Introduction to Unsupervised Learning
@@ -332,6 +332,38 @@ print(f"Query (index {idx}): {query_title}\nTop {top_n} similar recipes:")
 for rank, i in enumerate(top_idx, start=1):
     fname = filenames[i] if 'filenames' in globals() else None
     print(f"{rank}. [{i}] {titles[i]} (score={sims[i]:.4f})" + (f" — file: {fname}" if fname else ""))
+    
+
+# find the cluster containing the query index
+currentCluster = int(labels[idx])
+
+# build an array of global indices that belong to that cluster
+cluster_indices = np.asarray([i for i, c in enumerate(labels) if int(c) == currentCluster], dtype=np.int32)
+
+# Optionally exclude the query itself from the candidates
+cluster_indices = cluster_indices[cluster_indices != idx]
+
+if cluster_indices.size == 0:
+    print(f"No other recipes in cluster {currentCluster}.")
+else:
+    # candidate_matrix rows correspond to cluster_indices (global -> local mapping)
+    candidate_matrix = X[cluster_indices]
+
+    # compute similarities (local array aligned with cluster_indices)
+    cluster_sims = cosine_similarity(X[idx], candidate_matrix).flatten()
+
+    # get top local positions (handle case where fewer candidates than top_n)
+    k = min(top_n, cluster_sims.size)
+    top_local = np.argsort(cluster_sims)[::-1][:k]
+
+    # map local positions back to global indices
+    top_global = cluster_indices[top_local]
+
+    print(f"\nTop {k} similar recipes in cluster {currentCluster} (excluding query index {idx}):")
+    for rank, (local_pos, global_idx) in enumerate(zip(top_local, top_global), start=1):
+        score = float(cluster_sims[local_pos])
+        fname = filenames[global_idx] if 'filenames' in globals() else None
+        print(f"{rank}. [{global_idx}] {titles[global_idx]} (score={score:.4f})" + (f" — file: {fname}" if fname else ""))
 ```
 
 If we run this cell, we should see something like:
@@ -344,9 +376,58 @@ Top 5 similar recipes:
 3. [6410] Smoky Baby Back Ribs in the Crock-Pot (score=0.2995) — file: recipe_06437.json
 4. [7473] Beef Bone Broth Recipe (score=0.2907) — file: recipe_07527.json
 5. [7767] Crock Pot Baby Back Ribs (score=0.2632) — file: recipe_07825.json
+
+Top 5 similar recipes in cluster 6 (excluding query index 17843):
+1. [6410] Smoky Baby Back Ribs in the Crock-Pot (score=0.2995) — file: recipe_06437.json
+2. [10800] Homemade Natural Spicy Cider Decongestant and Expectorant (score=0.2169) — file: recipe_10867.json
+3. [16937] Slow Cooker Kalua Pork (score=0.2034) — file: recipe_17224.json
+4. [4020] Copycat Chick-fil-A Polynesian Sauce (score=0.1728) — file: recipe_04038.json
+5. [9640] FLY TRAP (score=0.1693) — file: recipe_09706.json
 ```
 
-This looks pretty good.  We can see that the top 5 recipes are similar to the query recipe.  We are using the cosine_similarity function in scikit-learn to measure the similarity the ingredients in the randomly picked recipe and recipes from our "database".  Although we haven't seen it before, the cosine similarity is a measure of the similarity between two vectors, is a frequently used algorithm in machine learning.  It is used in text analysis, for semantic search and RAG, face recognition, image deduplication, as well as the clustering example we are using here.  The cosine similarity is defined as:
+This looks pretty good.  We can see that the top 5 recipes are similar to the query recipe.   However our clustered version
+isn't quite as good.  We can see that there are a couple of similar recipes but the recipes aren't that similar.  Looking
+back at our elbow graph and our silhouette, we can see that another K value to try is 10.  As part of the reason we are 
+clustering is to generate some new relations by the clusters, so the recipes aren't all basically the same but share
+some unseen similarities.  Let's try that and see if we get better results:
+
+```python
+k = 10  # From the silhouette method and the elbow method k at 20 is the sweet spot.
+kmeans = KMeans(n_clusters=k, random_state=42, n_init=10, max_iter=500)
+labels = kmeans.fit_predict(X) 
+
+print(f"Clustered into {k} groups.")
+```
+
+and running the cell again, we will see (if we hardcode the idx in the cell to 17843):
+
+```python
+# Pick a random recipe to query.
+rnd = random.Random()
+idx = rnd.randrange(len(titles))
+idx = 17843 #hardcode to baby back ribs
+query_title = titles[idx]
+```
+slightly better results:
+
+```text
+Query (index 17843): Instant Pot® Ribs
+Top 5 similar recipes:
+1. [16008] Baby Back Pork Ribs (score=0.4227) — file: recipe_16293.json
+2. [15406] Instant Pot Ribs with White Barbecue Sauce (score=0.3035) — file: recipe_15691.json
+3. [6410] Smoky Baby Back Ribs in the Crock-Pot (score=0.2995) — file: recipe_06437.json
+4. [7473] Beef Bone Broth Recipe (score=0.2907) — file: recipe_07527.json
+5. [7767] Crock Pot Baby Back Ribs (score=0.2632) — file: recipe_07825.json
+
+Top 5 similar recipes in cluster 3 (excluding query index 17843):
+1. [6410] Smoky Baby Back Ribs in the Crock-Pot (score=0.2995) — file: recipe_06437.json
+2. [7473] Beef Bone Broth Recipe (score=0.2907) — file: recipe_07527.json
+3. [7767] Crock Pot Baby Back Ribs (score=0.2632) — file: recipe_07825.json
+4. [10800] Homemade Natural Spicy Cider Decongestant and Expectorant (score=0.2169) — file: recipe_10867.json
+5. [16937] Slow Cooker Kalua Pork (score=0.2034) — file: recipe_17224.json
+```
+
+We are using the cosine_similarity function in scikit-learn to measure the similarity the ingredients in the randomly picked recipe and recipes from our "database."  Although we haven't seen it before, the cosine similarity is a measure of the similarity between two vectors, is a frequently used algorithm in machine learning.  It is used in text analysis, for semantic search and RAG, face recognition, image deduplication, as well as the clustering example we are using here.  The cosine similarity is defined as:
 
 
 Cosine similarity (two equivalent forms)
@@ -370,6 +451,9 @@ If the actual formulae don't give you an intuition into what is going on, you ca
 
 Now that we know that our we can save all the artifacts we have into our models' directory.  We will save the k-means, the titles, the filenames, and the cluster assignments.
 
+
+
+
 ```python
 # Save artifacts
 with open(project_root / "models/kmeans_model.pkl", "wb") as f:
@@ -384,6 +468,8 @@ with open(project_root / "models/recipe_filenames.pkl", "wb") as f:   # <-- new
 # save the X matrix (can be large) so we don't need to recompute it
 dump(X, project_root / "models/tfidf_matrix.joblib")   
 ```
+
+
 
 ### Conclusion
 
