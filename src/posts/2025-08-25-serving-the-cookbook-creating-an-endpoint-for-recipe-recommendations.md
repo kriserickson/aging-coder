@@ -149,7 +149,7 @@ def _best_title_index(name: str, cutoff: float = 0.35) -> tuple[int | None, floa
     return int(idx), float(score) / 100.0    
 ```
 
-The `_best_title_index` function takes a name.  The cutoff value is the minimum score that a match must have to be considered a good match.  The function then uses the [rapidfuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#rapidfuzz.process.extractOne) extractOne function to find the best match for the name in the list of titles.  The scorer in rapidfuzz is a partial token sort ratio which combines partial matching with word reordering which we hope will be good for matching recipe titles.  There are a bunch of other scorers available in [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html#partial-token-sort-ratio), so try experimenting with the various options.
+The `_best_title_index` function takes a name.  The cutoff value is the minimum score that a match must have to be considered a good match.  The function then uses the [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#rapidfuzz.process.extractOne) extractOne function to find the best match for the name in the list of titles.  The scorer in RapidFuzz is a partial token sort ratio which combines partial matching with word reordering which we hope will be good for matching recipe titles.  There are a bunch of other scorers available in [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html#partial-token-sort-ratio), so try experimenting with the various options.
 
 ```python
 if best_idx is not None and match_score >= fuzzy_cutoff:
@@ -158,17 +158,17 @@ if best_idx is not None and match_score >= fuzzy_cutoff:
     # Determine cluster for that recipe
     cluster_id = int(kmeans.labels_[best_idx])
     
-    candidate_indexes = cluster_to_indices.get(cluster_id, np.array([], dtype=np.int32))
-    if candidate_indexes.size == 0:
-        candidate_indexes = np.arange(X.shape[0], dtype=np.int32)
+    candidate_indices = cluster_to_indices.get(cluster_id, np.array([], dtype=np.int32))
+    if candidate_indices.size == 0:
+        candidate_indices = np.arange(X.shape[0], dtype=np.int32)
 
-    candidate_indexes = candidate_indexes[candidate_indexes != best_idx]
+    candidate_indices = candidate_indices[candidate_indices != best_idx]
 ```
 
-If a good match is found, we find which cluster the index is in (on startup if you remember, we stored the clusters and all the indexes into the X array for quick lookup.)  Now we have all the indexes for cluster we remove the recipe that we found by matching the title (if you are not familiar with python, using a boolean in a NumPy ndarray returns all the elements from that array matching the boolean, under the hood [] calls \_\_getItem\_\_ so it can be easily overloaded as it is in the NumPy ndarray).
+If a good match is found, we find which cluster the index is in (on startup if you remember, we stored the clusters and all the indices into the X array for quick lookup.)  Now we have all the indices for cluster we remove the recipe that we found by matching the title (if you are not familiar with python, using a boolean in a NumPy ndarray returns all the elements from that array matching the boolean, under the hood [] calls \_\_getItem\_\_ so it can be easily overloaded as it is in the NumPy ndarray).
 
 ```python
-if candidate_indexes.size == 0:
+if candidate_indices.size == 0:
         return SimilarResponse(
             query=recipe_name,
             cluster=cluster_id,
@@ -178,7 +178,7 @@ if candidate_indexes.size == 0:
             matched_filename=(filenames[best_idx] if filenames and filenames[best_idx] else None),
         )
 
-    candidate_matrix = X[candidate_indexes]
+    candidate_matrix = X[candidate_indices]
     top_local, sims = _cosine_similarity_rank(query_vector, candidate_matrix, top_k=min(top_k, candidate_matrix.shape[0]), use_sklearn=USE_SKLEARN_COSINE)
  ```
 
@@ -223,9 +223,12 @@ def _cosine_similarity_rank(query_vector: csr_matrix, candidate_matrix: csr_matr
 
     k = min(max(int(top_k), 1), n)  # ensure 1 <= k <= n
     
-    # np.argpartition is O(n) and avoids a full sort of all N elements. It returns an unordered partition 
-    # where the first k positions contain the top-k items. - We then fully sort only those k items to 
-    # produce descending order.
+    # np.argpartition is expected to run in linear time O(n) to partition the array and
+    # place the top-k candidates into the first k positions (unordered). You must
+    # then fully sort only those k items to produce a correctly ordered top-k list.
+    # This reduces work compared to sorting all n entries; the benefit grows with
+    # large n (e.g. hundreds of thousands to millions). For small candidate sets the
+    # overhead may make the simple argsort approach faster in practice.
     part = np.argpartition(-sims, kth=k-1)[:k]
     top_local = part[np.argsort(-sims[part])]
     
@@ -240,10 +243,12 @@ top_local = np.argsort(sims)[::-1][:top_k]
 return top_local, sims
 ```
 
-we have included two (premature because our sample size is so small) optimizations to show how one might optimize both the cosign_similarity ranking of the array, and the sorting of the top_local results.  The first optimization we have made optional so that we can log the performance of each algorithm.  
+we have included two (premature because our sample size is so small) optimizations to show how one might optimize both the cosign_similarity ranking of the array, and the sorting of the top_local results.  The first optimization we have made optional so that we can log the performance of each algorithm.
 
-The "optimization" is that if both vectors are L2‑normalized (aka Euclidean normalization where ||a|| = ||b|| = 1) then the denominator is 1, so cosine(a, b) = a · b
-i.e. dot product equals cosine similarity. How this applies to TF‑IDF in scikit‑learn: TfidfVectorizer by default computes TF–IDF weights and then performs L2 normalization of each document vector (norm='l2'). After vectorizer.fit_transform(texts), each row is scaled to unit L2 length, so comparing rows via dot product returns cosine similarity directly.  So if you change the vectorizer to norm=None (or do additional transforms that remove normalization), dot product no longer equals cosine; you must use the cosine_similarity function.  If you run both you will see that dot-product is about twice as fast cosine_similarity but for our example the point is almost moot as the cosine_similarity is already very fast:
+The "optimization" is simple: the dot product equals cosine similarity only when both vectors are L2-normalized  where ||a|| = ||b|| = 1) then the denominator is 1, so cosine(a, b) = a · b. 
+In scikit-learn, TfidfVectorizer defaults to norm='l2', so the rows produced by vectorizer.fit_transform(texts) are L2-normalized and the dot product between two rows equals their cosine similarity. If you set TfidfVectorizer(norm=None) or perform additional transforms that remove normalization, the dot product no longer equals cosine similarity — use scikit-learn's cosine_similarity (sklearn.metrics.pairwise.cosine_similarity) in that case.
+
+If you compare the two methods you may see the dot-product approach is faster (in our short benchmark it was about twice as fast), but that speedup only matters with large candidate sets. For small datasets the difference is typically negligible:
 
 ```text
 cosine similarity computed using sklearn for 2656 candidates in 0.0032s
@@ -263,7 +268,7 @@ Now that we have our top_k results we just need to format them and display them.
 
 
 ```python
-    results = _format_results(candidate_indexes, sims, top_local)
+    results = _format_results(candidate_indices, sims, top_local)
     return SimilarResponse(
         query=recipe_name,
         cluster=cluster_id,
