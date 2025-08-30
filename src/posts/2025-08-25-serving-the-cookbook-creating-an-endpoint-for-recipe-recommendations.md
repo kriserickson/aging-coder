@@ -13,7 +13,7 @@ This will be just a quick little follow-up to the last [post](/posts/2025-08-25-
 
 ### Setup Script
 
-The code is pretty straightforward, so lets go through it section by section.
+The code is pretty straightforward, so let's go through it section by section.
 
 ```python
 # Toggle default similarity computation method:
@@ -109,7 +109,7 @@ It works by:
 
 ### Similar Recipes Endpoint
 
-Lets jump forward in the script and look at the endpoint for similar recipes.   Here's the code:
+Let's jump forward in the script and look at the endpoint for similar recipes.   Here's the code:
 
 ```python
 @app.get("/similar_recipes", response_model=SimilarResponse)
@@ -119,18 +119,12 @@ def similar_recipes(
     fuzzy_cutoff: float = Query(0.35, ge=0.0, le=1.0),
 ):
     """
-    If the query looks like a recipe title, perform a fuzzy title match. If a good title
-    match is found, use that recipe's TF-IDF ingredient vector as the query vector and
-    return recipes similar by ingredients. If no good title match is found, return an empty result set.
-    """
-    if X is None:
-        raise HTTPException(
-            status_code=503,
-            detail="TF-IDF matrix (X) not available on server. Save and deploy tfidf_matrix.joblib.",
-        )
-
+    It first performs a fuzzy title match. If a good title match is found, use that recipe's 
+    TF-IDF ingredient vector as the query vector and return recipes similar by ingredients. 
+    If no good title match is found, return an empty result set.
+    """    
     # 1) Try fuzzy title match
-    best_idx, match_score = _best_title_index(query, cutoff=fuzzy_cutoff)
+    best_idx, match_score = _best_title_index(recipe_name, cutoff=fuzzy_cutoff)
 ```    
    
 It takes a few options as arguments, but we are mostly interested in the `recipe_name` argument.  The `recipe_name` argument is the name of the recipe that we want to find similar recipes for.  
@@ -155,50 +149,170 @@ def _best_title_index(name: str, cutoff: float = 0.35) -> tuple[int | None, floa
     return int(idx), float(score) / 100.0    
 ```
 
-The `_best_title_index` function takes a name.  The cutoff value is the minimum score that a match must have to be considered a good match.  The function then uses the [rapidfuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#rapidfuzz.process.extractOne) extractOne function to find the best match for the name in the titles dictionary.  The scorer in rapidfuzz is a partial token sort ratio which combines partial matching with word reordering which we hope will be good for matching recipe titles.  There are a bunch of other scorers available in [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html#partial-token-sort-ratio), so try experimenting with the various options.
+The `_best_title_index` function takes a name.  The cutoff value is the minimum score that a match must have to be considered a good match.  The function then uses the [rapidfuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/process.html#rapidfuzz.process.extractOne) extractOne function to find the best match for the name in the list of titles.  The scorer in rapidfuzz is a partial token sort ratio which combines partial matching with word reordering which we hope will be good for matching recipe titles.  There are a bunch of other scorers available in [RapidFuzz](https://rapidfuzz.github.io/RapidFuzz/Usage/fuzz.html#partial-token-sort-ratio), so try experimenting with the various options.
 
 ```python
-  if best_idx is not None and match_score >= fuzzy_cutoff:
-        query_vector = X[best_idx]
+if best_idx is not None and match_score >= fuzzy_cutoff:
+    query_vector = X[best_idx]
 
-        # Determine cluster for that recipe
-        cluster_id = int(kmeans.labels_[best_idx])
-        
-        candidate_indexes = cluster_to_indices.get(cluster_id, np.array([], dtype=np.int32))
-        if candidate_indexes.size == 0:
-            candidate_indexes = np.arange(X.shape[0], dtype=np.int32)
+    # Determine cluster for that recipe
+    cluster_id = int(kmeans.labels_[best_idx])
+    
+    candidate_indexes = cluster_to_indices.get(cluster_id, np.array([], dtype=np.int32))
+    if candidate_indexes.size == 0:
+        candidate_indexes = np.arange(X.shape[0], dtype=np.int32)
 
-        candidate_indexes = candidate_indexes[candidate_indexes != best_idx]
-        if candidate_indexes.size == 0:
-            return SimilarResponse(
-                query=recipe_name,
-                cluster=cluster_id,
-                total_candidates=0,
-                results=[],
-                matched_title=titles[best_idx],
-                matched_filename=(filenames[best_idx] if filenames and filenames[best_idx] else None),
-            )
+    candidate_indexes = candidate_indexes[candidate_indexes != best_idx]
+```
 
-        candidate_matrix = X[candidate_indexes]
-        top_local, sims = _cosine_sim_rank(query_vector, candidate_matrix, top_k=min(top_k, candidate_matrix.shape[0]), use_sklearn=USE_SKLEARN_COSINE)
-        results = _format_results(candidate_indexes, sims, top_local)
+If a good match is found, we find which cluster the index is in (on startup if you remember, we stored the clusters and all the indexes into the X array for quick lookup.)  Now we have all the indexes for cluster we remove the recipe that we found by matching the title (if you are not familiar with python, using a boolean in a NumPy ndarray returns all the elements from that array matching the boolean, under the hood [] calls \_\_getItem\_\_ so it can be easily overloaded as it is in the NumPy ndarray).
+
+```python
+if candidate_indexes.size == 0:
         return SimilarResponse(
             query=recipe_name,
             cluster=cluster_id,
-            total_candidates=int(candidate_matrix.shape[0]),
-            results=results,
+            total_candidates=0,
+            results=[],
             matched_title=titles[best_idx],
             matched_filename=(filenames[best_idx] if filenames and filenames[best_idx] else None),
         )
 
+    candidate_matrix = X[candidate_indexes]
+    top_local, sims = _cosine_similarity_rank(query_vector, candidate_matrix, top_k=min(top_k, candidate_matrix.shape[0]), use_sklearn=USE_SKLEARN_COSINE)
+ ```
+
+Next is a simple sanity to ensure that the cluster exists and wasn't a cluster of 1.  Again using the indexing operator on X we grab all the elements in the cluster into the candidate_matrix.  Next we call our _cosine_similarity_rank function which ranks the similarities in the cluster our recipe matched.
+
+```python
+def _cosine_similarity_rank(query_vector: csr_matrix, candidate_matrix: csr_matrix, top_k: int, use_sklearn: bool ) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Rank candidates by cosine similarity. With TF-IDF default norm='l2',
+    dot product equals cosine similarity.
+
+    Parameters
+    - q_vec:      (1 x D) query sparse row
+    - cand_matrix:(N x D) candidate sparse matrix
+    - top_k:      number of top results to return
+    - use_sklearn: if True use sklearn.cosine_similarity (robust, normalizes inside).
+                   if False use sparse dot-product (fast, requires pre-normalized vectors).
+                   
+    Returns (top_local_indices_relative_to_cand_matrix, sims_array)
+    """
+
+    # timing starts here
+    start = time.perf_counter()
+    
+    # Compute similarity scores (1D array length n_cands)
+    if use_sklearn:
+        # sklearn will handle normalization and safety checks.
+        sims = cosine_similarity(query_vector, candidate_matrix).ravel()
+        method = "sklearn"
+    else:
+        # Fast sparse dot-product. Correct only if rows are L2-normalized (TF-IDF default).
+        sims = (query_vector @ candidate_matrix.T).toarray().ravel()
+        method = "dot-product"
+
+    elapsed = time.perf_counter() - start
+    logger.info("cosine similarity computed using %s for %d candidates in %.4fs", method, sims.size, elapsed)
+
+    n = sims.size
+
+    if n == 0:
+        return np.asarray([], dtype=np.int32), sims
+
+    k = min(max(int(top_k), 1), n)  # ensure 1 <= k <= n
+    
+    # np.argpartition is O(n) and avoids a full sort of all N elements. It returns an unordered partition 
+    # where the first k positions contain the top-k items. - We then fully sort only those k items to 
+    # produce descending order.
+    part = np.argpartition(-sims, kth=k-1)[:k]
+    top_local = part[np.argsort(-sims[part])]
+    
+    return top_local, sims
+```
+
+While this entire code could be replaced by the much simpler 
+
+```python
+sims = cosine_similarity(query_vector, candidate_matrix).ravel()
+top_local = np.argsort(sims)[::-1][:top_k]
+return top_local, sims
+```
+
+we have included two (premature because our sample size is so small) optimizations to show how one might optimize both the cosign_similarity ranking of the array, and the sorting of the top_local results.  The first optimization we have made optional so that we can log the performance of each algorithm.  
+
+The "optimization" is that if both vectors are L2‑normalized (aka Euclidean normalization where ||a|| = ||b|| = 1) then the denominator is 1, so cosine(a, b) = a · b
+i.e. dot product equals cosine similarity. How this applies to TF‑IDF in scikit‑learn: TfidfVectorizer by default computes TF–IDF weights and then performs L2 normalization of each document vector (norm='l2'). After vectorizer.fit_transform(texts), each row is scaled to unit L2 length, so comparing rows via dot product returns cosine similarity directly.  So if you change the vectorizer to norm=None (or do additional transforms that remove normalization), dot product no longer equals cosine; you must use the cosine_similarity function.  If you run both you will see that dot-product is about twice as fast cosine_similarity but for our example the point is almost moot as the cosine_similarity is already very fast:
+
+```text
+cosine similarity computed using sklearn for 2656 candidates in 0.0032s
+```
+
+vs:
+
+```text
+cosine similarity computed using dot-product for 2656 candidates in 0.0012s
+```
+
+however, over a million candidates or more candidates it would be worth the savings.
+
+The second optimization is that instead of just sorting the array and getting the sorted results we use np.argpartion which has the advantage of being linear time for O(n), and then only sorting the top_k values.  Since even the fastest sort is O(n log n) this would mean a considerable savings if the number of candidates was in the millions.
+
+Now that we have our top_k results we just need to format them and display them.  Which is some very self-explanatory code:
+
+
+```python
+    results = _format_results(candidate_indexes, sims, top_local)
     return SimilarResponse(
         query=recipe_name,
-        cluster=0,
-        total_candidates=0,
-        results=[],
-        matched_title=None,
-        matched_filename=None,
+        cluster=cluster_id,
+        total_candidates=int(candidate_matrix.shape[0]),
+        results=results,
+        matched_title=titles[best_idx],
+        matched_filename=(filenames[best_idx] if filenames and filenames[best_idx] else None),
     )
 ```
 
-If a good match is found, we use the TF-IDF vector for that recipe as the query vector and return recipes similar by ingredients.  If no good match is found, we return an empty result set.
+We now have a working endpoint that will take a recipe title and return the recipe it matched as well as some potential similar recipes.  
+
+
+### Putting it all together
+
+To view our service in action we probably need a quick and dirty webpage to take in the input, and show the results.
+I had CoPilot quickly create a simple front-end for this project which will allow us to test to see how well it works (of course this bit of "vibe-coding" needed a few fixed both from Co-Pilot and then manually afterwards) but this is some code that will never go into production so it is the perfect use case "vibe-coding".  First, if you haven't already, run the complete `unstructured.ipynb` code to generate the required models and pickle data files.
+
+We add the following code to our FastAPI service to serve our HTML, JS, and CSS that is in the static directory.
+
+```python
+# Serve static SPA
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+@app.get("/", include_in_schema=False)
+def serve_index():
+    index_path = STATIC_DIR / "index.html"
+    if not index_path.exists():
+        raise HTTPException(status_code=404, detail="index.html not found. Build the SPA under /static.")
+    return FileResponse(str(index_path))
+```
+
+Start the code either with the `launch.json` entry `"Python Debugger: uvicorn similar_service (port 8080)` or from the command line with
+
+```bash
+python -m uvicorn src.similar_service:app --port 8080
+```
+
+When you hit the webpage, you will see a prompt to enter a recipe title:
+
+![Enter Recipe Title](/img/unsupervised/enter_title.webp)
+
+And once you enter a title (like Tomato Soup) you will see some similar recipes:
+
+![Show Recipes](/img/unsupervised/show_recipes.webp)
+
+### Final Thoughts
+
+We have quickly created a way of getting similar recipes to a recipe based on its name. So, we come back to the question, why are we clustering these recipes.  The goal is to get clusters of recipes that are similar, but not in the exact same way that they are similar in the cosine_similarity of their ingredients.  Hopefully the k-means clustering has recognized some similarities in the data not found in the standard similarity of ingredients.  Hopefully, with K-Means, we can discover that recipes tend to fall into, say, “Asian stir-fries,” “Mediterranean salads,” “baked desserts,” etc., based on ingredient patterns and then use the blunt ingredients similarity to bring those to the forefront.   The clusters will also speed up the task of finding similar recipes in the end since each cluster is a fraction of the size of the entire corpus of recipes (once again, since we have such a small sample this isn't really a benefit).
+
+This may not be the best use of k-means clustering, but it does demonstrate how it works and how it might be used in a real-world situation.  We have also learned about cosine_similarity which will show its face again when start looking at [RAG](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) over the next few articles.  And we can see how quick it is to go from a proof of concept in a Jupyter notebook to a nice REST endpoint (though not a production ready endpoint) and the optimizations that can be made if we understand about what is actually happening with cosine_similarity and inefficient algorithms like sorting.
