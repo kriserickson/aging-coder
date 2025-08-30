@@ -2,7 +2,7 @@
 layout: post
 category: 
 title: "Serving the Cookbook: Creating an Endpoint for Recipe Recommendations"
-imagefeature: blog/serving.webp
+imagefeature: blog/unsupervised-2.webp
 description: 
 tags: ["Programming", "ML", "Unsupervised Learning", "API"]
 date: 2025-08-30
@@ -12,6 +12,18 @@ date: 2025-08-30
 This will be just a quick little follow-up to the last [post](/posts/2025-08-25-clustering-the-cookbook-a-taste-of-unsupervised-learning) where we created a model and some saved data for returning recipes with similar ingredients.  In this post, we'll create an endpoint for the model and return recipes based on the ingredients passed to the FastAPI endpoint.
 
 ### Setup Script
+
+If you haven't already, please clone the [GitHub repository](https://github.com/kriserickson/recipe-parser/tree/unsupervised-1).
+
+```bash
+git clone https://github.com/kriserickson/recipe-parser.git
+```
+Then check out the branch for this blog post.
+
+```bash
+cd recipe-parser
+git checkout unsupervised-1
+```
 
 The code is pretty straightforward, so let's go through it section by section.
 
