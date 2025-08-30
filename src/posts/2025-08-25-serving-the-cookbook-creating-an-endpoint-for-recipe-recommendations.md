@@ -9,7 +9,7 @@ date: 2025-08-25
 ---
 ### Introduction
 
-This will be just a quick little follow-up to the last [post](/posts/2025-08-25-clustering-the-cookbook-a-taste-of-unsupervised-learning) where we created a model and some saved data for returning recipes with similar ingredients.  In this post, we'll create an endpoint for the model and return recipes based on the ingredients passed in using FastAPI.
+This will be just a quick little follow-up to the last [post](/posts/2025-08-25-clustering-the-cookbook-a-taste-of-unsupervised-learning) where we created a model and some saved data for returning recipes with similar ingredients.  In this post, we'll create an endpoint for the model and return recipes based on the ingredients passed to the FastAPI endpoint.
 
 ### Setup Script
 
@@ -99,13 +99,13 @@ app = FastAPI(title="Recipe Similarity API", version="1.0.0", lifespan=lifespan)
 ```
 The code then sets up the lifespan handler for the app.  The [lifespan handler](https://fastapi.tiangolo.com/advanced/events/) is a function that is called when the app starts and stops and is the modern way to handle setting up and tearing down of FastAPI services (the old [@app.on_event is now deprecated](https://fastapi.tiangolo.com/advanced/events/#alternative-events-deprecated)).  In this case, we're loading the saved artifacts from the previous post.  We also build the `cluster_to_indices` dictionary from the `kmeans.labels_` attribute.  We then do some sanity checks to make sure that the artifacts are built from the same dataset and that the `X` matrix is the same size as the `labels` array.
 
-The _build_cluster_index function builds a lookup mapping each cluster id that returns array of row indices that belong to that cluster. It's used so we can quickly retrieve candidate rows for a given cluster instead of scanning all rows.
+The `_build_cluster_index` function builds a lookup mapping each cluster id that returns array of row indices that belong to that cluster. It's used so we can quickly retrieve candidate rows for a given cluster instead of scanning all rows.
 
 It works by:
 
-1) Create an empty dict clusters: cluster_id -> list of int.
-2) Iterate enumerate(labels): for each index i and cluster value c, append i to clusters[c] (via setdefault).
-3) Convert each list of indices to a numpy.ndarray (dtype=np.int32) and return the final dict.
+1) Create an empty dict clusters: `cluster_id` -> list of int.
+2) Iterate enumerate(labels): for each index `i` and cluster value `c`, append `i` to `clusters[c]` (via `setdefault`).
+3) Convert each list of indices to a `numpy.ndarray` (`dtype=np.int32`) and return the final dict.
 
 ### Similar Recipes Endpoint
 
@@ -127,7 +127,7 @@ def similar_recipes(
     best_idx, match_score = _best_title_index(recipe_name, cutoff=fuzzy_cutoff)
 ```    
    
-It takes a few options as arguments, but we are mostly interested in the `recipe_name` argument.  The `recipe_name` argument is the name of the recipe that we want to find similar recipes for.  
+It takes a few options as arguments, but we are mostly interested in the `recipe_name` argument.  The endpoint parameters are defined with FastAPI's `Query` helper (for example: `recipe_name: str = Query(..., min_length=1)`). The `recipe_name` argument is the name of the recipe that we want to find similar recipes for.  
 
 We then try to find a good match for the recipe name using the fuzzy title match.  
 
@@ -165,7 +165,7 @@ if best_idx is not None and match_score >= fuzzy_cutoff:
     candidate_indices = candidate_indices[candidate_indices != best_idx]
 ```
 
-If a good match is found, we find which cluster the index is in (on startup if you remember, we stored the clusters and all the indices into the X array for quick lookup.)  Now we have all the indices for cluster we remove the recipe that we found by matching the title (if you are not familiar with python, using a boolean in a NumPy ndarray returns all the elements from that array matching the boolean, under the hood [] calls \_\_getItem\_\_ so it can be easily overloaded as it is in the NumPy ndarray).
+If a good match is found, we find which cluster the index is in (on startup if you remember, we stored the clusters and all the indices into the `X` array for quick lookup.)  Now we have all the indices for cluster we remove the recipe that we found by matching the title (if you are not familiar with python, using a boolean in a NumPy `ndarray` returns all the elements from that array matching the boolean, under the hood [] calls `__getItem__` so it can be easily overloaded as it is in the NumPy `ndarray`).
 
 ```python
 if candidate_indices.size == 0:
@@ -182,7 +182,7 @@ if candidate_indices.size == 0:
     top_local, sims = _cosine_similarity_rank(query_vector, candidate_matrix, top_k=min(top_k, candidate_matrix.shape[0]), use_sklearn=USE_SKLEARN_COSINE)
  ```
 
-Next is a simple sanity to ensure that the cluster exists and wasn't a cluster of 1.  Again using the indexing operator on X we grab all the elements in the cluster into the candidate_matrix.  Next we call our _cosine_similarity_rank function which ranks the similarities in the cluster our recipe matched.
+Next is a simple sanity to ensure that the cluster exists and wasn't a cluster of 1.  Again using the indexing operator on `X` we grab all the elements in the cluster into the candidate_matrix.  Next we call our `_cosine_similarity_rank` function which ranks the similarities in the cluster our recipe matched.
 
 ```python
 def _cosine_similarity_rank(query_vector: csr_matrix, candidate_matrix: csr_matrix, top_k: int, use_sklearn: bool ) -> tuple[np.ndarray, np.ndarray]:
@@ -245,8 +245,8 @@ return top_local, sims
 
 we have included two (premature because our sample size is so small) optimizations to show how one might optimize both the cosign_similarity ranking of the array, and the sorting of the top_local results.  The first optimization we have made optional so that we can log the performance of each algorithm.
 
-The "optimization" is simple: the dot product equals cosine similarity only when both vectors are L2-normalized  where ||a|| = ||b|| = 1) then the denominator is 1, so cosine(a, b) = a · b. 
-In scikit-learn, TfidfVectorizer defaults to norm='l2', so the rows produced by vectorizer.fit_transform(texts) are L2-normalized and the dot product between two rows equals their cosine similarity. If you set TfidfVectorizer(norm=None) or perform additional transforms that remove normalization, the dot product no longer equals cosine similarity — use scikit-learn's cosine_similarity (sklearn.metrics.pairwise.cosine_similarity) in that case.
+The "optimization" is simple: the dot product equals cosine similarity only when both vectors are L2-normalized  (i.e. where ||a|| = ||b|| = 1) then the denominator is 1, so cosine(a, b) = a · b). 
+In scikit-learn, TfidfVectorizer defaults to norm='l2', so the rows produced by `vectorizer.fit_transform(texts)` are L2-normalized and the dot product between two rows equals their cosine similarity. If you set TfidfVectorizer(norm=None) or perform additional transforms that remove normalization, the dot product no longer equals cosine similarity — use scikit-learn's cosine_similarity (`sklearn.metrics.pairwise.cosine_similarity`) in that case.
 
 If you compare the two methods you may see the dot-product approach is faster (in our short benchmark it was about twice as fast), but that speedup only matters with large candidate sets. For small datasets the difference is typically negligible:
 
@@ -260,11 +260,11 @@ vs:
 cosine similarity computed using dot-product for 2656 candidates in 0.0012s
 ```
 
-however, over a million candidates or more candidates it would be worth the savings.
+however, if you have a million candidates or more candidates it would be worth the savings.
 
-The second optimization is that instead of just sorting the array and getting the sorted results we use np.argpartion which has the advantage of being linear time for O(n), and then only sorting the top_k values.  Since even the fastest sort is O(n log n) this would mean a considerable savings if the number of candidates was in the millions.
+The second optimization is that instead of just sorting the array and getting the sorted results we use `np.argpartion` which has the advantage of being linear time for `O(n)`, and then only sorting the top_k values.  Since even the fastest sort is `O(n log n)` this also would mean a considerable savings if the number of candidates was in the millions.
 
-Now that we have our top_k results we just need to format them and display them.  Which is some very self-explanatory code:
+Now that we have our `top_k `results we just need to format them and display them.  Which is done with the `_format_results` function.
 
 
 ```python
@@ -284,8 +284,8 @@ We now have a working endpoint that will take a recipe title and return the reci
 
 ### Putting it all together
 
-To view our service in action we probably need a quick and dirty webpage to take in the input, and show the results.
-I had CoPilot quickly create a simple front-end for this project which will allow us to test to see how well it works (of course this bit of "vibe-coding" needed a few fixed both from Co-Pilot and then manually afterwards) but this is some code that will never go into production so it is the perfect use case "vibe-coding".  First, if you haven't already, run the complete `unstructured.ipynb` code to generate the required models and pickle data files.
+To view our service in action we probably need a webpage to take in the input, and show the results.
+I had CoPilot quickly create a simple front-end for this project which will allow us to test to see how well it works.  First, if you haven't already (during the previous article), run the complete `unstructured.ipynb` code to generate the required models and pickle data files.
 
 We add the following code to our FastAPI service to serve our HTML, JS, and CSS that is in the static directory.
 
@@ -318,6 +318,6 @@ And once you enter a title (like Tomato Soup) you will see some similar recipes:
 
 ### Final Thoughts
 
-We have quickly created a way of getting similar recipes to a recipe based on its name. So, we come back to the question, why are we clustering these recipes.  The goal is to get clusters of recipes that are similar, but not in the exact same way that they are similar in the cosine_similarity of their ingredients.  Hopefully the k-means clustering has recognized some similarities in the data not found in the standard similarity of ingredients.  Hopefully, with K-Means, we can discover that recipes tend to fall into, say, “Asian stir-fries,” “Mediterranean salads,” “baked desserts,” etc., based on ingredient patterns and then use the blunt ingredients similarity to bring those to the forefront.   The clusters will also speed up the task of finding similar recipes in the end since each cluster is a fraction of the size of the entire corpus of recipes (once again, since we have such a small sample this isn't really a benefit).
+We have quickly created a way of getting similar recipes to a recipe based on its name. So, we come back to the question, why are we clustering these recipes.  The goal is to get clusters of recipes that are similar, but not in the exact same way that they are similar in the `cosine_similarity` of their ingredients.  Hopefully the k-means clustering has recognized some similarities in the data not found in the standard similarity of ingredients (some unsupervised learnering as it were).  Hopefully, with K-Means, we can discover that recipes tend to fall into, say, “Asian stir-fries,” “Mediterranean salads,” “baked desserts,” etc., based on ingredient patterns and then use the blunt ingredients similarity to bring those to the forefront.   The clusters will also speed up the task of finding similar recipes in the end since each cluster is a fraction of the size of the entire corpus of recipes (once again, since we have a small sample this isn't really a benefit).
 
 This may not be the best use of k-means clustering, but it does demonstrate how it works and how it might be used in a real-world situation.  We have also learned about cosine_similarity which will show its face again when start looking at [RAG](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) over the next few articles.  And we can see how quick it is to go from a proof of concept in a Jupyter notebook to a nice REST endpoint (though not a production ready endpoint) and the optimizations that can be made if we understand about what is actually happening with cosine_similarity and inefficient algorithms like sorting.
