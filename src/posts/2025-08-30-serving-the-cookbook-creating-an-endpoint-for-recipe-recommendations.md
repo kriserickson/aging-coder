@@ -5,7 +5,7 @@ title: "Serving the Cookbook: Creating an Endpoint for Recipe Recommendations"
 imagefeature: blog/serving.webp
 description: 
 tags: ["Programming", "ML", "Unsupervised Learning", "API"]
-date: 2025-08-25
+date: 2025-08-30
 ---
 ### Introduction
 

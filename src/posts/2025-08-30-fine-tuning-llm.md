@@ -6,6 +6,7 @@ imagefeature:
 description: 
 tags: []
 date: 2025-08-30
+draft: true
 ---
 Of the open models available for ollama with < 1B parameters, only qwen actually managed to parse the HTML and return
 a result.
