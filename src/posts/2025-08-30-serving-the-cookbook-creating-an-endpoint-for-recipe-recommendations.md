@@ -1,6 +1,6 @@
 ---
 layout: post
-category: 
+category: "Machine Learning" 
 title: "Serving the Cookbook: Creating an Endpoint for Recipe Recommendations"
 imagefeature: blog/unsupervised-2.webp
 description: 
@@ -11,7 +11,7 @@ date: 2025-08-30
 
 This will be just a quick little follow-up to the last [post](/posts/2025-08-25-clustering-the-cookbook-a-taste-of-unsupervised-learning) where we created a model and some saved data for returning recipes with similar ingredients.  In this post, we'll create an endpoint for the model and return recipes based on the ingredients passed to the FastAPI endpoint.
 
-### Setup Script
+### Setup
 
 If you haven't already, please clone the [GitHub repository](https://github.com/kriserickson/recipe-parser/tree/unsupervised-1).
 
@@ -24,6 +24,8 @@ Then check out the branch for this blog post.
 cd recipe-parser
 git checkout unsupervised-1
 ```
+
+### Startup Script
 
 The code is pretty straightforward, so let's go through it section by section.
 
@@ -255,7 +257,7 @@ top_local = np.argsort(sims)[::-1][:top_k]
 return top_local, sims
 ```
 
-we have included two (premature because our sample size is so small) optimizations to show how one might optimize both the cosign_similarity ranking of the array, and the sorting of the top_local results.  The first optimization we have made optional so that we can log the performance of each algorithm.
+we have included two (premature because our sample size is so small) optimizations to show how one might optimize both the cosine_similarity ranking of the array, and the sorting of the top_local results.  The first optimization we have made optional so that we can log the performance of each algorithm.
 
 The "optimization" is simple: the dot product equals cosine similarity only when both vectors are L2-normalized  (i.e. where ||a|| = ||b|| = 1) then the denominator is 1, so cosine(a, b) = a · b). 
 In scikit-learn, TfidfVectorizer defaults to norm='l2', so the rows produced by `vectorizer.fit_transform(texts)` are L2-normalized and the dot product between two rows equals their cosine similarity. If you set TfidfVectorizer(norm=None) or perform additional transforms that remove normalization, the dot product no longer equals cosine similarity — use scikit-learn's cosine_similarity (`sklearn.metrics.pairwise.cosine_similarity`) in that case.
