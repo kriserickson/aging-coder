@@ -1,14 +1,32 @@
 <section style="text-align:center;margin:2rem 0;">
-    <a href="https://x.com/intent/tweet?text=&quot;{{ page.title }}&quot;%20{{ site.url }}{{ page.url }}%20via%20&#64;{{ site.owner.twitter }}"
-       onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" title="Share on X" style="margin:0 0.5rem;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,0.05);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3l8.2 9.2L3.7 21h2.7l6.1-6.9 5.3 6.9H21l-8.7-11 7.9-9H17L11.5 7 7 3H3z"/></svg>
+    <!-- LinkedIn link -->
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ site.url }}{{ page.url | urlencode }}"
+       onclick="window.open(this.href, 'linkedin-share', 'width=550,height=500'); return false;"
+       title="Share on LinkedIn"
+       style="margin:0 0.5rem;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,0.05);">
+        <svg height="20" viewBox="0 0 72 72" width="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g fill="none" fill-rule="evenodd">
+                <path d="M8,72 L64,72 C68.418278,72 72,68.418278 72,64 L72,8 C72,3.581722 68.418278,-8.11624501e-16 64,0 L8,0 C3.581722,8.11624501e-16 -5.41083001e-16,3.581722 0,8 L0,64 C5.41083001e-16,68.418278 3.581722,72 8,72 Z"
+                      fill="currentColor"/>
+                <path d="M62,62 L51.315625,62 L51.315625,43.8021149 C51.315625,38.8127542 49.4197917,36.0245323 45.4707031,36.0245323 C41.1746094,36.0245323 38.9300781,38.9261103 38.9300781,43.8021149 L38.9300781,62 L28.6333333,62 L28.6333333,27.3333333 L38.9300781,27.3333333 L38.9300781,32.0029283 C38.9300781,32.0029283 42.0260417,26.2742151 49.3825521,26.2742151 C56.7356771,26.2742151 62,30.7644705 62,40.051212 L62,62 Z M16.349349,22.7940133 C12.8420573,22.7940133 10,19.9296567 10,16.3970067 C10,12.8643566 12.8420573,10 16.349349,10 C19.8566406,10 22.6970052,12.8643566 22.6970052,16.3970067 C22.6970052,19.9296567 19.8566406,22.7940133 16.349349,22.7940133 Z M11.0325521,62 L21.769401,62 L21.769401,27.3333333 L11.0325521,27.3333333 L11.0325521,62 Z"
+                      fill="#FFF"/>
+            </g>
+        </svg>
     </a>
-    <a href="https://www.facebook.com/sharer/sharer.php?u={{ site.url }}{{ page.url }}"
-       onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;" title="Share on Facebook" style="margin:0 0.5rem;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,0.05);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M22 12.07C22 6.48 17.52 2 11.93 2S2 6.48 2 12.07c0 5 3.66 9.14 8.44 9.93v-7.03H7.9v-2.9h2.54V9.41c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.9h-2.34V22c4.78-.79 8.44-4.93 8.44-9.93z"/></svg>
+    <!-- Bluesky link -->
+    <a href="https://bsky.app/intent/compose?text={{ page.title | urlencode }}%20{{ site.url }}{{ page.url }}"
+       onclick="window.open(this.href, 'bsky-share', 'width=550,height=600');return false;"
+       title="Share on Bluesky" style="margin:0 0.5rem;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,0.05);">
+        <svg width="20" height="20" viewBox="0 0 600 530" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"/>
+        </svg>
     </a>
+    <!-- Mastodon link -->
     <a href="https://mastodon.social/share?text=&quot;{{ page.title }}&quot;%20{{ site.url }}{{ page.url }}%20via%20&#64;{{ site.owner.twitter }}"
-       onclick="window.open(this.href, 'mastodon-share', 'width=550,height=235');return false;" title="Share on Mastodon" style="margin:0 0.5rem;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,0.05);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C6.477 2 2 6.216 2 11.2c0 3.454 1.88 6.517 4.74 8.14.35.18.49.04.49-.25 0-.12-.01-.52-.01-1.02-1.93.41-2.34-.95-2.34-.95-.33-.87-.8-1.1-.8-1.1-.65-.44.05-.43.05-.43.72.05 1.09.76 1.09.76.64 1.08 1.68.77 2.09.59.06-.46.25-.77.45-.95-1.54-.18-3.16-.77-3.16-3.44 0-.76.26-1.38.69-1.87-.07-.17-.3-.88.07-1.83 0 0 .57-.18 1.87.7a6.3 6.3 0 011.7-.23c.58 0 1.17.08 1.7.23 1.3-.88 1.87-.7 1.87-.7.37.95.14 1.66.07 1.83.43.49.69 1.11.69 1.87 0 2.67-1.63 3.26-3.18 3.43.26.22.49.66.49 1.33 0 .96-.01 1.74-.01 1.98 0 .29.13.44.5.25C20.12 17.717 22 14.654 22 11.2 22 6.216 17.523 2 12 2z"/></svg>
+       onclick="window.open(this.href, 'mastodon-share', 'width=550,height=400');return false;" title="Share on Mastodon" style="margin:0 0.5rem;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,0.05);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 216.4144 232.00976" aria-hidden="true">
+            <path fill="currentColor" d="M211.80734 139.0875c-3.18125 16.36625-28.4925 34.2775-57.5625 37.74875-15.15875 1.80875-30.08375 3.47125-45.99875 2.74125-26.0275-1.1925-46.565-6.2125-46.565-6.2125 0 2.53375.15625 4.94625.46875 7.2025 3.38375 25.68625 25.47 27.225 46.39125 27.9425 21.11625.7225 39.91875-5.20625 39.91875-5.20625l.8675 19.09s-14.77 7.93125-41.08125 9.39c-14.50875.7975-32.52375-.365-53.50625-5.91875C9.23234 213.82 1.40609 165.31125.20859 116.09125c-.365-14.61375-.14-28.39375-.14-39.91875 0-50.33 32.97625-65.0825 32.97625-65.0825C49.67234 3.45375 78.20359.2425 107.86484 0h.72875c29.66125.2425 58.21125 3.45375 74.8375 11.09 0 0 32.975 14.7525 32.975 65.0825 0 0 .41375 37.13375-4.59875 62.915"/>
+            <path fill="#fff" d="M177.50984 80.077v60.94125h-24.14375v-59.15c0-12.46875-5.24625-18.7975-15.74-18.7975-11.6025 0-17.4175 7.5075-17.4175 22.3525v32.37625H96.20734V85.42325c0-14.845-5.81625-22.3525-17.41875-22.3525-10.49375 0-15.74 6.32875-15.74 18.7975v59.15H38.90484V80.077c0-12.455 3.17125-22.3525 9.54125-29.675 6.56875-7.3225 15.17125-11.07625 25.85-11.07625 12.355 0 21.71125 4.74875 27.8975 14.2475l6.01375 10.08125 6.015-10.08125c6.185-9.49875 15.54125-14.2475 27.8975-14.2475 10.6775 0 19.28 3.75375 25.85 11.07625 6.36875 7.3225 9.54 17.22 9.54 29.675"/>
+        </svg>
     </a>
 </section>
