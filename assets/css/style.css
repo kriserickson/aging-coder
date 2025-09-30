@@ -1,9 +1,3 @@
-/*
-  Legacy stylesheet (trimmed):
-  - Major Notepad/Foundation rules were intentionally neutralized and moved to overrides.css
-  - Keep a small set of CSS variables for site-wide theming and quick customization
-  - This file is intentionally minimal to avoid regressions; prune further when ready
-*/
 :root {
   --primary: #008080; /* teal accent */
   --text-color: #111;
@@ -76,8 +70,6 @@ body {
   background: var(--bg);
 }
 
-/* Link color */
+/* Link color *
 a { color: var(--link); }
 
-/* Small utility - legacy placeholder */
-.hidden-legacy { display:none !important; }

@@ -32,8 +32,27 @@
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
 
+        function getQueryTheme() {
+            try {
+                const qp = new URLSearchParams(window.location.search);
+                const t = (qp.get('theme') || '').toLowerCase();
+                if (t === 'light' || t === 'dark') { // force without persisting
+                    return t;
+                }
+                if (t === 'auto') { // explicitly request auto
+                    return null;
+                }
+            } catch (e) {}
+            return undefined;
+        }
+
         function getSavedTheme() {
-            return localStorage.getItem('theme') || getSystemTheme();
+            const q = getQueryTheme();
+            if (q !== undefined) {
+                return q;
+            } // honor query override if present
+            const saved = localStorage.getItem('theme');
+            return saved || getSystemTheme();
         }
 
         function saveTheme(mode) {
@@ -67,16 +86,17 @@
             const t = e.target.closest && e.target.closest('#theme-toggle');
             if (!t) return;
 
-            const saved = getSavedTheme();
-
-            if (saved === 'light') {
-                // If explicitly light -> switch to dark
-                setTheme('dark');
-                saveTheme('dark');
-            } else if (saved === 'dark') {
-                // If explicitly dark -> return to Auto
-                setTheme('light');
-                saveTheme('light');
+            // Note: clicking always sets an explicit preference, overriding Auto
+            const current = root.getAttribute('data-theme');
+            if (!current) {
+                // Auto -> set opposite of system
+                const sys = getSystemTheme();
+                const next = (sys === 'dark') ? 'light' : 'dark';
+                setTheme(next); saveTheme(next);
+            } else if (current === 'light') {
+                setTheme('dark'); saveTheme('dark');
+            } else {
+                setTheme(null); saveTheme(null); // back to Auto
             }
             updateIcons();
         });
