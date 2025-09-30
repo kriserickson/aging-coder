@@ -9,11 +9,13 @@
     <nav class="site-nav">
         <div class="site-logo"><a href="/" aria-label="Home"><img src="/img/{{ site.logo }}" alt="Blog Logo"></a></div>
         <ul>
-            <li class="mobile-menu-toggle show-for-small"><button aria-label="Open menu"><i class="fa-solid fa-bars" aria-hidden="true"></i></button></li>
+            <li class="mobile-menu-toggle show-for-small"><button aria-label="Open menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button></li>
             {% for link in site.links %}
                 <li><a href="{{ link.url }}">{{ link.title }}</a></li>
             {% endfor %}
-            <li><a href="/feed.xml" title="Atom/RSS feed"><i class="fa-solid fa-rss" aria-hidden="true"></i> Feed</a></li>
+            <li>
+                <button id="theme-toggle" aria-label="Toggle dark mode"><span id="theme-toggle-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+            </li>
         </ul>
     </nav>
     <div class="site-title-row">

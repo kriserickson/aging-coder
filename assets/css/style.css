@@ -9,14 +9,75 @@
   --text-color: #111;
   --muted-color: #666;
   --surface: #ffffff;
+
+  /* New theme variables */
+  --bg: #ffffff;
+  --link: var(--primary);
+  --header-bg: #f5fbfb;          /* subtle teal tint */
+  --header-fg: #102626;          /* deep teal text */
+  --header-border: rgba(0,0,0,0.06);
+  --footer-bg: #0f1c1c;          /* dark teal */
+  --footer-fg: #d7efef;          /* light text on footer */
+  --footer-link: #b6e8e8;        /* links on footer */
+  --tag-bg: #e0f7fa;             /* pill background */
+  --code-bg: #f6f8fa;            /* code/pre background */
+  --code-fg: #0f2a2a;            /* code/pre text */
+  --code-border: rgba(0,0,0,0.06); /* thin inner border for code blocks */
+
+  /* Code token colors (light) */
+  --code-token-comment: #7e8a9a;
+  --code-token-punctuation: #8aa1b3;
+  --code-token-property: #e06c75;   /* tag/constant/symbol/deleted share this */
+  --code-token-boolean: #d19a66;    /* and number */
+  --code-token-selector: #98c379;   /* attr-name/char/builtin/inserted */
+  --code-token-string: #a6e3a1;
+  --code-token-operator: #80cbc4;   /* and entity/url */
+  --code-token-atrule: #89b4fa;     /* and attr-value/keyword */
+  --code-token-function: #82aaff;   /* and class-name */
+  --code-token-regex: #f78c6c;      /* and important/variable */
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] {
+  --bg: #0e1217;
+  --surface: #121821;
+  --text-color: #e6ecf1;
+  --muted-color: #9aa6b2;
+  --primary: #33d1cc;
+  --link: #33d1cc;
+  --header-bg: #0f141a;
+  --header-fg: #e6ecf1;
+  --header-border: rgba(255,255,255,0.06);
+  --footer-bg: #0b1015;
+  --footer-fg: #c9d7e1;
+  --footer-link: #97e7e3;
+  --tag-bg: #123839;
+  --code-bg: #0c1016;
+  --code-fg: #cdd9e5;
+  --code-border: rgba(255,255,255,0.06);
+
+  /* Code token colors (dark) */
+  --code-token-comment: #8b96a6;
+  --code-token-punctuation: #9fb3c8;
+  --code-token-property: #ef8897;
+  --code-token-boolean: #e6b980;
+  --code-token-selector: #a5d6a7;
+  --code-token-string: #b7f0b9;
+  --code-token-operator: #8adad3;
+  --code-token-atrule: #9bbcfb;
+  --code-token-function: #99b6ff;
+  --code-token-regex: #ffb38a;
 }
 
 /* Basic sensible defaults kept here */
 body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   color: var(--text-color);
-  background: var(--surface);
+  background: var(--bg);
 }
+
+/* Link color */
+a { color: var(--link); }
 
 /* Small utility - legacy placeholder */
 .hidden-legacy { display:none !important; }

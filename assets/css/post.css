@@ -1427,6 +1427,3 @@ pre[class*="language-"] {
     justify-content: center;
 }
 
-[aria-hidden="true"] {
-    display: none;
-}
