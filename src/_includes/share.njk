@@ -1,16 +1,14 @@
-        <div class="row text-center">
-            <section class="notepad-post-share">
-                <a class="twitter-icon" href="https://x.com/intent/tweet?text=&quot;{{ page.title }}&quot;%20{{ site.url }}{{ page.url }}%20via%20&#64;{{ site.owner.twitter }}"
-                   onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" title="Share on Twitter">
-                    <i class="fab fa-x-twitter"></i>
-                </a>
-                <a class="facebook-icon" href="https://www.facebook.com/sharer/sharer.php?u={{ site.url }}{{ page.url }}"
-                   onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;" title="Share on Facebook">
-                    <i class="fab fa-facebook"></i>
-                </a>
-                <a class="mastodon-icon" href="https://mastodon.social/share?text=&quot;{{ page.title }}&quot;%20{{ site.url }}{{ page.url }}%20via%20&#64;{{ site.owner.twitter }}"
-                   onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" title="Share on Matodon">
-                    <i class="fab fa-mastodon"></i>
-                </a>
-            </section>
-        </div>
+<section style="text-align:center;margin:2rem 0;">
+    <a href="https://x.com/intent/tweet?text=&quot;{{ page.title }}&quot;%20{{ site.url }}{{ page.url }}%20via%20&#64;{{ site.owner.twitter }}"
+       onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" title="Share on Twitter" style="margin:0 0.5rem;">
+        <i class="fa-brands fa-twitter" aria-hidden="true"></i>
+    </a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u={{ site.url }}{{ page.url }}"
+       onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;" title="Share on Facebook" style="margin:0 0.5rem;">
+        <i class="fa-brands fa-facebook" aria-hidden="true"></i>
+    </a>
+    <a href="https://mastodon.social/share?text=&quot;{{ page.title }}&quot;%20{{ site.url }}{{ page.url }}%20via%20&#64;{{ site.owner.twitter }}"
+       onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" title="Share on Mastodon" style="margin:0 0.5rem;">
+        <i class="fa-brands fa-mastodon" aria-hidden="true"></i>
+    </a>
+</section>

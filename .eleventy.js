@@ -7,6 +7,9 @@ const markdownItKatex = require("markdown-it-katex");
 const markdownItAnchor = require("markdown-it-anchor");
 const isBuild = process.env.ELEVENTY_RUN_MODE === 'build';
 
+const Image = require('@11ty/eleventy-img');
+const path = require('node:path');
+
 function getPosts(collectionApi) {
     return collectionApi.getFilteredByGlob('src/posts/*.md').filter(function(post) {
         // Skip drafts if we are in production mode
@@ -20,14 +23,47 @@ module.exports = function(eleventyConfig) {
         return encodeURIComponent(str);
     });
 
+    // Transform images: wrap <img> tags and add lazy/loading attributes and a lightweight class
+    // Also ensure an alt attribute exists (empty if necessary) to improve accessibility
     eleventyConfig.addTransform('wrapImages', function(content, outputPath) {
-        // Only apply this transformation to HTML files
         if (outputPath && outputPath.endsWith('.html')) {
-            // Use a regex to wrap all <img> tags in <p class="with-image">
-            // noinspection HtmlRequiredAltAttribute
-            return content.replace(/<img(.*?)>/g, '<p class="with-image"><img$1></p>');
+            return content.replace(/<img\b([^>]*)>/gi, function(match, attrs) {
+                // Normalize existing attributes string
+                let attrStr = attrs || '';
+
+                // Helper to test if an attribute exists
+                const hasAttr = (name) => new RegExp('\\b' + name + '\\s*=','i').test(attrStr);
+
+                // Add alt attribute if missing
+                if (!hasAttr('alt')) {
+                    attrStr += ' alt=""';
+                }
+
+                // Add loading attribute if missing
+                if (!hasAttr('loading')) {
+                    attrStr += ' loading="lazy"';
+                }
+                // Add decoding attribute if missing
+                if (!hasAttr('decoding')) {
+                    attrStr += ' decoding="async"';
+                }
+                // Ensure there is a class attribute and include 'img-inline'
+                if (hasAttr('class')) {
+                    // Append img-inline to existing class attr
+                    attrStr = attrStr.replace(/class=("|')([^"']*)("|')/i, function(_, q, v) {
+                        // avoid duplicate
+                        if (v.split(/\s+/).includes('img-inline')) return `class=${q}${v}${q}`;
+                        return `class=${q}${v} img-inline${q}`;
+                    });
+                } else {
+                    attrStr += ' class="img-inline"';
+                }
+
+                // Return wrapped image
+                return `<p class="with-image"><img${attrStr}></p>`;
+            });
         }
-        return content; // If not HTML, return content unmodified
+        return content;
     });
 
     eleventyConfig.addPlugin(syntaxHighlight);
@@ -155,11 +191,64 @@ module.exports = function(eleventyConfig) {
         return `<a class="external-link" href="${snippet.data.raw_permalink}">View raw markdown</a>`;
     });
 
+    // Responsive thumbnail shortcode using @11ty/eleventy-img
+    // Generates WebP + JPEG resized images and proper srcset HTML. Falls back to simple markup for remote images or failures.
+    eleventyConfig.addNunjucksAsyncShortcode('thumbnail', async function(src, alt = '') {
+        if (!src) return '';
+        // If remote URL, return a simple lazy img
+        if (/^https?:\/\//i.test(src)) {
+            return `<figure class="cover-thumb"><img src="${src}" alt="${(alt||'').replace(/"/g,'&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
+        }
+
+        // Resolve local source path. Accept '/img/...' or 'blog/...' style paths
+        let inputPath;
+        if (src.startsWith('/')) {
+            // leading slash, treat as project-rooted path
+            inputPath = path.join(process.cwd(), src);
+        } else if (src.startsWith('img' + path.sep) || src.startsWith('img/')) {
+            inputPath = path.join(process.cwd(), src);
+        } else {
+            inputPath = path.join(process.cwd(), 'img', src);
+        }
+
+        try {
+            const metadata = await Image(inputPath, {
+                widths: [160, 320, 480, 640, 1024],
+                formats: ['webp','jpeg'],
+                outputDir: './_site/img/',
+                urlPath: '/img/',
+            });
+
+            const imageAttributes = {
+                alt: alt || '',
+                sizes: '(min-width: 700px) 120px, (min-width: 480px) 320px, 100vw',
+                class: 'img-thumb',
+                loading: 'lazy',
+                decoding: 'async'
+            };
+
+            // Image.generateHTML returns a string with figure/img markup — wrap in cover-thumb container
+            const html = Image.generateHTML(metadata, imageAttributes);
+            // Ensure outer figure has cover-thumb class for our CSS; if generateHTML already includes figure, insert class
+            const result = html.replace(/<figure(.*?)>/i, function(m, attrs){
+                if (/class=/.test(attrs)) {
+                    return `<figure${attrs.replace(/class=("|')([^"']*)("|')/i, function(_,q,v){return `class=${q}${v} cover-thumb${q}`;})}>`;
+                }
+                return `<figure class="cover-thumb"${attrs}>`;
+            });
+            return result;
+        } catch (err) {
+            // Fallback: return simple markup referencing the static img path
+            const normalized = src.startsWith('/') ? src : `/img/${src}`;
+            return `<figure class="cover-thumb"><img src="${normalized}" alt="${(alt||'').replace(/"/g,'&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
+        }
+    });
+
     // Add Katex support for math rendering in markdown
     const mdLib = markdownIt({
         html: true
     })
-            .use(markdownItKatex)
+            // Note: markdown-it-katex removed for security reasons; math rendering is disabled until a safe update is available
             .use(markdownItAnchor);
 
     eleventyConfig.setLibrary("md", mdLib);

@@ -1,19 +1,9 @@
-            <div class="notepad-author-info">
-                <div class="row">
-                    <section class="notepad-post-author small-12 columns">
-                        
-                            <img src="/img/{{ site.owner.avatar }}" class="notepad-post-author-avatar" alt="{{ site.owner.name }}'s photo">
-                        
-                        
-                            <span class="author-label">Author</span>
-                            <h1>{{ site.owner.name }}</h1>
-                        
-                        
-                            <p><a href="mailto:{{ site.owner.email }}" class="author-website">{{ site.owner.email }}</a></p>
-                        
-                        
-                            <p>{{ site.owner.description }}</p>
-                        
-                    </section>
-                </div>
-            </div>
+<div style="display:flex;align-items:center;gap:1.5rem;margin:2rem 0;">
+    <img src="/img/{{ site.owner.avatar }}" alt="{{ site.owner.name }}'s photo" class="avatar" loading="lazy" decoding="async">
+    <div>
+        <span style="font-size:0.9rem;color:#6b7280;">Author</span>
+        <h2 style="margin:0;">{{ site.owner.name }}</h2>
+        <p style="margin:0.2rem 0;"><a href="mailto:{{ site.owner.email }}">{{ site.owner.email }}</a></p>
+        <p style="margin:0.2rem 0;">{{ site.owner.description }}</p>
+    </div>
+</div>
