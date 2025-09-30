@@ -335,6 +335,7 @@ iframe {
 }
 
 .post-list li {
+    list-style: none;
     padding: 8px 0;
     border-bottom: 1px solid #ccc;
     border-bottom: 1px solid rgba(0, 0, 0, .1);
@@ -392,6 +393,7 @@ iframe {
     float: left;
     font-size: 14px;
     line-height: 2.5;
+    list-style: none;
 }
 
 .tag-box a {

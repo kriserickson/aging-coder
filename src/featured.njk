@@ -11,7 +11,7 @@ eleventyExcludeFromCollections: true
         {% if post.data.featured %}
             {% set featuredcount = featuredcount + 1 %}
             <li>
-                <article>
+
                     <a href="{{ post.url }}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                              style="vertical-align:middle;margin-right:6px;" aria-hidden="true">
@@ -24,7 +24,7 @@ eleventyExcludeFromCollections: true
                             </time>
                         </span>
                     </a>
-                </article>
+
             </li>
         {% endif %}
     {% endfor %}

@@ -10,14 +10,6 @@
             <div class="site-logo"><a href="/" aria-label="Home"><img src="/img/{{ site.logo }}" alt="Blog Logo"></a>
             </div>
             <ul>
-                <li class="mobile-menu-toggle show-for-small">
-                    <button aria-label="Open menu">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
-                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
-                        </svg>
-                    </button>
-                </li>
                 {% for link in site.links %}
                     <li><a href="{{ link.url }}">{{ link.title }}</a></li>
                 {% endfor %}
@@ -41,8 +33,8 @@
                 </li>
             </ul>
         </nav>
-        <div class="site-title-row">
-            <h1>{{ title }}</h1>
+        <div>
+            <h1 class="site-title">{{ title }}</h1>
         </div>
     </div>
 </header>
