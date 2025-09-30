@@ -1,75 +1,520 @@
 :root {
-  --primary: #008080; /* teal accent */
-  --text-color: #111;
-  --muted-color: #666;
-  --surface: #ffffff;
+    --primary: #c40000;
+    --text-color: #1e0b0b;
+    --muted-color: #7a3c3c;
+    --surface: #ffffff;
 
-  /* New theme variables */
-  --bg: #ffffff;
-  --link: var(--primary);
-  --header-bg: #f5fbfb;          /* subtle teal tint */
-  --header-fg: #102626;          /* deep teal text */
-  --header-border: rgba(0,0,0,0.06);
-  --footer-bg: #0f1c1c;          /* dark teal */
-  --footer-fg: #d7efef;          /* light text on footer */
-  --footer-link: #b6e8e8;        /* links on footer */
-  --tag-bg: #e0f7fa;             /* pill background */
-  --code-bg: #f6f8fa;            /* code/pre background */
-  --code-fg: #0f2a2a;            /* code/pre text */
-  --code-border: rgba(0,0,0,0.06); /* thin inner border for code blocks */
+    /* New theme variables */
+    --bg: #ffffff;
+    --link: #c40000;
+    --link-hover: #940000;
+    --header-bg: #B60000; /* subtle teal tint */
+    --header-fg: #ffffff; /* deep teal text */
+    --header-border: rgba(255, 255, 255, 0.20);
+    --footer-bg: #B60000; /* dark teal */
+    --footer-fg: #ffffff; /* light text on footer */
+    --footer-link: #ffd1d1; /* links on footer */
+    --tag-bg: #ffe0e0; /* pill background */
+    --code-bg: #fdf6e3; /* code/pre background */
+    --code-fg: #586e75; /* code/pre text */
+    --code-border: #eee8d5; /* thin inner border for code blocks */
 
-  /* Code token colors (light) */
-  --code-token-comment: #7e8a9a;
-  --code-token-punctuation: #8aa1b3;
-  --code-token-property: #e06c75;   /* tag/constant/symbol/deleted share this */
-  --code-token-boolean: #d19a66;    /* and number */
-  --code-token-selector: #98c379;   /* attr-name/char/builtin/inserted */
-  --code-token-string: #a6e3a1;
-  --code-token-operator: #80cbc4;   /* and entity/url */
-  --code-token-atrule: #89b4fa;     /* and attr-value/keyword */
-  --code-token-function: #82aaff;   /* and class-name */
-  --code-token-regex: #f78c6c;      /* and important/variable */
+    /* Code token colors (light) */
+    --code-token-comment: #93a1a1;
+    --code-token-punctuation: #657b83;
+    --code-token-property: #6c71c4; /* tag/constant/symbol/deleted share this */
+    --code-token-boolean: #2aa198; /* and number */
+    --code-token-selector: #859900; /* attr-name/char/builtin/inserted */
+    --code-token-string: #b58900;
+    --code-token-operator: #cb4b16; /* and entity/url */
+    --code-token-atrule: #268bd2; /* and attr-value/keyword */
+    --code-token-function: #2aa198; /* and class-name */
+    --code-token-regex: #dc322f; /* and important/variable */
 }
 
 /* Dark theme overrides */
 [data-theme="dark"] {
-  --bg: #0e1217;
-  --surface: #121821;
-  --text-color: #e6ecf1;
-  --muted-color: #9aa6b2;
-  --primary: #33d1cc;
-  --link: #33d1cc;
-  --header-bg: #0f141a;
-  --header-fg: #e6ecf1;
-  --header-border: rgba(255,255,255,0.06);
-  --footer-bg: #0b1015;
-  --footer-fg: #c9d7e1;
-  --footer-link: #97e7e3;
-  --tag-bg: #123839;
-  --code-bg: #0c1016;
-  --code-fg: #cdd9e5;
-  --code-border: rgba(255,255,255,0.06);
+    --bg: #120a0a;
+    --surface: #1a1010;
+    --text-color: #f5e9e9;
+    --muted-color: #c98e8e;
+    --primary: #ff5c5c;
+    --link: #ff5c5c;
+    --header-bg: #0f0909;
+    --header-fg: #f5e9e9;
+    --header-border: rgba(255, 255, 255, 0.10);
+    --footer-bg: #0f0909;
+    --footer-fg: #ffd6d6;
+    --footer-link: #ffaaaa;
+    --tag-bg: #241313;
+    --code-bg: #002b36;
+    --code-fg: #93a1a1;
+    --code-border: #073642;
 
-  /* Code token colors (dark) */
-  --code-token-comment: #8b96a6;
-  --code-token-punctuation: #9fb3c8;
-  --code-token-property: #ef8897;
-  --code-token-boolean: #e6b980;
-  --code-token-selector: #a5d6a7;
-  --code-token-string: #b7f0b9;
-  --code-token-operator: #8adad3;
-  --code-token-atrule: #9bbcfb;
-  --code-token-function: #99b6ff;
-  --code-token-regex: #ffb38a;
+    /* Code token colors (dark) */
+    --code-token-comment: #586e75;
+    --code-token-punctuation: #eee8d5;
+    --code-token-property: #6c71c4;
+    --code-token-boolean: #2aa198;
+    --code-token-selector: #859900;
+    --code-token-string: #b58900;
+    --code-token-operator: #cb4b16;
+    --code-token-atrule: #268bd2;
+    --code-token-function: #2aa198;
+    --code-token-regex: #dc322f;
 }
 
 /* Basic sensible defaults kept here */
 body {
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  color: var(--text-color);
-  background: var(--bg);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    color: var(--text-color);
+    background: var(--bg);
 }
 
-/* Link color *
-a { color: var(--link); }
 
+/* Site overrides for header, nav, and small utilities */
+.site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+}
+
+.site-nav .site-logo img {
+    height: 3rem;
+    width: 3rem;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.site-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 1.1rem;
+    align-items: center;
+}
+
+.site-nav a {
+    color: var(--header-fg);
+    text-decoration: none;
+    padding: 0.25rem 0.15rem;
+}
+
+.site-nav a:hover {
+    color: var(--footer-link);
+}
+
+.site-logo a {
+    display: inline-block;
+    /* Remove white tile box behind the logo */
+    background: transparent;
+    padding: 0;
+    border-radius: 10px; /* keep rounded shape if needed */
+    box-shadow: none;
+}
+
+.site-logo-img {
+    height: 3rem;
+    width: 3rem;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
+/* Remove default paragraph margin on the site logo wrapper */
+.site-logo p.with-image {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Header (full width) + inner container (constrained) */
+.site-header {
+    background: var(--header-bg);
+    color: var(--header-fg);
+    width: 100%;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--header-border);
+    margin-top: 0;
+    text-align: center;
+    /* Keep bottom spacing subtle; body content provides main spacing */
+    margin-bottom: 1rem;
+}
+
+.site-header-inner {
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.site-header .site-title {
+    margin: 0.25rem 0;
+    font-family: 'Merriweather', 'Georgia', serif;
+    font-weight: 700;
+    color: var(--header-fg);
+    font-size: clamp(1.6rem, 4.2vw, 2.8rem);
+    letter-spacing: -0.5px;
+}
+
+.site-header .site-description {
+    margin: 0;
+    font-family: 'Merriweather', 'Georgia', serif;
+    font-weight: 300;
+    color: color-mix(in srgb, var(--header-fg) 75%, transparent);
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+}
+
+/* Layout container: center page and constrain width for better readability */
+.site-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem; /* give breathing room on mobile */
+}
+
+/* Post layout hooks */
+.post-main {
+    max-width: 1180px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+}
+
+.post-meta {
+    color: var(--muted-color, #888);
+    font-size: 1rem;
+}
+
+/* Make sure article cards inherit card styles */
+article {
+    box-sizing: border-box;
+}
+
+/* Footer: strong, branded bar using CSS variables */
+.site-footer {
+    background: var(--footer-bg);
+    color: var(--footer-fg);
+    padding: 2rem 0;
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--header-border);
+}
+
+.site-footer a {
+    color: var(--footer-link);
+}
+
+.site-footer .copyright,
+.site-footer .social-icons {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.site-footer .copyright {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.site-footer .social-icons {
+    margin-top: 0.85rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.9rem;
+}
+
+.site-footer .social-icons a {
+    color: var(--footer-link);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--footer-fg) 30%, transparent);
+    transition: background 120ms ease, transform 120ms ease;
+}
+
+.site-footer .social-icons a:hover {
+    background: color-mix(in srgb, var(--footer-fg) 50%, transparent);
+    transform: translateY(-1px);
+}
+
+.site-footer .social-icons svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Ensure nav images don't overflow */
+.site-nav .icon {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.social-icons svg .background-color {
+    fill: color-mix(in srgb, var(--footer-fg) 30%, transparent);
+}
+
+.site-footer .social-icons a:hover svg .background-color {
+    fill: color-mix(in srgb, var(--footer-fg) 50%, transparent);
+}
+
+/* Image thumbnail helpers: consistent aspect ratio, cover, and lazy loading support */
+.img-thumb {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
+
+/* Use flex-basis to keep thumbnails consistent inside flex card layouts */
+.cover-thumb {
+    flex: 0 0 120px; /* reserved width in card layout */
+    width: 120px;
+    height: 90px; /* visual crop area */
+    display: block;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: transparent; /* remove grey tile under image */
+    align-self: center; /* ensure the thumbnail aligns to center in flex parents */
+}
+
+/* The actual image should fill the container and preserve crop via object-fit */
+.cover-thumb > img,
+.cover-thumb picture img,
+.cover-thumb .img-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Square variant for default/fallback logo thumbnails */
+.cover-thumb--square {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cover-thumb--square > img,
+.cover-thumb--square picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* square source will not crop in a square box */
+    display: block;
+}
+
+@media (max-width: 699px) {
+    /* Keep the default icon square on mobile instead of stretching */
+    .cover-thumb--square {
+        width: 120px;
+        height: 120px;
+        flex-basis: 120px;
+    }
+}
+
+/* Responsive adjustments for the index list */
+@media (max-width: 699px) {
+    .cover-thumb {
+        width: 100%;
+        height: 180px;
+        flex-basis: auto;
+    }
+}
+
+/* Theme toggle styling: make it a clean icon-only button */
+#theme-toggle {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.25rem !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--header-fg) !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+}
+
+#theme-toggle:hover {
+    background: color-mix(in srgb, var(--header-fg) 10%, transparent) !important;
+    color: var(--primary) !important;
+}
+
+#theme-toggle:focus {
+    outline: 3px solid rgba(3, 169, 244, 0.35);
+    outline-offset: 2px;
+}
+
+#theme-toggle-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* Card/index layout: ensure consistent thumbnail behavior when transform injects extra wrappers */
+.card .cover-thumb {
+    flex: 0 0 120px;
+    width: 120px;
+    height: 90px;
+}
+
+.card .cover-thumb .with-image {
+    margin: 0;
+}
+
+/* Normalize image wrapper paragraphs so they don't show extra space or color */
+.cover-thumb .with-image,
+.card .cover-thumb .with-image,
+.card .cover-thumb p.with-image {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+.card .cover-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Card base styles (index/post list) */
+.card {
+    display: flex;
+    gap: 1rem;
+    align-items: center; /* vertically center thumbnail and content */
+    background: var(--surface, #fff);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    flex-wrap: wrap;
+}
+
+.card-content {
+    flex: 1 1 0;
+    min-width: 220px;
+}
+
+.card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.15rem;
+}
+
+.card h3 a {
+    color: var(--primary, #0077b6);
+    text-decoration: none;
+}
+
+.card .excerpt p {
+    margin: 0;
+    color: var(--muted-color, #666);
+}
+
+.tag-pill {
+    font-size: 0.9rem;
+    color: var(--primary, #0077b6);
+    background: var(--tag-bg, #e0f7fa);
+    padding: 0.2rem 0.7rem;
+    border-radius: 1rem;
+    text-decoration: none;
+}
+
+.signoff {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.signoff img {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+}
+
+.share-section {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.share-section svg {
+    color: var(--primary, #0077b6);
+}
+
+.centered {
+    width: 100%;
+    text-align: center;
+}
+
+.strong {
+    font-weight: bold;
+}
+
+.mb-2 {
+    margin: 1rem 0;
+}
+
+/* Ensure grid layout for wider screens (keeps thumbnail column width) */
+@media (min-width: 700px) {
+    main > article.card {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        align-items: center; /* center thumbnail cell vertically with content */
+    }
+
+    .card .cover-thumb {
+        margin-right: 0;
+    }
+}
+
+/* Improve spacing for smaller screens */
+@media (max-width: 699px) {
+    /* Header spacing stays compact on mobile as well */
+    .site-nav {
+        padding: 0.5rem 0;
+    }
+
+    .site-nav .site-logo img {
+        height: 2.6rem;
+        width: 2.6rem;
+    }
+
+    .post-main {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+    }
+}
+
+/* Ensure square variant beats generic card thumbnail sizing */
+.card .cover-thumb--square {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+}
+
+@media (max-width: 699px) {
+    .card .cover-thumb--square {
+        width: 120px;
+        height: 120px;
+        flex-basis: 120px;
+    }
+}
+
+/* Link color */
+:where(a:not([role=button])), [role=link] {
+    --pico-color: var(--link);
+    --pico-underline: var(--link);
+}
+
+:where(a:not([role=button])):is([aria-current]:not([aria-current=false]),:hover,:active,:focus), [role=link]:is([aria-current]:not([aria-current=false]),:hover,:active,:focus) {
+    --pico-color: var(--link-hover);
+    --pico-underline: var(--link-hover);
+}

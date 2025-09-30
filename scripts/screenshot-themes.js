@@ -3,7 +3,7 @@
  * Screenshot themed palettes for Aging Coder site using Puppeteer.
  * - You must run the site separately (npm run serve) before running this.
  * - This script visits pages with ?theme=light|dark to force modes,
- *   injects brand CSS variables via a <style> tag, and captures screenshots.
+ *   injects brand or code CSS variables via a <style> tag, and captures screenshots.
  * - It also writes a .txt file next to each screenshot listing variables used.
  *
  * Usage (Windows cmd.exe):
@@ -11,7 +11,7 @@
  *
  * Options:
  *   --baseUrl   Base URL of the running site (default: http://localhost:8080)
- *   --set       Which variable set to apply: brand | code (default: brand; code is stubbed for future)
+ *   --set       Which variable set to apply: brand | code (default: brand)
  *   --mode      light | dark | both (default: both)
  *   --mobile    true|false (default: false)  // when true uses a mobile viewport; otherwise 1440x1244
  *   --palettes  Comma-separated list of palette IDs to include (optional)
@@ -27,26 +27,22 @@ function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (args.set === 'code') {
-    console.warn('[screenshot-themes] --set=code requested; code palettes are not implemented yet. Exiting.');
-    process.exit(0);
-  }
 
   const baseUrl = args.baseUrl || 'http://localhost:8080';
   const pages = ['/', '/posts/2025-08-30-serving-the-cookbook-creating-an-endpoint-for-recipe-recommendations/'];
   const outRoot = path.resolve('reports', 'theme-previews');
   await fsp.mkdir(outRoot, { recursive: true });
 
-  const allPalettes = await loadPalettes();
+  const allPalettes = await loadPalettes(args.set || 'brand');
   const selected = filterPalettes(allPalettes, args.palettes);
   const modes = normalizeModes(args.mode);
   const device = normalizeDevice(args.mobile);
+  const isCodeSet = String(args.set || 'brand').toLowerCase() === 'code';
   // Max screenshot height in pixels; pages taller than this will be clipped to this height
   const MAX_SCREENSHOT_HEIGHT = 8000;
   const galleryMode = (args.gallery || 'all').toLowerCase(); // 'first' | 'all'
   const showPageOnly = galleryMode !== 'all';
 
-  // Lazy import to avoid requiring puppeteer unless we actually run the script
   const puppeteer = require('puppeteer');
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -76,7 +72,7 @@ async function main() {
 
             await page.goto(themedUrl, { waitUntil: 'networkidle2' });
 
-            // Inject the CSS variables for brand palette
+            // Inject the CSS variables for selected set
             const css = cssForPalette(p);
             await page.addStyleTag({ content: css });
 
@@ -131,8 +127,9 @@ async function main() {
   }
 
   // Generate the gallery index from a file template ({{rows}} placeholder)
-  await writeIndexHtml(outRoot, selected, pages, modes, showPageOnly);
-  console.log(`[screenshot-themes] Done. Gallery: ${path.join('reports', 'theme-previews', 'index.html')}`);
+  const outputIndexName = isCodeSet ? 'code-index.html' : 'index.html';
+  await writeIndexHtml(outRoot, selected, pages, modes, showPageOnly, outputIndexName);
+  console.log(`[screenshot-themes] Done. Gallery: ${path.join('reports', 'theme-previews', outputIndexName)}`);
 }
 
 function parseArgs(argv) {
@@ -170,11 +167,12 @@ function appendQuery(url, params) {
   return u.toString();
 }
 
-async function loadPalettes() {
-  const jsonPath = path.resolve(__dirname, 'palettes.json');
+async function loadPalettes(setName) {
+  const file = String(setName || 'brand').toLowerCase() === 'code' ? 'code-palettes.json' : 'palettes.json';
+  const jsonPath = path.resolve(__dirname, file);
   const buf = await fsp.readFile(jsonPath, 'utf8');
   const parsed = JSON.parse(buf);
-  if (!Array.isArray(parsed)) throw new Error('palettes.json must export an array');
+  if (!Array.isArray(parsed)) throw new Error(`${file} must export an array`);
   return parsed;
 }
 
@@ -200,7 +198,7 @@ function cssForPalette(p) {
   return `:root {\n${light}\n}\n[data-theme=\"dark\"] {\n${dark}\n}`;
 }
 
-async function writeIndexHtml(outRoot, palettes, pages, modes, showPageOnly) {
+async function writeIndexHtml(outRoot, palettes, pages, modes, showPageOnly, fileName) {
   const rel = (p) => path.relative(outRoot, p).replace(/\\/g, '/');
   const rows = [];
   const pagesForGallery = showPageOnly ? [pages[1]] : pages;
@@ -228,7 +226,7 @@ async function writeIndexHtml(outRoot, palettes, pages, modes, showPageOnly) {
   const templatePath = path.resolve(__dirname, 'templates', 'theme-previews.html');
   const template = await fsp.readFile(templatePath, 'utf8');
   const html = template.replace('{{rows}}', rows.join('\n'));
-  await fsp.writeFile(path.join(outRoot, 'index.html'), html, 'utf8');
+  await fsp.writeFile(path.join(outRoot, fileName), html, 'utf8');
 }
 
 main().catch(err => { console.error(err); process.exit(1); });
