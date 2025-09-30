@@ -248,7 +248,7 @@ module.exports = function(eleventyConfig) {
     const mdLib = markdownIt({
         html: true
     })
-            // Note: markdown-it-katex removed for security reasons; math rendering is disabled until a safe update is available
+            .use(markdownItKatex)
             .use(markdownItAnchor);
 
     eleventyConfig.setLibrary("md", mdLib);

@@ -114,49 +114,35 @@ article {
     box-sizing: border-box;
 }
 
-/* Neutralize legacy Notepad theme rules so they don't fight Pico/overrides */
-.notepad-site-head,
-.notepad-blog-menu,
-.notepad-post-header,
-.notepad-post-title,
-.notepad-content,
-.notepad-index-post,
-.notepad-post-content,
-.notepad-post-excerpt,
-.notepad-index-post-tags {
-    all: unset;
-    box-sizing: border-box;
-}
-
 /* Footer: strong, branded bar using CSS variables */
-.notepad-site-footer {
+.site-footer {
     background: var(--footer-bg);
     color: var(--footer-fg);
     padding: 2rem 0;
     margin-top: 2.5rem;
     border-top: 1px solid var(--header-border);
 }
-.notepad-site-footer a { color: var(--footer-link); }
-.notepad-site-footer .copyright,
-.notepad-site-footer .social-icons {
+.site-footer a { color: var(--footer-link); }
+.site-footer .copyright,
+.site-footer .social-icons {
     max-width: 980px;
     margin: 0 auto;
     padding: 0 1rem;
 }
-.notepad-site-footer .copyright {
+.site-footer .copyright {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
     text-align: center;
     font-size: 0.95rem;
 }
-.notepad-site-footer .social-icons {
+.site-footer .social-icons {
     margin-top: 0.85rem;
     display: flex;
     justify-content: center;
     gap: 0.9rem;
 }
-.notepad-site-footer .social-icons a {
+.site-footer .social-icons a {
     color: var(--footer-link);
     display: inline-flex;
     align-items: center;
@@ -167,11 +153,11 @@ article {
     background: color-mix(in srgb, var(--footer-fg) 10%, transparent);
     transition: background 120ms ease, transform 120ms ease;
 }
-.notepad-site-footer .social-icons a:hover {
+.site-footer .social-icons a:hover {
     background: color-mix(in srgb, var(--footer-fg) 18%, transparent);
     transform: translateY(-1px);
 }
-.notepad-site-footer .social-icons svg { width: 20px; height: 20px; }
+.site-footer .social-icons svg { width: 20px; height: 20px; }
 
 /* Ensure header inner width matches page container */
 .site-header-inner { max-width: 980px; margin: 0 auto; padding: 0 1rem; }
@@ -278,13 +264,13 @@ article {
 }
 
 /* Card/index layout: ensure consistent thumbnail behavior when transform injects extra wrappers */
-.card .cover-thumb, .notepad-index-post .cover-thumb {
+.card .cover-thumb {
     flex: 0 0 120px;
     width: 120px;
     height: 90px;
 }
 
-.card .cover-thumb .with-image, .notepad-index-post .cover-thumb .with-image {
+.card .cover-thumb .with-image {
     margin: 0;
 }
 
@@ -297,7 +283,7 @@ article {
     background: transparent !important;
 }
 
-.card .cover-thumb img, .notepad-index-post .cover-thumb img {
+.card .cover-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
