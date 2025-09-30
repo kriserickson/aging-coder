@@ -248,38 +248,6 @@ article {
     line-height: 1;
 }
 
-/* Broader Font Awesome fallbacks for various versions (helps when resets removed inherited fonts) */
-/* Solid icons in FA7/6 require heavier font-weight (900) */
-.fa, .fas, .fal, .fa-solid {
-    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
-    font-weight: 900 !important;
-}
-
-.far {
-    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
-    font-weight: 400 !important;
-}
-
-.fa-brands, .fab {
-    font-family: "Font Awesome 7 Brands", "Font Awesome 6 Brands", "Font Awesome 5 Brands" !important;
-    font-weight: 400 !important;
-}
-
-/* Make sure Font Awesome icons render by forcing sensible display and smoothing */
-.fa, .fas, .far, .fal, .fa-solid, .fa-brands, .fab {
-    display: inline-block !important;
-    speak: none !important;
-    font-style: normal !important;
-    text-rendering: auto !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-}
-
-/* Ensure pseudo elements used by FA still render when parent resets occurred */
-.fa:before, .fas:before, .far:before, .fab:before {
-    display: inline-block;
-}
-
 /* Card/index layout: ensure consistent thumbnail behavior when transform injects extra wrappers */
 .card .cover-thumb, .notepad-index-post .cover-thumb {
     flex: 0 0 120px;

@@ -1,52 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-{% include "head.njk" %}
-{% if site.dropcap %}<style type="text/css">@media only screen and (min-width:43.75em){.notepad-post-content div>p:first-child:first-letter{float:left;font-size:4.688rem;line-height:4.375rem;padding-top:.25rem;padding-right:.5rem;padding-left:.188rem;font-family:serif}}</style>{% endif %}
+    {% include "head.njk" %}
+    {% if site.dropcap %}
+        <style>@media only screen and (min-width: 43.75em) {
+                .notepad-post-content div > p:first-child:first-letter {
+                    float: left;
+                    font-size: 4.688rem;
+                    line-height: 4.375rem;
+                    padding-top: .25rem;
+                    padding-right: .5rem;
+                    padding-left: .188rem;
+                    font-family: serif
+                }
+            }</style>{% endif %}
 </head>
 <body>
 <header class="site-header">
-  <div class="site-header-inner site-container">
-    <nav class="site-nav">
-        <div class="site-logo"><a href="/" aria-label="Home"><img src="/img/{{ site.logo }}" alt="Blog Logo"></a></div>
-        <ul>
-            {% for link in site.links %}
-                <li><a href="{{ link.url }}">{{ link.title }}</a></li>
-            {% endfor %}
-            <li>
-                <button id="theme-toggle" aria-label="Toggle dark mode"><span id="theme-toggle-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
-            </li>
-        </ul>
-    </nav>
-  </div>
+    <div class="site-header-inner site-container">
+        <nav class="site-nav">
+            <div class="site-logo"><a href="/" aria-label="Home"><img src="/img/{{ site.logo }}" alt="Blog Logo"></a>
+            </div>
+            <ul>
+                {% for link in site.links %}
+                    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {% endfor %}
+                <li>
+                    <button id="theme-toggle" aria-label="Toggle dark mode">
+                        <span id="theme-toggle-icon" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                 aria-hidden="true" focusable="false"><path
+                                        d="M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </header>
 
 <div class="site-container">
-<main class="post-main">
-    <article>
-        <h1>{{ title }}</h1>
-        <p class="post-meta">
-            by <strong>{{ site.owner.name }}</strong>
-            {% set tagsize = tags.size %}
-            {% if tagsize != 0 %} in
-                {% for tag in tags %}<a href="/tags/index.html#{{ tag | cgi_encode }}" rel="tag">{{ tag }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
-            {% endif %} —
-            <strong>
-                <time datetime="{{ page.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
-                    {{ page.date | date('DD MMM YYYY') }}
-                </time>
-            </strong>
-        </p>
-        {% if imagefeature %}
-            <figure class="cover-thumb" aria-hidden="false">
-                <img src="/img/{{ imagefeature }}" alt="Cover image for {{ title }}" class="img-thumb" loading="lazy" decoding="async">
-            </figure>
-        {% endif %}
-        <div>{{ content | safe }}</div>
-    </article>
-    {% if site.share %}{% include "share.njk" %}{% endif %}
-    {% include "signoff.njk" %}
-</main>
+    <main class="post-main">
+        <article>
+            <h1>{{ title }}</h1>
+            <p class="post-meta">
+                by <strong>{{ site.owner.name }}</strong>
+                {% set tagsize = tags.size %}
+                {% if tagsize != 0 %} in
+                    {% for tag in tags %}<a href="/tags/index.html#{{ tag | cgi_encode }}"
+                            rel="tag">{{ tag }}</a>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% endif %} —
+                <strong>
+                    <time datetime="{{ page.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
+                        {{ page.date | date('DD MMM YYYY') }}
+                    </time>
+                </strong>
+            </p>
+            {% if imagefeature %}
+                <figure class="cover-thumb" aria-hidden="false">
+                    <img src="/img/{{ imagefeature }}" alt="Cover image for {{ title }}" class="img-thumb"
+                         loading="lazy" decoding="async">
+                </figure>
+            {% endif %}
+            <div>{{ content | safe }}</div>
+        </article>
+        {% if site.share %}{% include "share.njk" %}{% endif %}
+        {% include "signoff.njk" %}
+    </main>
 </div>
 {% include "footer.njk" %}
 {% include "scripts.njk" %}
