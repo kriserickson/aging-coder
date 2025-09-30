@@ -14,11 +14,10 @@ pagination:
                 {% thumbnail post.data.imagefeature, post.data.title %}
             </div>
         {% else %}
-            <div class="cover-thumb">
+            <div class="cover-thumb cover-thumb--square">
                 {% thumbnail site.logo, site.title %}
             </div>
         {% endif %}
-
         <div class="card-content">
             <header>
                 <h3>

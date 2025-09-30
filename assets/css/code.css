@@ -7,7 +7,7 @@ code[class*="language-"] {
   background: var(--code-bg);
   text-shadow: none;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 pre[class*="language-"] {

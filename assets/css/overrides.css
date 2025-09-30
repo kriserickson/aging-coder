@@ -200,6 +200,7 @@ article {
     border-radius: 0.5rem;
     overflow: hidden;
     background: transparent; /* remove grey tile under image */
+    align-self: center; /* ensure the thumbnail aligns to center in flex parents */
 }
 
 /* The actual image should fill the container and preserve crop via object-fit */
@@ -210,6 +211,30 @@ article {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+/* Square variant for default/fallback logo thumbnails */
+.cover-thumb--square {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.cover-thumb--square > img,
+.cover-thumb--square picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* square source will not crop in a square box */
+    display: block;
+}
+@media (max-width: 699px) {
+    /* Keep the default icon square on mobile instead of stretching */
+    .cover-thumb--square {
+        width: 120px;
+        height: 120px;
+        flex-basis: 120px;
+    }
 }
 
 /* Responsive adjustments for the index list */
@@ -283,7 +308,7 @@ article {
 .card {
     display: flex;
     gap: 1rem;
-    align-items: flex-start;
+    align-items: center; /* vertically center thumbnail and content */
     background: var(--surface, #fff);
     border-radius: 0.5rem;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -321,12 +346,25 @@ article {
     text-decoration: none;
 }
 
+.signoff {
+    display:flex;
+    align-items:center;
+    gap:1.5rem;
+    margin:2rem 0;
+}
+
+.signoff img {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+}
+
 /* Ensure grid layout for wider screens (keeps thumbnail column width) */
 @media (min-width: 700px) {
     main > article.card {
         display: grid;
         grid-template-columns: 120px 1fr;
-        align-items: flex-start;
+        align-items: center; /* center thumbnail cell vertically with content */
     }
 
     .card .cover-thumb {
@@ -349,5 +387,19 @@ article {
     .post-main {
         margin: 1rem auto;
         padding: 0 0.75rem;
+    }
+}
+
+/* Ensure square variant beats generic card thumbnail sizing */
+.card .cover-thumb--square {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+}
+@media (max-width: 699px) {
+    .card .cover-thumb--square {
+        width: 120px;
+        height: 120px;
+        flex-basis: 120px;
     }
 }
