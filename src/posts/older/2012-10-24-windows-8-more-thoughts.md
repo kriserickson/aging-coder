@@ -1,9 +1,12 @@
 ---
 layout: post
-title: "Windows 8, more thoughts"
-description: ""
+title: 'Windows 8, more thoughts'
+description: 'Discussion on Windows 8''s strategy and pricing, including potential versioning shifts and updates. The author critiques the new Metro interface and its design implications.'
 category: Windows
-tags: [Microsoft, Windows8, Crystal Ball]
+tags:
+  - Microsoft
+  - Windows8
+  - Crystal Ball
 ---
 
 

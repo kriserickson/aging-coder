@@ -1,9 +1,16 @@
 ---
 layout: post
-title: "5 Geeky Things I Love"
-description: ""
+title: 5 Geeky Things I Love
+description: 'The post highlights diverse software tools and services, including music apps, PHP programming improvements, and ebook reader readability. It notes renewed interest in Cygwin via Mintty, Git, and Node.'
 category: Lifehacks
-tags: [rdio,iphone,kindle,jetbrains,phpstorm,cygwin,thingsilove]
+tags:
+  - rdio
+  - iphone
+  - kindle
+  - jetbrains
+  - phpstorm
+  - cygwin
+  - thingsilove
 ---
 
 1. [Rdio](http://rd.io) Instant access to millions of tunes.  Amazing value for money.

@@ -1,9 +1,14 @@
 ---
 layout: post
-title: "5 Geeky Things I Love - 2013"
-description: ""
+title: 5 Geeky Things I Love - 2013
+description: 'The post reflects on personal tech changes, noting ongoing enjoyment, issues, and perceived value across devices, services, and tools. It mentions PHP ease, Android progress, GitHub social coding, and platform lock-in challenges.'
 category: Lifehacks
-tags: [rdio,nexus7,jetbrains,github,javascript]
+tags:
+  - rdio
+  - nexus7
+  - jetbrains
+  - github
+  - javascript
 ---
 
 [It's two years later](/lifehacks/2011/07/21/5-geeky-things-i-love/) and time to re-evaluate or just expand upon the things I love.  Some have staid the same, some have changed.

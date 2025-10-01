@@ -1,9 +1,10 @@
 ---
 layout: post
-title: "How I became twice as productive"
-description: ""
+title: How I became twice as productive
+description: The author discovers that listening at double speed on the iPod app increases productivity and credibility in using faster playback. They reflect on preferences and the value of higher playback speeds.
 category: Lifehacks
-tags: [iphone]
+tags:
+  - iphone
 ---
 
 Though I had known about about 2x speed button on the iPod application forever, however the two times I ha tried to use it I found it hard to listen to.

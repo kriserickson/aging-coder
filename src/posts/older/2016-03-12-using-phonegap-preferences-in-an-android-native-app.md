@@ -1,9 +1,14 @@
 ---
 layout: post
-title: "Using PhoneGap Preferences in an Android Native App"
-description: ""
+title: Using PhoneGap Preferences in an Android Native App
+description: The post discusses migrating from PhoneGap/Cordova to a native Android app and the long development tail after initial progress. It explains how to import and reuse localStorage preferences from the web version using a local SQLite datab…
 category: Android
-tags: [Programming, Android, Mobile, PhoneGap, Cordova]
+tags:
+  - Programming
+  - Android
+  - Mobile
+  - PhoneGap
+  - Cordova
 ---
 
 When updating [RecipeFolder](https://recipe-folder.com) from a PhoneGap/Cordova hybrid to a Native Java app I initially

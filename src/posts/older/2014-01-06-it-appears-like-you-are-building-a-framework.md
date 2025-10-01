@@ -1,9 +1,11 @@
 ---
 layout: post
-title: "It appears like you are building a framework"
-description: ""
+title: It appears like you are building a framework
+description: The post discusses building a mobile framework and the caution against reinventing the wheel. It reflects on past framework choices and the pitfalls of copying ActiveRecord.
 category: TopcoatTouch
-tags: [Mobile,Programming]
+tags:
+  - Mobile
+  - Programming
 ---
 
 

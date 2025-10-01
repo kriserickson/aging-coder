@@ -1,9 +1,14 @@
 ---
 layout: post
-title: "Going Native"
-description: ""
+title: Going Native
+description: 'The post discusses author’s evolving view on Android Studio and its 1.5 improvements for building Android apps. It notes faster templates and the shift away from complex, hacky methods.'
 category: Android
-tags: [Programming, Android, Mobile, PhoneGap, Cordova]
+tags:
+  - Programming
+  - Android
+  - Mobile
+  - PhoneGap
+  - Cordova
 imagefeature: blog/goingnative.jpg
 featured: true
 ---

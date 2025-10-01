@@ -1,9 +1,11 @@
 ---
 layout: post
-title: "Tools for the Modern Web Developer on Windows"
-description: ""
+title: Tools for the Modern Web Developer on Windows
+description: 'The article discusses embracing Windows for modern web development with a strong editor, JetBrains tooling, and a Unix-like toolchain. It emphasizes reliable editors, static analysis, and cross-platform compatibility.'
 category: Programming
-tags: [Programming,Windows]
+tags:
+  - Programming
+  - Windows
 ---
 
 Be a windows developer in the web world sucks.  Bring a windows laptop to conference or meet-up you feel like the

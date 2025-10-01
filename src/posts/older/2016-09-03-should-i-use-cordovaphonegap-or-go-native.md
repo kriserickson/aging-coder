@@ -1,10 +1,15 @@
 ---
 layout: post
-title: "Should I use Cordova / Phonegap or go Native?"
-description: ""
+title: Should I use Cordova / Phonegap or go Native?
+description: 'The article discusses choosing between Cordova and native apps and emphasizes that the right choice depends on features, platforms, and available expertise. It suggests evaluating pros and cons for both options with a structured decision…'
 category: Programming
 imagefeature: blog/direction.jpg
-tags: [Mobile,Phonegap,Cordova,Native,Programming]
+tags:
+  - Mobile
+  - Phonegap
+  - Cordova
+  - Native
+  - Programming
 featured: true
 ---
 

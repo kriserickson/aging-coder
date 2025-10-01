@@ -1,9 +1,12 @@
 ---
 layout: post
-title: "How Microsoft is betting everything on Tablets"
-description: ""
+title: How Microsoft is betting everything on Tablets
+description: 'The post PC era is advancing, with Windows adapting to tablets and smartphones while maintaining desktop compatibility. Microsoft introduces Windows RT, sandboxed apps, a restricted browser, and a whitelist approach to Flash.'
 category: Windows
-tags: [Microsoft, Windows8, Crystal Ball]
+tags:
+  - Microsoft
+  - Windows8
+  - Crystal Ball
 ---
 
 

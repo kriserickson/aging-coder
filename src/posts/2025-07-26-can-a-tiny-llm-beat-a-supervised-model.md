@@ -1,11 +1,14 @@
 ---
 layout: post
-category: AI 
-title: "Can a Tiny LLM Beat A Supervised Model?"
+category: AI
+title: Can a Tiny LLM Beat A Supervised Model?
 imagefeature: blog/llm-vs-supervised.webp
-description: 
+description: 'We compare a compact fine-tuned LLM against a lightweight supervised model for parsing recipes from noisy web pages. The article outlines experiments with commercial LLMs, local open-source models, and cost-performance considerations.'
 draft: false
-tags: ["Programming", "LLM", "AI"]
+tags:
+  - Programming
+  - LLM
+  - AI
 ---
 
 

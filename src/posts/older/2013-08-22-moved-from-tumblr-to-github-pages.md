@@ -1,9 +1,11 @@
 ---
 layout: post
-title: "Moved from Tumblr to Github Pages"
-description: ""
+title: Moved from Tumblr to Github Pages
+description: 'The post explains migrating a blog to a static Jekyll setup on GitHub Pages. It cites Markdown editing, control over design, and free hosting as key reasons.'
 category: Blog
-tags: [github,blogging]
+tags:
+  - github
+  - blogging
 ---
 
 

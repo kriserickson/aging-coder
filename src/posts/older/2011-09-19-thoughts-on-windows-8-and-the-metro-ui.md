@@ -1,9 +1,11 @@
 ---
 layout: post
-title: "Thoughts on Windows 8, and the Metro UI"
-description: ""
+title: 'Thoughts on Windows 8, and the Metro UI'
+description: 'Microsoft criticizes the Metro UI approach, arguing a single interface and new API create development barriers. The piece questions app availability and the learning curve for Windows 8 and Windows RT developers.'
 category: Windows
-tags: [windows8,metro]
+tags:
+  - windows8
+  - metro
 ---
 
 

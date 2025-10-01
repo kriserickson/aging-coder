@@ -1,10 +1,15 @@
 ---
 layout: post
-title: "Phonegap, Be Wary of Plugins"
-description: ""
+title: 'Phonegap, Be Wary of Plugins'
+description: 'The post discusses PhoneGap plugins, highlighting their promise and pitfalls when building features like alarms and in-app payments. It recounts a reader request to port an Android app efficiently using plugins.'
 category: PhoneGap
 imagefeature: blog/dragons.jpg
-tags: [Programming, Android, Mobile, PhoneGap, Cordova]
+tags:
+  - Programming
+  - Android
+  - Mobile
+  - PhoneGap
+  - Cordova
 featured: true
 ---
 
