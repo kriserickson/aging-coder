@@ -73,6 +73,27 @@ module.exports = function(eleventyConfig) {
     // });
     eleventyConfig.addFilter('date', dateFilter);
 
+    // Excerpt filter: prefer frontmatter.description; otherwise extract from templateContent
+    eleventyConfig.addFilter('excerpt', function(post, length = 200) {
+        if (!post) return '';
+        try {
+            const desc = (post.data && post.data.description) ? String(post.data.description).trim() : '';
+            if (desc) return desc;
+
+            // Fall back to post.templateContent (raw rendered markdown) or page.content
+            const raw = post.templateContent || (post.data && post.data.page && post.data.page.templateContent) || '';
+            if (!raw) return '';
+
+            // Strip HTML tags
+            const stripped = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (!stripped) return '';
+            if (stripped.length <= length) return stripped;
+            return stripped.slice(0, length).trim() + '…';
+        } catch (e) {
+            return '';
+        }
+    });
+
     // Add filter to sort collections by their 'name' property (case-insensitive)
     eleventyConfig.addFilter('sortByName', function(arr) {
         if (!Array.isArray(arr)) return arr;

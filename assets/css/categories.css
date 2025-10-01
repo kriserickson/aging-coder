@@ -1,41 +1,118 @@
+/* Improved categories styles: responsive pill tags, clearer headings and post list */
+
 .tag-box {
-    padding: 4px 0;
-    margin: 0;
-    overflow: hidden;
+    padding: 8px 0;
+    margin: 0 0 24px 0;
     list-style: none;
-    *zoom: 1;
-}
-
-.tag-box:after,
-.tag-box:before {
-    display: table;
-    line-height: 0;
-    content: "";
-}
-
-.tag-box:after {
-    clear: both;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
 }
 
 .tag-box.inline li {
-    float: left;
-    font-size: 14px;
-    line-height: 2.5;
+    float: none;
+    font-size: 0.9rem;
+    line-height: 1.6;
     list-style: none;
+    margin: 0;
 }
 
 .tag-box a {
-    padding: 4px 6px;
-    margin: 2px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 10px;
+    margin: 0;
     text-decoration: none;
-    border: 0.0625rem solid black;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
+    border: 1px solid var(--header-border);
+    color: var(--muted-color);
+    background: var(--tag-bg);
+    border-radius: 999px;
+    font-weight: 500;
+    transition: background-color .18s ease, color .18s ease, transform .08s ease;
+}
+
+.tag-box a:hover,
+.tag-box a:focus {
+    background: var(--header-bg);
+    color: var(--header-fg);
+    transform: translateY(-1px);
 }
 
 .tag-box a span {
-    font-size: 10px;
-    vertical-align: super;
-    color: black;
+    font-size: 0.75rem;
+    vertical-align: baseline;
+
 }
+
+/* Category section heading */
+.page-content h2 {
+    margin-top: 28px;
+    margin-bottom: 12px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--header-fg);
+    padding: 5px 10px;
+    background: var(--primary);
+    border-radius: 5px;
+}
+
+/* Post list */
+.post-list {
+    margin: 0 0 24px 0;
+    padding-left: 1.25rem; /* keep bullets aligned */
+}
+
+.post-list li {
+    margin: 6px 0 12px;
+    line-height: 1.5;
+    list-style: none;
+}
+
+.post-list a {
+    color: var(--link);
+    text-decoration: none;
+    font-weight: 600;
+}
+.post-list a:hover {
+    text-decoration: underline;
+}
+
+.post-list .entry-date time {
+    display: block;
+    color: var(--muted-color);
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin-top: 3px;
+}
+
+/* Make the main container appear as a soft card for emphasis */
+.page-content > div {
+    background: var(--card-bg);
+    padding: 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* Empty state tweaks */
+.empty {
+    text-align: center;
+    color: var(--muted-color);
+    padding: 28px 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 700px) {
+    .tag-box { gap: 6px; }
+    .post-card .card-content { padding: 12px; }
+    .page-content h2 { font-size: 1.35rem; }
+}
+
+/* Accessibility: focus styles for keyboard users */
+.tag-box a:focus {
+    outline: 3px solid rgba(0, 120, 215, 0.2);
+    outline-offset: 3px;
+}
+
+/* End of categories.css */

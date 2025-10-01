@@ -181,7 +181,7 @@ body {
 }
 
 .post-meta {
-    color: var(--muted-color, #888);
+    color: var(--muted-color);
     font-size: 1rem;
 }
 
@@ -390,7 +390,7 @@ article {
     display: flex;
     gap: 1rem;
     align-items: center; /* vertically center thumbnail and content */
-    background: var(--surface, #fff);
+    background: var(--surface);
     border-radius: 0.5rem;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     margin-bottom: 1.25rem;
@@ -409,19 +409,19 @@ article {
 }
 
 .card h3 a {
-    color: var(--primary, #0077b6);
+    color: var(--primary);
     text-decoration: none;
 }
 
 .card .excerpt p {
     margin: 0;
-    color: var(--muted-color, #666);
+    color: var(--muted-color);
 }
 
 .tag-pill {
     font-size: 0.9rem;
-    color: var(--primary, #0077b6);
-    background: var(--tag-bg, #e0f7fa);
+    color: var(--primary);
+    background: var(--tag-bg);
     padding: 0.2rem 0.7rem;
     border-radius: 1rem;
     text-decoration: none;
@@ -446,7 +446,7 @@ article {
 }
 
 .share-section svg {
-    color: var(--primary, #0077b6);
+    color: var(--primary);
 }
 
 .centered {
