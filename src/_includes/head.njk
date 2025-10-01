@@ -43,18 +43,26 @@
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-<!-- Modern Google Font -->
+{# Modern Google Font #}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- Heading font: Merriweather for a nicer site title and subtitle -->
+{# Heading font: Merriweather for a nicer site title and subtitle #}
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-<!-- Pico CSS -->
+{# Pico CSS #}
 <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
-<!-- Custom site CSS overrides (optional, for later steps) -->
+{# Custom site CSS overrides (optional, for later steps) #}
 <link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/post.css">
-<link rel="stylesheet" href="/assets/css/code.css">
 
-<!-- Icons -->
+<!-- Extra Pages -->
+{# Accept extra_css from frontmatter (preferred) or fallback to page.extra_css #}
+{% set _extraCss = extra_css or page.extra_css %}
+{% if _extraCss %}
+    {% for css in _extraCss %}
+        <link rel="stylesheet" href="/assets/css/{{ css }}">
+    {% endfor %}
+{% endif %}
+<!-- End Extra Pages -->
+
+{# Icons #}
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="shortcut icon" href="/favicon.png">
 <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-precomposed.png">

@@ -2,7 +2,7 @@
 layout: post
 title: "The State of HTML Mobile Frameworks in 2016"
 description: "It's been over 2 years since I posted The State of Mobile Frameworks and a fair amount has changed in that time, so now is probably a good time to dive back into that thorny topic"
-category: Mobile
+category: mobile
 imagefeature: blog/state-of-frameworks.jpg
 tags: [Programming,Phonegap,HTML5,Cordova]
 featured: true
@@ -343,4 +343,3 @@ they aren't much but they might give you something to play with if you are going
 
 
 
- 

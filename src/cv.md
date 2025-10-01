@@ -10,7 +10,7 @@ permalink: /cv/index.html
 
 <div class="centered mb-2">
     <a href="https://github.com/kriserickson">github.com/kriserickson</a> | 
-    <a href="https://"linkedin.com/in/kristian-l-erickson">linkedin.com/in/kristian-l-erickson</a>
+    <a href="https://linkedin.com/in/kristian-l-erickson">linkedin.com/in/kristian-l-erickson</a>
 </div>
 
 **Executive Summary**

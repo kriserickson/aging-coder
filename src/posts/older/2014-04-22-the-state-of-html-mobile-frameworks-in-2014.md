@@ -8,7 +8,6 @@ the various other HTML5 Mobile platforms when I had to create a mobile applicati
 framework ..."
 category: Programming
 tags: [Mobile,Programming,Phonegap,Cordova,HTML5]
-featured: true
 ---
 This is part 1 of a multipart series.  There will be more parts forthcoming.
 

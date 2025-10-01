@@ -4,8 +4,6 @@ title: "Second thoughts on NativeScript"
 description: "It's been 6 months since I wrote First Thoughts on NativeScript and you would think by now with my formidable blogging output I would have written dozens of articles following up on my initial thoughts..."
 category: Programming
 tags: [Mobile,Programming,NativeScript,JavaScript,MNJS]
-featured: true
-comments: true
 ---
 
 <div style="font-size: 16px; margin: 0 0 10px 0; background: #f5f5f5; border: 1px solid #ddd; padding: 15px; margin: 0 auto 2em auto; max-width: 56.25rem; line-height: 1.5em"><strong>Update:</strong> Recent experiences with React Native can be found in the post: <a href="/programming/2018/07/04/react-native-a-tempting-quagmire/">React Native -- A Tempting Quagmire</a></div>
@@ -170,5 +168,4 @@ or go native to create the best possible app on each platform.  None of which ca
  
 
 
- 
  

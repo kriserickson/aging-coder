@@ -11,7 +11,7 @@ const Image = require('@11ty/eleventy-img');
 const path = require('node:path');
 
 function getPosts(collectionApi) {
-    return collectionApi.getFilteredByGlob('src/posts/*.md').filter(function(post) {
+    return collectionApi.getFilteredByGlob('src/posts/**/*.md').filter(function(post) {
         // Skip drafts if we are in production mode
         return post.data.draft !== true || !isBuild;
     });
@@ -50,7 +50,7 @@ module.exports = function(eleventyConfig) {
                 // Ensure there is a class attribute and include 'img-inline'
                 if (hasAttr('class')) {
                     // Append img-inline to existing class attr
-                    attrStr = attrStr.replace(/class=("|')([^"']*)("|')/i, function(_, q, v) {
+                    attrStr = attrStr.replace(/class=(['"])([^'"]*)(\1)/i, function(_, q, v) {
                         // avoid duplicate
                         if (v.split(/\s+/).includes('img-inline')) return `class=${q}${v}${q}`;
                         return `class=${q}${v} img-inline${q}`;
@@ -73,6 +73,16 @@ module.exports = function(eleventyConfig) {
     // });
     eleventyConfig.addFilter('date', dateFilter);
 
+    // Add filter to sort collections by their 'name' property (case-insensitive)
+    eleventyConfig.addFilter('sortByName', function(arr) {
+        if (!Array.isArray(arr)) return arr;
+        return arr.slice().sort((a, b) => {
+            const na = String((a && a.name) ? a.name : a).trim().toLowerCase();
+            const nb = String((b && b.name) ? b.name : b).trim().toLowerCase();
+            return na.localeCompare(nb, undefined, { sensitivity: 'base' });
+        });
+    });
+
     eleventyConfig.setTemplateFormats(['njk', 'md', 'liquid']);
 
     // Passthrough copy for assets directory
@@ -86,14 +96,31 @@ module.exports = function(eleventyConfig) {
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
-            // Check if pagination object exists and has a pageNumber
+            // Keep original pagination behavior
             if (data.pagination && data.pagination.pageNumber === 0) {
                 return '/';  // Return root for the first page
             } else if (data.pagination) {
                 return `/page/${data.pagination.pageNumber}/`;  // Return for paginated pages
             }
 
-            // Return undefined if no pagination (use default Eleventy behavior)
+            // If this is a post under src/posts (including nested folders), produce
+            // a canonical permalink that ignores intermediate folders. That way
+            // files moved into e.g. src/posts/older/ will still be available at
+            // /posts/<slug>/ like before.
+            try {
+                if (data.page && data.page.filePathStem && data.page.filePathStem.startsWith('/posts')) {
+                    // data.page.fileSlug should be the filename without extension
+                    const slug = data.page.fileSlug || path.basename(data.page.filePathStem);
+                    if (!slug) return data.permalink; // fallback
+                    // If the file is an index under /posts (e.g. /posts/index), return the folder root
+                    if (slug === 'index') return '/posts/';
+                    return `/posts/${slug}/`;
+                }
+            } catch (e) {
+                // If anything goes wrong, fall back to any explicit permalink the template provided
+            }
+
+            // Return undefined if no special handling (use default Eleventy behavior)
             return data.permalink;
         },
 
@@ -101,6 +128,24 @@ module.exports = function(eleventyConfig) {
 
     eleventyConfig.addCollection('posts', function(collectionApi) {
         const posts = getPosts(collectionApi);
+
+        // Warn if multiple posts would canonicalize to the same slug (and thus the same /posts/<slug>/ URL)
+        const slugMap = {};
+        posts.forEach((post) => {
+            try {
+                const stem = post.filePathStem || (post.data && post.data.page && post.data.page.filePathStem) || '';
+                const slug = post.fileSlug || (stem ? path.basename(stem) : path.basename(post.inputPath || ''));
+                if (!slug) return;
+                if (slugMap[slug]) {
+                    console.warn(`Eleventy warning: duplicate post slug detected for '/posts/${slug}/'\n  - ${slugMap[slug]}\n  - ${post.inputPath || stem}`);
+                } else {
+                    slugMap[slug] = post.inputPath || stem;
+                }
+            } catch (e) {
+                // ignore errors in warning code
+            }
+        });
+
         return posts.reverse();
     });
 
@@ -125,22 +170,55 @@ module.exports = function(eleventyConfig) {
     });
 
     eleventyConfig.addCollection('categories', function(collectionApi) {
+        // Use getPosts helper so we consistently include drafts handling and globbing
         const posts = getPosts(collectionApi);
+
         const categories = {};
         posts.forEach((post) => {
-            if (!post.data.category) return;
-            if (!categories[post.data.category]) {
-                categories[post.data.category] = {
-                    name: post.data.category,
+            const cat = post.data && (post.data.category || (post.data.categories && post.data.categories[0]));
+            if (!cat) return;
+            const key = String(cat);
+            if (!categories[key]) {
+                categories[key] = {
+                    name: cat,
                     size: 1,
                     posts: [post]
                 };
             } else {
-                categories[post.data.category].size++;
-                categories[post.data.category].posts.push(post);
+                categories[key].size++;
+                categories[key].posts.push(post);
             }
         });
-        return Object.values(categories);
+
+        // Sort posts in each category by date (newest first)
+        Object.keys(categories).forEach(k => {
+            categories[k].posts.sort((a, b) => {
+                const ta = a.date ? new Date(a.date).getTime() : 0;
+                const tb = b.date ? new Date(b.date).getTime() : 0;
+                return tb - ta;
+            });
+        });
+
+        // Return categories sorted alphabetically by name (case-insensitive)
+        const sortedKeys = Object.keys(categories).sort((a, b) => {
+            const na = String((categories[a] && categories[a].name) ? categories[a].name : a).trim().toLowerCase();
+            const nb = String((categories[b] && categories[b].name) ? categories[b].name : b).trim().toLowerCase();
+            return na.localeCompare(nb, undefined, { sensitivity: 'base' });
+        });
+        return sortedKeys.map(k => categories[k]);
+    });
+
+    // Add a featured collection so templates can reliably iterate featured posts
+    eleventyConfig.addCollection('featured', function(collectionApi) {
+        // Use getPosts to include files under src/posts/** (including nested folders) and respect drafts
+        return getPosts(collectionApi).filter(item => {
+            try {
+                // Accept boolean true or truthy values in frontmatter
+                return !!(item.data && item.data.featured);
+            } catch (e) {
+                return false;
+            }
+        }).reverse();
     });
 
     eleventyConfig.addCollection('tags', function(collectionApi) {
@@ -228,15 +306,12 @@ module.exports = function(eleventyConfig) {
             };
 
             // Image.generateHTML returns a string with figure/img markup — wrap in cover-thumb container
-            const html = Image.generateHTML(metadata, imageAttributes);
-            // Ensure outer figure has cover-thumb class for our CSS; if generateHTML already includes figure, insert class
-            const result = html.replace(/<figure(.*?)>/i, function(m, attrs){
+            return Image.generateHTML(metadata, imageAttributes).replace(/<figure(.*?)>/i, function(m, attrs){
                 if (/class=/.test(attrs)) {
-                    return `<figure${attrs.replace(/class=("|')([^"']*)("|')/i, function(_,q,v){return `class=${q}${v} cover-thumb${q}`;})}>`;
+                    return `<figure${attrs.replace(/class=(['"])([^'"]*)(\1)/i, function(_,q,v){return `class=${q}${v} cover-thumb${q}`;})}>`;
                 }
                 return `<figure class="cover-thumb"${attrs}>`;
             });
-            return result;
         } catch (err) {
             // Fallback: return simple markup referencing the static img path
             const normalized = src.startsWith('/') ? src : `/img/${src}`;

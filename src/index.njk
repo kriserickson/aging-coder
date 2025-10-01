@@ -25,7 +25,7 @@ pagination:
                 </h3>
             </header>
             <section class="excerpt">
-                <p>{{ post.templateContent | striptags | truncate(220, '…') }}</p>
+                <p>{{ post.templateContent | striptags | truncate(220, '…') | safe }}</p>
             </section>
             <div class="post-tags">
                 {% if post.data.category %}

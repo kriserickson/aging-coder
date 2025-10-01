@@ -4,7 +4,6 @@ title: "It appears like you are building a framework"
 description: ""
 category: TopcoatTouch
 tags: [Mobile,Programming]
-featured: true
 ---
 
 
