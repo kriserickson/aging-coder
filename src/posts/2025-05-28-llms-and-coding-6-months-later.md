@@ -4,7 +4,7 @@ category: Programming
 title: "LLMs and Coding 6 months later"
 imagefeature: blog/llms-6months-later.webp
 description: "Good lord, it has been 6 months since I last wrote a post about LLMs and coding and how the world has changed. "
-tags: ["Programming", "LLM"]
+tags: ["Programming", "LLM", "AI"]
 featured: true
 ---
 Good lord, has really been 6 months since I last 
@@ -168,9 +168,9 @@ a good project to try since it wasn't too complex of a problem and had the proje
 coverage. I asked Junie for a plan and to start the process, and it did create a nice Markdown document with all the steps involved...
 
 {% assign snippet = collections.static-snippets | findSnippetByName: "convert-strategy" %}
-{% if snippet and snippet.url and snippet.templateContent %}
+{% if snippet and snippet.url and snippet.data.rawMarkdown %}
   <div class="snippet-preview">
-    {{ snippet.templateContent | truncate: 200, "..." }}
+    {{ snippet.data.rawMarkdown | truncate: 200, "..." }}
     <div>
       <a class="external-link" href="{{ snippet.url }}">Read full document</a> | 
       {% snippetRawLink snippet %}
@@ -234,5 +234,3 @@ I am learning how to be more productive in VS Code because I see that is where t
 because there is so much competition there (and now that both VS Code forks are multi-billion dollar companies, I think
 that a few more startups will be springing up in the VS Code fork world), even VS Code itself there are dozens if not
 hundreds of AI coding assistants.
-
-

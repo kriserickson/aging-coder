@@ -3,8 +3,9 @@ layout: post
 category: AI 
 title: "Experiments in Supervised Learning: Lessons from an old Recipe App"
 imagefeature: blog/supervised-part-1.webp
-description: 
+description: "A hands-on introduction to building a supervised learning pipeline using labeled recipe data from the author's old Recipe Folder project. This post explains the dataset, setup steps, and the plan for a multi-part series to train and improve models for extracting recipes from web pages."
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
+featured: true
 ---
 
 
@@ -165,4 +166,3 @@ pip install -r requirements.txt
 * You can experiment with the other functions in the project, and in the next article I will explain what is going on with them and how the first stab at building a supervised learning model worked.
 
 *[To be continued...](/posts/2025-06-14-experiments-in-supervised-learning-part-2/)*
-

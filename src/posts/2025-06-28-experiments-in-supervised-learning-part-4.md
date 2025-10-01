@@ -5,6 +5,7 @@ title: "Experiments in Supervised Learning Part 4"
 imagefeature: blog/supervised-part-4.webp
 description:
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
+featured: true
 ---
 
 ### Speeding up the Training Loop

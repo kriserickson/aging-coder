@@ -4,7 +4,6 @@ title: "Building A Not Very Successful Product For No Money"
 description: "Every now and then when a technical person tries Recipe Folder out, I get asked about how the application was built and what it runs on."
 category: "Recipe Folder"
 tags: ["Recipe Folder", "mobile", "node", "programming"]
-featured: true
 ---
 
 

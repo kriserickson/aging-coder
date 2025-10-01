@@ -1,50 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-{% include "head.njk" %}
+    {% include "head.njk" %}
 </head>
 <body class="post-template page">
-
-<main id="notepad-page-container" class="notepad-page-container" role="main">
-
-
-        <header class="notepad-page-header">
-            <div class="notepad-page-menu-header">
-
-                    <a class="notepad-blog-logo" href="/">
-                        <img src="/img/{{ site.logo }}" alt="Blog Logo">
-                    </a>
-
-
-
-                <div class="notepad-blog-menu">
-    <div class="notepad-mobile-menu show-for-small">
-        <a href="#"><i class="fas fa-bars"></i></a>
+<header class="site-header">
+    <div class="site-header-inner">
+        <nav class="site-nav">
+            <div class="site-logo"><a href="/" aria-label="Home"><img src="/img/{{ site.logo }}" alt="Blog Logo"></a>
+            </div>
+            <ul>
+                {% for link in site.links %}
+                    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {% endfor %}
+                <li>
+                    <button id="theme-toggle" aria-label="Toggle dark mode">
+                        <span id="theme-toggle-icon">
+                            <svg width="18"
+                                 height="18"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 aria-hidden="true"
+                                 focusable="false">
+                                <path
+                                        d="M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <div>
+            <h1 class="site-title">{{ title }}</h1>
+        </div>
     </div>
-    <ul class="notepad-menu">
-        <li class="notepad-mobile-close-btn show-for-small text-right">
-            <a href="#"><i class="fas fa-times"></i></a>
-        </li>
-{% for link in site.links %}
-            <li><a href="{{ link.url }}">{{ link.title }}</a></li>
-{% endfor %}
-           <li><a href="/feed.xml" title="Atom/RSS feed"><i class="icon-rss"></i> Feed</a></li>
-    </ul>
-</div>
-            </div>
-            <div class="notepad-page-title row">
-                <div class="small-12 columns">
-                    <h1>{{ title }}</h1>
-                </div>
-            </div>
-        </header>
+</header>
 
-<article class="notepad-page-content">
-                    <div>{{ content | safe }}</div>
-</article>
+<div class="site-container">
+    <main role="main">
+        <article class="page-content">
+            <div>{{ content | safe }}</div>
+        </article>
         <div class="cf"></div>
-    {% include "footer.njk" %}
-</main>
+        {% include "footer.njk" %}
+    </main>
+
+</div>
 
 {% include "scripts.njk" %}
 </body>

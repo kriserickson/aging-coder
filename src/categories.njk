@@ -5,18 +5,20 @@ permalink: /categories/
 tags: [Categories]
 description: "An archive of posts sorted by category."
 eleventyExcludeFromCollections: true
+extra_css:
+  - categories.css
 ---
 
 <ul class="tag-box inline">
 
-  {% for tag in collections.categories %}
+  {% for tag in collections.categories | sortByName %}
     <li><a href="#{{ tag.name }}">{{ tag.name | capitalize }} <span>{{ tag.size }}</span></a></li>
   {% endfor %}
 
 
 </ul>
 
-{% for tag in collections.categories %}
+{% for tag in collections.categories | sortByName %}
   <h2 id="{{ tag.name }}">{{ tag.name | capitalize }}</h2>
   <ul class="post-list">
     {% for post in tag.posts %}

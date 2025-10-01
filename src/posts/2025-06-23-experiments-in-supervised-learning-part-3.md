@@ -5,6 +5,7 @@ title: "Experiments in Supervised Learning Part 3"
 imagefeature: blog/supervised-part-3.webp
 description:
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
+featured: true
 ---
 
 In the [previous post](/posts/2025-06-14-experiments-in-supervised-learning-part-2) we built a simple model 
