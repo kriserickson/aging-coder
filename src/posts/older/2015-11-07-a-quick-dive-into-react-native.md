@@ -4,8 +4,6 @@ title: "A Quick Dive into React Native"
 description: "In my last post's comments Dave, suggested that I try (or to be honest try again) React Native.  And I thought I would give the whole MobileNativeJavaScript thing one more shot..."
 category: Programming
 tags: [React Native,Mobile,MNJS,JavaScript,Programming]
-featured: true
-comments: true
 ---
 In my [last post's comments](http://www.agingcoder.com/programming/2015/10/15/second-thoughts-on-nativescript-react-native-and-mobilenativejavascript-in-general/), Dave (no other
 name), suggested that I try (or to be honest try again) React Native.  And I thought I would give the whole MobileNativeJavaScript thing one more shot.  React Native, 

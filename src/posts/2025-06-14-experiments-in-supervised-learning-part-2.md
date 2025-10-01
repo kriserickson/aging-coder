@@ -3,8 +3,9 @@ layout: post
 category: AI
 title: "Experiments in Supervised Learning Part 2"
 imagefeature: blog/supervised-part-2.webp
-description: 
+description: "This post trains an initial supervised learning model on labeled recipe data, walks through the training pipeline and reports the first evaluation metrics. It explains feature extraction, pipeline construction, and highlights practical next steps to improve model accuracy and reduce common misclassifications."
 tags: ["Programming", "ML", "Supervised Learning", "AI"]
+featured: true
 ---
 ## First Results: Building and Running the Initial Model
 

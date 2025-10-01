@@ -2,19 +2,19 @@
   "title": "Aging Coder",
   "description": "Random Musings on Technology",
   "logo": "logo.png",
-  "disqus_shortname": "agingcoder",
+  "disqus_shortname": "",
   "share": true,
-  "dropcap": true,
-  "comments": true,
+  "comments": false,
   "url": "http://agingcoder.com",
   "owner": {
     "name": "Kris Erickson",
     "avatar": "portrait.jpg",
     "email": "kristian.erickson@gmail.com",
     "description": "The Aging Coder",
-    "twitter": "ksoncan34",
+    "bluesky": "ksoncan34.bsky.social",
     "github": "kriserickson",
-    "mastodon": "https://mastodon.social/@ksoncan34"
+    "mastodon": "https://mastodon.social/@ksoncan34",
+    "linkedin": "kristian-l-erickson"
   },
   "google_analytics": "G-90YGBLJTS2",
   "google_verify": "",
@@ -30,16 +30,16 @@
       "icon": "home"
     },
     {
+      "title": "CV",
+      "url": "/cv/"
+    },
+    {
       "title": "Featured Posts",
       "url": "/featured"
     },
     {
       "title": "Categories",
       "url": "/categories"
-    },
-    {
-      "title": "About",
-      "url": "/about"
     }
   ]
 }

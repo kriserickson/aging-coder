@@ -1,0 +1,122 @@
+/* Hero */
+.featured-hero {
+    background: linear-gradient(90deg, var(--header-bg) 0%, var(--footer-bg) 100%);
+    color: var(--header-fg);
+    padding: 28px 0;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.featured-hero h1 { display: none; }
+
+.featured-hero .lead {
+    color: var(--header-fg);
+    opacity: 0.9;
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+/* Container */
+.container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* One-column stack of media cards */
+.posts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.post-card {
+    background: var(--surface);
+    border: 1px solid var(--header-border);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px var(--header-border);
+    overflow: hidden;
+}
+
+/* Media layout: image left, content right on wide; stacked on small */
+.featured-card {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    align-items: start;
+    gap: 0;
+}
+
+.cover-thumb {
+    width: 112px;
+    min-width: 112px;
+    height: 112px;
+    background: var(--surface);
+    display: grid;
+    place-items: center;
+    border-right: 1px solid var(--header-border);
+}
+
+.cover-thumb--square {
+    width: 112px;
+    height: 112px;
+}
+
+.card-content {
+    padding: 14px 16px;
+}
+
+.post-title {
+    margin: 0 0 6px 0;
+    font-size: 1.15rem;
+    line-height: 1.25;
+}
+
+.post-title a {
+    color: var(--link);
+    text-decoration: none;
+}
+
+.post-title a:hover {
+    text-decoration: underline;
+}
+
+.post-date {
+    display: inline-block;
+    color: var(--muted-color);
+    font-size: .7rem;
+    margin: 0 0 6px 0;
+}
+
+.excerpt {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.excerpt p {
+    margin: 0;
+    color: var(--muted-color);
+    font-size: .9rem;
+    line-height: 1.5;
+}
+
+/* Empty state */
+.empty {
+    text-align: center;
+    color: var(--muted-color);
+    padding: 24px 0;
+}
+
+/* Small screens: stack image on top */
+@media (max-width: 700px) {
+  .featured-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cover-thumb {
+    width: 100%;
+    min-width: 0;
+    height: 160px;
+    border-right: 0;
+    border-bottom: 1px solid var(--header-border);
+  }
+}

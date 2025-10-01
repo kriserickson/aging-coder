@@ -4,30 +4,51 @@ permalink: /featured/
 title: FEATURED POSTS
 description: "An archive of featured posts"
 eleventyExcludeFromCollections: true
+extra_css:
+    - featured.css
 ---
-{% set featuredcount = '0' %}
-<ul class="post-list">
-    {% for post in collections.posts %}
-        {% if post.data.featured %}
-            {% set featuredcount = featuredcount + 1 %}
-            <li>
-                <article>
-                    <i class="fas fa-star"></i>
-                    <a href="{{ post.url }}">
-                        {{ post.data.title }}
-                        <span class="entry-date">
-                            <time datetime="{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
-                                {{ post.date | date('MMMM D, yyyy') }}
-                            </time>
-                        </span>
-                    </a>
-                </article>
-            </li>
-        {% endif %}
-    {% endfor %}
-</ul>
-{% if featuredcount == 0 %}
-    <div class="notepad-page-title row">
-        <h1>No posts has been featured yet</h1>
+{% set featuredcount = collections.featured | length %}
+
+<section class="featured-hero" aria-labelledby="featured-title">
+    <div class="container">
+        <p class="lead">A curated selection of standout posts and highlights.</p>
     </div>
-{% endif %}
+</section>
+
+<div class="container">
+    <div class="posts-grid" role="list">
+        {% for post in collections.featured %}
+            <article class="post-card featured-card" role="listitem">
+                {% if post.data.imagefeature %}
+                    <div class="cover-thumb">
+                        {% thumbnail post.data.imagefeature, post.data.title %}
+                    </div>
+                {% else %}
+                    <div class="cover-thumb cover-thumb--square">
+                        {% thumbnail site.logo, site.title %}
+                    </div>
+                {% endif %}
+                <div class="card-content">
+                    <header>
+                        <h3 class="post-title"><a href="{{ post.url }}">{{ post.data.title }}</a></h3>
+                        <time class="post-date" datetime="{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">{{ post.date | date('MMMM D, yyyy') }}</time>
+                    </header>
+                    <section class="excerpt">
+                        {% if post.data.description %}
+                            <p>{{ post.data.description }}</p>
+                        {% else %}
+                            <p></p>
+                        {% endif %}
+                    </section>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+
+    {% if featuredcount == 0 %}
+        <div class="empty">
+            <h2>No posts have been featured yet</h2>
+            <p>Mark posts with <code>featured: true</code> in the frontmatter to list them here.</p>
+        </div>
+    {% endif %}
+</div>
