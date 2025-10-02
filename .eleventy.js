@@ -126,6 +126,7 @@ module.exports = function (eleventyConfig) {
     // Passthrough copy for img directory
     eleventyConfig.addPassthroughCopy('img');
     eleventyConfig.addPassthroughCopy('audio');
+    eleventyConfig.addPassthroughCopy('video');
     eleventyConfig.addPassthroughCopy('favicon.*');
 
     // Add eleventyComputed for dynamic permalink logic

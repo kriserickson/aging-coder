@@ -1,9 +1,11 @@
 ---
 layout: post
-title: "MSBuild Shell Extension"
-description: ""
+title: MSBuild Shell Extension
+description: 'The post documents creating a simple Registry Shell command to build, clean, and rebuild Visual Studio solutions via msbuild. It provides a sample .reg snippet and notes on vcvarsall.bat paths for VS 10.0.'
 category: Programming
-tags: [vs,reghack]
+tags:
+  - vs
+  - reghack
 ---
 
 After MSBuildShellExtension stopped getting developed (so that it won't really build .Net 4.0 any more, even with a fair 

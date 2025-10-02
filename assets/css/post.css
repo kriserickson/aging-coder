@@ -316,6 +316,7 @@ body {
 pre {
     word-wrap: break-word;
     margin-bottom: 1.5625rem;
+    font-size: 0.8rem;
 }
 
 iframe {
