@@ -10,17 +10,17 @@ tags:
   - AI
   - LLM
 ---
-## RAG Retrieval Augmented Generation
+## Retrieval-Augmented Generation (RAG)
 
-When I first heard about RAG (Retrieval Augmented Generation) in the context of large language models (LLMs), I was expecting it to be a complex and technical concept, even after doing a little bit of reading and discovering that the information generally was stored as embeddings in a vector database that there would be a fair amount of complexity involved.  But eventually I realized that RAG is really a very straightforward concept, you add (or augment) the prompt to the LLM with information that is relevant to the question being asked.  
+When I first heard about RAG (Retrieval-Augmented Generation) in the context of large language models (LLMs), I was expecting it to be a complex and technical concept, even after doing a little bit of reading and discovering that the information generally was stored as embeddings in a vector database that there would be a fair amount of complexity involved.  But eventually I realized that RAG is really a very straightforward concept: you add (or augment) the prompt to the LLM with information that’s relevant to the question being asked.  
 
-It is as simple as supplying the prompt with the information required to answer the question and then using the power of the LLM to generate a human response that isn't just a regurgitation of the supplied information, but a synthesis of the information that is relevant to the question being asked.  
+It’s as simple as supplying the prompt with the information required to answer the question, then using the power of the LLM to generate a human response that isn’t just a regurgitation of the supplied information, but a synthesis of the information that’s relevant to the question being asked.  
 
-For the past 7 blog posts we have been using the recipes from the [Recipe Folder](https://web.archive.org/web/20220630230600/http://recipe-folder.com/) database to experiment with various aspects of Machine Learning.  We are going to do the same here, but this time use an LLM to help create a recipe suggestion system.  The idea is that the user will provide a list of ingredients they have on hand and the LLM will suggest a recipe that can be made with those ingredients.  The LLM will use RAG to augment the prompt with the recipes from the Recipe Folder database based on the ingredients provided by the user.
+For the past 7 blog posts we’ve been using the recipes from the [Recipe Folder](https://web.archive.org/web/20220630230600/http://recipe-folder.com/) database to experiment with various aspects of machine learning.  We’re going to do the same here, but this time use an LLM to help create a recipe-suggestion system.  The idea is that the user will provide a list of ingredients they have on hand and the LLM will suggest a recipe that can be made with those ingredients.  The LLM will use RAG to augment the prompt with the recipes from the Recipe Folder database based on the ingredients provided by the user.
 
-### Jupyter Tests to Explore RAG
+### Experimenting in a Notebook
 
-Lets use a Jupyter notebook to explore this idea.  First lets switch to the rag branch of the repository.
+Let’s use a Jupyter notebook to explore this idea.  First let’s switch to the rag branch of the repository.
 
 ```bash
 git checkout rag
@@ -35,14 +35,14 @@ source ./.venv/bin/activate # Linux/MacOS
 pip install -r requirements.txt
 ```
 
-Now we can look at the notebook that we will be using to explore this idea.  Open the `notebooks/rag.ipynb` file in Jupyter notebook.  You have to run the first cell, but it just imports the required libraries and sets up some paths we don't really need to include it here, except the final line:
+Now we can look at the notebook that we’ll be using to explore this idea.  Open the `notebooks/rag.ipynb` file in Jupyter notebook.  You have to run the first cell, but it just imports the required libraries and sets up some paths—we don’t really need to include it here, except the final line:
 
 ```python
 # Load a small pre-trained embedding model (open local model)
 model = SentenceTransformer('all-MiniLM-L6-v2')  # open-source embedding model
 ```
 
-This loads the SentenceTransformer model that we will be using to create the embeddings for the recipes.   The model is downloaded from the internet the first time it is run, so the first time it is loaded, it will take a little time.
+This loads the SentenceTransformer model that we’ll be using to create the embeddings for the recipes.   The model is downloaded from the internet the first time it’s run, so the first time it’s loaded, it’ll take a little time.
 
 ```python
 # Ensure the labels directory exists
@@ -51,9 +51,9 @@ if not labels_dir.exists():
     exit(1)
 ```
 
-### Sentence Transformer
+### SentenceTransformers
 
-Next, we load the JSON files that contain the recipes.  We will use the `SentenceTransformer` model to create embeddings for each recipe.  We will store the embeddings in a database that we will use to create the recipe suggestion system.   We use the ipwidgets library to display a progress bar while we are loading the recipes and creating the embeddings. 
+Next, we load the JSON files that contain the recipes.  We’ll use the `SentenceTransformer` model to create embeddings for each recipe.  We’ll store the embeddings in a database that we’ll use to create the recipe-suggestion system.   We use the ipywidgets library to display a progress bar while we’re loading the recipes and creating the embeddings. 
 
 ```python
 # Collect JSON files
@@ -77,7 +77,9 @@ for idx, fp in enumerate(files):
 
     # add source filename so downstream steps know which file produced this record
     if isinstance(obj, dict) and obj.get("title") and obj.get("ingredients"):
-        text = f"{obj["title"]}: " + ", ".join(obj["ingredients"])
+        title = obj["title"]
+        ingr = ", ".join(obj["ingredients"])  # safe join; ingredients is a list[str]
+        text = f"{title}: {ingr}"
         vector = model.encode(text)            # get embedding vector (e.g., numpy array)
         embedding_db.append({
             "title" : obj["title"],
@@ -93,13 +95,13 @@ pickle.dump(embedding_db, open(model_path, 'wb'))
 print(f"Stored {len(embedding_db)} recipe embeddings in the database.")
 ```
 
-SentenceTransformer is a powerful library that can be used to create embeddings for text.  It is a wrapper around the Hugging Face Transformers library and the PyTorch library.  It is straightforward to use and provides a variety of pre-trained models (encoders) that can be used to create embeddings.  In the most basic terms it converts the text of a string (in our case the title and the ingredients of the recipe) into a vector that can be used to compare the similarity of two strings.  Depending upon which model you select, you will get different features of the sentence encoded, with MiniLM being a good balance of features and size.  As it has a fairly small number of parameters and gets its performance and small size from [attention distillation](https://sh-tsang.medium.com/brief-review-minilm-deep-self-attention-distillation-for-task-agnostic-compression-of-0be4516d6922).  The particular MiniLM we chose (all-MiniLM-L6-v2) is a 6-layer Transformer, with 33 million parameters and an embedding dimension of 384.  Given that a whole book could probably be written about various Transformer models and the MiniLM's [advancements in particular](https://arxiv.org/abs/2002.10957) we will leave it to the fact that the SentenceTransformer is powerful tool to extract semantic meaning from text that can be stored in an embedding database (here we use an in-memory database but in future posts we will a Vector database like [Chroma](https://github.com/chroma-core/chroma) or [Faiss](https://github.com/facebookresearch/faiss) to store the embeddings.
+SentenceTransformer is a powerful library that can be used to create embeddings for text.  It’s a wrapper around the Hugging Face Transformers library and the PyTorch library.  It’s straightforward to use and provides a variety of pre-trained models (encoders) that can be used to create embeddings.  In the most basic terms, it converts the text of a string (in our case the title and the ingredients of the recipe) into a vector that can be used to compare the similarity of two strings.  Depending upon which model you select, you’ll get different features of the sentence encoded, with MiniLM being a good balance of features and size.  It gets its performance and small size from [attention distillation](https://sh-tsang.medium.com/brief-review-minilm-deep-self-attention-distillation-for-task-agnostic-compression-of-0be4516d6922).  The particular MiniLM we chose (all-MiniLM-L6-v2) is a 6-layer Transformer with an embedding dimension of 384.  Given that a whole book could probably be written about various Transformer models and the MiniLM’s [advancements in particular](https://arxiv.org/abs/2002.10957), we’ll leave it to the fact that the SentenceTransformer is a powerful tool to extract semantic meaning from text that can be stored in an embedding database (here we use an in-memory database but in future posts we’ll use a vector database like [Chroma](https://github.com/chroma-core/chroma) or [Faiss](https://github.com/facebookresearch/faiss) to store the embeddings).
 
-The SentenceTransformer is much more complex than the TF-IDF (TfidVectorizer) we used in the unsupervised learning blog post.  When we encoded the ingredients with a TF-IDF we lost any semantic meaning of the ingredients, we just got a sparse vector with one dimension per vocabulary word.  In the SentenceTransformer we get a dense vector with a fixed number of embeddings (384 for the MiniLM) which captures the semantics of the words because it is using a pre-trained transformer model.  While we could have a used a TF-IDF vectorizer for this purpose, we chose to use the SentenceTransformer because it is much more powerful and is what you would use for most real-world RAG applications (ingredients don't have nearly as much semantic meaning as say a company Knowledge Base or Product Faq but we might gain some deeper understanding of the ingredients from the recipe from using the SentenceTransformer).  And while there are other Transformer Models (BERT, RoBERTa, XLNet, etc.) that can be used for RAG, we chose to use the MiniLM because it is a small model that is generally the de-facto standard for RAG.
+The SentenceTransformer is much more complex than the TF‑IDF (TfidfVectorizer) we used in the unsupervised learning blog post.  When we encoded the ingredients with TF‑IDF, we lost any semantic meaning of the ingredients—we just got a sparse vector with one dimension per vocabulary word.  In the SentenceTransformer we get a dense vector with a fixed number of embeddings (384 for the MiniLM), which captures the semantics of the words because it’s using a pre-trained transformer model.  While we could have used a TF‑IDF vectorizer for this purpose, we chose to use the SentenceTransformer because it’s much more powerful and is what you’d use for most real-world RAG applications (ingredients don’t have nearly as much semantic meaning as, say, a company Knowledge Base or Product FAQ, but we might gain some deeper understanding of the ingredients from the recipe by using the SentenceTransformer).  And while there are other Transformer Models (BERT, RoBERTa, XLNet, etc.) that can be used for RAG, we chose to use the MiniLM because it’s a small model that’s generally the de-facto standard for RAG.
 
-### Getting Recipes from Ingredients
+### Retrieving Recipes from Ingredients
 
-There is also a cell in the notebook that loads the embedding database from disk.  This is not strictly necessary, but it is useful for testing and debugging since generating the embeddings can take a while.  If you want to run the notebook without loading the embeddings from disk, you can comment out the line that loads the embedding database from disk and uncomment the line that creates the embeddings from scratch. 
+There’s also a cell in the notebook that loads the embedding database from disk.  This isn’t strictly necessary, but it’s useful for testing and debugging since generating the embeddings can take a while.  If you want to run the notebook without loading the embeddings from disk, you can comment out the line that loads the embedding database from disk and uncomment the line that creates the embeddings from scratch. 
 
 ```python
 embedding_db = pickle.load(open(model_path, 'rb'))
@@ -138,7 +140,7 @@ def _find_best_matches(query_ingredients, top_n: int = 10):
         
 # Example query
 user_ingredients = ["cheese", "bread", "mustard", "pickle"]  
-matches = find_best_matches(user_ingredients)
+matches = _find_best_matches(user_ingredients)
 for entry, score in matches:
     print(f"{entry['title']} [{entry['source_file']}] — {score * 100:.2f}%")
 ```
@@ -147,7 +149,7 @@ In the `_find_best_matches` function, we first generate the encoding for the ing
 
 This prepares the denominators so you can compute cosine similarity in a vectorized way as: `sims = (mat @ q_vec) / denom` where `mat @ q_vec` produces the dot product between the query and each stored vector (shape (N,)), and dividing by denom yields the cosine similarity for each stored vector.  We are computing [cosine similarity](/posts/2025-08-30-serving-the-cookbook-creating-an-endpoint-for-recipe-recommendations#startup-script) (which we discussed in the previous [blog post](/posts/2025-08-30-serving-the-cookbook-creating-an-endpoint-for-recipe-recommendations#startup-script)) to find recipes that have ingredients contained in the query.  The top 10 results are returned in the `matches` variable, and we just output them in the notebook.
 
-Now we can use those results to augment our prompt with the recipes from the Recipe Folder database.   Eventually this will be moved to a service, but first lets try it out in a notebook.  Let's first grab the top 25 matches from the embedding database.   
+Now we can use those results to augment our prompt with the recipes from the Recipe Folder database.   Eventually this will be moved to a service, but first let’s try it out in a notebook.  Let’s first grab the top 25 matches from the embedding database.   
 
 ```python
 user_ingredients = ["cheese", "bread", "mustard", "pickle"]
@@ -171,14 +173,13 @@ Muffuletta-Style Grilled Ham-and-Cheese Sandwiches [recipe_03876.json] — 65.16
 Coffee-Rubbed Cheeseburgers with Texas Barbecue Sauce [recipe_02822.json] — 65.14%
 ```
 
-### Prompting the LLM with Rag
+### Prompting the LLM with RAG
 
 The next section has a couple of functions that we will use in the next section.  They are pretty straightforward, and probably don't need any more explanation that in the markdown above their cell.
 
-Now, before trying to run this last section you are going to have to create a .env file in root directory of the repository.
+Now, before trying to run this last section you’re going to have to create a .env file in the root directory of the repository.
 
 ```dotenv
-# Add your OpenAI API key here
 OPENAI_API_KEY=sk-proj-YOUR_API_KEY
 USE_OPEN_AI=true
 #MODEL_NAME=gpt-4.1-nano
@@ -189,7 +190,7 @@ MODEL_NAME=gpt-5-nano
 #MODEL_NAME=gemma3:1b
 ```
 
-If you want to use open-ai then you will need to add your key to it.  If you want to use one of the local models, change USE_OPEN_AI to false, and pick one of the local models (I found that all of these worked most of the time, but phi4-mini was the most consistent).  I've included code for both querying OpenAI and using a local model server that provides an OpenAI compatible API endpoint (whether that be [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), [text-generation-webui](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples), [Local AI](https://localai.io) or one of the many other solutions to run models locally).  If you are not using Ollama, or have changed the default port the API runs on, you will need to update the `api_url` variable. 
+If you want to use OpenAI then you’ll need to add your key to it.  If you want to use one of the local models, change USE_OPEN_AI to false, and pick one of the local models (I found that all of these worked most of the time, but phi4-mini was the most consistent).  I’ve included code for both querying OpenAI and using a local model server that provides an OpenAI-compatible API endpoint (whether that be [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), [text-generation-webui](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples), [Local AI](https://localai.io), or one of the many other solutions to run models locally).  If you’re not using Ollama, or have changed the default port the API runs on, you’ll need to update the `api_url` variable. 
 
 ```python
 api_url = "http://127.0.0.1:11434/v1/chat/completions" # Change me to the correct endpoint
@@ -197,7 +198,7 @@ api_url = "http://127.0.0.1:11434/v1/chat/completions" # Change me to the correc
 
 The LLM query section begins by loading the data from the .env file.   Then it has some default ingredients to query against, and tries to find the best matches:
 
-```pythin
+```python
 user_ingredients = ["carrots", "edamame", "corn", "pork"]  # user has these ingredients
 
 # Grab the top 25 matches from the embedding DB
@@ -230,7 +231,7 @@ user_msg = (
 )
 ```
 
-And really that is all that RAG is, getting some information from a knowledge source (in our case the recipes that match the ingredients that the use has asked for), and *augmenting* the prompt with that information.  The prompt we are using may not be the best prompt for the situation, and you can spend a fair amount of time experimenting with different prompts to see what works best for your situation.  I've found that OpenAI works well with a system prompt that contains more detailed instructions and the user prompt being just the augmented data, but that the smaller locally run models (Gemma/Phi/Qwen) need the JSON in the user prompt.  But this is something to play around with, try all sorts of different prompts in the Notebook and see what works best for you. 
+And really that’s all that RAG is: getting some information from a knowledge source (in our case the recipes that match the ingredients the user has asked for), and *augmenting* the prompt with that information.  The prompt we’re using may not be the best prompt for the situation, and you can spend a fair amount of time experimenting with different prompts to see what works best for your situation.  I’ve found that OpenAI works well with a system prompt that contains more detailed instructions and the user prompt being just the augmented data, but that the smaller locally run models (Gemma/Phi/Qwen) need the JSON in the user prompt.  But this is something to play around with—try all sorts of different prompts in the Notebook and see what works best for you. 
 
 For example, initially I was using these prompts, and it worked great with the OpenAI models but when I switched to any of the local models, I had to change the user prompt to be a little more universally applicable.
 
@@ -293,7 +294,7 @@ else:
     data["reasoning_effort"] = "minimal"
 ```
 
-For openAI I used the `gpt-5-nano` model in the example because it is the least expensive model that OpenAI currently provides (currently at 5 cents for 1 million tokens).  However, if you do not set the reasoning_effort to minimal, it will use at least 50% more tokens and take 5-10x longer to complete.  We set the temperature to 0.3 on other models because we want to have a mostly grounded response with a smaller chance of hallucinating.
+For OpenAI I used the `gpt-5-nano` model in the example because it’s the least expensive model that OpenAI currently provides (currently at 5 cents for 1 million tokens).  However, if you don’t set the reasoning_effort to minimal, it will use at least 50% more tokens and take 5–10× longer to complete.  We set the temperature to 0.3 on other models because we want to have a mostly grounded response with a smaller chance of hallucinating.
 
 ```python
 # Send the HTTP request to OpenAI
@@ -332,7 +333,7 @@ else:
         print("No validated file selected for the model's pick.")
 ```
 
-We send the request to the LLM, and then we extract the JSON from the response. The rest of the code is mostly to make sure we didn't hallucinate a file that doesn't exist, and to make sure we don't pick a file that doesn't match the recipe name.  At the end the Jupyter Notebook will print out something similar to:
+We send the request to the LLM, and then we extract the JSON from the response. The rest of the code is mostly to make sure we didn’t hallucinate a file that doesn’t exist, and to make sure we don’t pick a file that doesn’t match the recipe name.  At the end the Jupyter Notebook will print out something similar to:
 
 ```text
 gpt-5-nano's answer took 4155 tokens and 2.059s:
@@ -349,7 +350,7 @@ Final chosen file for the model's pick: recipe_16260.json
 
 ## Creating a Suggestion Service
 
-Now that we know how to use RAG, we can create a service that will take a user's ingredients and return the best match from the database.  We will use some of the code from our notebook, but we will put this into a fastapi service and create a simple UI to interact with it.   First we will create the FastAPI service:
+Now that we know how to use RAG, we can create a service that will take a user’s ingredients and return the best match from the database.  We’ll use some of the code from our notebook, but we’ll put this into a FastAPI service and create a simple UI to interact with it.   First we’ll create the FastAPI service:
 
 ```python
 def _load_resources():
@@ -382,7 +383,7 @@ async def lifespan(app: FastAPI):
         raise RuntimeError(f"Failed to load resources: {e}")
 
     # Mount static assets if present
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR, html=True), name="static"))
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 
     yield
     
@@ -414,9 +415,9 @@ def suggest_recipe(req: SuggestRequest):
     }
 ```
 
-The `suggest_recipe` function takes a request object that contains the ingredients and the recipe style, and then it calls the `_find_best_matches` (basically the exact same code as we had in the notebook) function to find the top 25 matches.  It calls the `_call_llm` function to call the LLM with our Rag prompt.  The `_call_llm` function is also basically the same as the code in the notebook, changed a tiny bit to make it a little closer to be being production ready.  Pleasedo not mistake this code for being production ready, it is not -- there are a considerable amount of things that would need to be done before you could safely use this code in production -- rate limiting being the most important thing to consider -- **do not even consider putting into production any code that calls an LLM if you don't have reasonable rate limiting in place** and a also a cap set in the dashboard for what you willing to spend on inference).
+The `suggest_recipe` function takes a request object that contains the ingredients and the recipe style, and then it calls the `_find_best_matches` (basically the exact same code as we had in the notebook) function to find the top 25 matches.  It calls the `_call_llm` function to call the LLM with our RAG prompt.  The `_call_llm` function is also basically the same as the code in the notebook, changed a tiny bit to make it a little closer to being production ready.  Please do not mistake this code for being production ready—it is not! There are a considerable amount of things that would need to be done before you could safely use this code in production—rate limiting being the most important thing to consider—**do not even consider putting into production any code that calls an LLM if you don’t have reasonable rate limiting in place** and a cap set in the dashboard for what you’re willing to spend on inference.
 
-The other two functions allow for the serving of our index.html (in FastApi there is no way I know of to default to index.html when serving /).  The other function allows for the serving of our recipe files that we have in the `data/potential_labels` directory. 
+The other two functions allow for the serving of our index.html. FastAPI won’t serve index.html at \ unless add an explicit route as shown.  The other function allows for the serving of our recipe files that we have in the `data/potential_labels` directory. 
 
 ```python
 @app.get("/", response_class=FileResponse)
@@ -487,9 +488,9 @@ Which will return something like:
 ```
 
 
-### A Tiny Spa
+### A Tiny SPA
 
-To make recipe suggestions accessible, I created minimal single-page app (SPA).  The SPA is just a simple HTML page that uses the FastAPI client to call the service.  The code for the SPA is pretty simple and is found in `static/index.html`, `static/main.js` and the styling is found `static.style.css`.  The interface lets users enter ingredients, specify a recipe style, and get AI-powered suggestions relatively quickly. Ingredients are managed as interactive "pills" that can be added or removed with a click, making the experience smooth and intuitive.
+To make recipe suggestions accessible, I created a minimal single-page app (SPA).  The SPA is just a simple HTML page that uses the FastAPI client to call the service.  The code for the SPA is pretty simple and is found in `static/index.html`, `static/main.js`, and the styling is found in `static/style.css`.  The interface lets users enter ingredients, specify a recipe style, and get AI-powered suggestions relatively quickly. Ingredients are managed as interactive "pills" that can be added or removed with a click, making the experience smooth and intuitive.
 
 The core logic in `main.js` handles user input, communicates with the backend, and dynamically updates the UI. Notably, it:
 
@@ -511,11 +512,11 @@ This little SPA demonstrates how Retrieval Augmented Generation (RAG) can be com
 
 ### Conclusion
 
-And there you have it - a full tour of how Retrieval Augmented Generation (RAG) can turn a list of ingredients into a smart recipe suggestion, by using RAG in our prompt. We started with a Jupyter notebook, wrangled some embeddings, built a FastAPI service, and wrapped it all up in a tiny SPA. The result is a system that feels surprisingly helpful, and maybe even a little bit magical, especially when it nails a recipe you’d never have thought of.
+And there you have it—a tour of how Retrieval‑Augmented Generation (RAG) can turn a list of ingredients into a smart recipe suggestion by augmenting a prompt with the right context. We started with a Jupyter notebook, built embeddings, stood up a FastAPI service, and wrapped it in a tiny SPA. The result feels surprisingly helpful—especially when it surfaces a recipe you wouldn’t have considered.
 
-Of course, there’s plenty of room to tinker and improve. If you’re thinking about putting something like this online, rate limiting is a must—LLM calls aren’t free, and you don’t want a runaway script eating your API quota. Also spend somtime experimenting with different prompt styles or system messages; it is surprising how much the phrasing can change the results (sometimes for the better, sometimes for the weirder). Want to get fancy? Add support for dietary restrictions, cuisine types, or even let users rate the suggestions and feed that back into the system.
+There’s plenty of room to tinker. If you’re planning to put something like this online, rate limiting is a must—LLM calls aren’t free, and a runaway script can burn your quota. Also spend some time experimenting with different prompt styles or system messages; small phrasing changes can shift results. Want to get fancy? Add dietary filters, cuisine types, or user ratings that feed back into selection.
 
-While this is just demonstrating the tip of the spear of what you can do with RAG, and is about the most simple form of RAG that possible.  The real challenge of RAG is the "Retreval" part, and getting relevent data to augment the prompt with.  We have done the most simple thing possible here by creating a very simple database of vectors in memory and using Cosiine simularity.  This works for this example, but in the real world you are going to need a vector database and store the data there.  We will be looking into that in the future.
+While this is just demonstrating the tip of the spear of what you can do with RAG, and is about the most simple form of RAG that possible.  The real challenge of RAG is the "Retrieval" part, and getting relevant data to augment the prompt with.  We have done the most simple thing possible here by creating a very simple database of vectors in memory and using Cosine similarity.  This works for this example, as a recipes have all the ingredients stored in a very accessible fashion, but in the real world you are going to need a vector database and store the data there.    The challenging part of RAG is the act of getting the data that you want to augment the prompt with, cleaning it, and storing it in a database in a way that it is queryable in a performant way. We will be looking into that in the future.
 
 
 
