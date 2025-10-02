@@ -1,11 +1,11 @@
 ---
 layout: post
-category: AI 
-title: "fine-tuning-llm"
-imagefeature:
-description: 
+category: AI
+title: fine-tuning-llm
+imagefeature: null
+description: 'A comparison of open models under 1B parameters shows qwen parsing HTML successfully in small tests, with varied results across other models. Larger tests reveal inconsistent HTML handling and missing recipe details across several models.'
 tags: []
-date: 2025-08-30
+date: 2025-08-30T00:00:00.000Z
 draft: true
 ---
 Of the open models available for ollama with < 1B parameters, only qwen actually managed to parse the HTML and return

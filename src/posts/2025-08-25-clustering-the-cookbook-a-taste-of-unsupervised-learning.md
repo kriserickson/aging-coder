@@ -1,11 +1,14 @@
 ---
 layout: post
-category: Programming 
-title: "Clustering the Cookbook: A Taste of Unsupervised Learning"
+category: Programming
+title: 'Clustering the Cookbook: A Taste of Unsupervised Learning'
 imagefeature: blog/unsupervised.webp
-description: 
-tags: ["Programming", "ML", "Unsupervised Learning"]
-date: 2025-08-25
+description: 'This post introduces unsupervised learning, focusing on clustering and its use for grouping recipes by ingredient similarity. It describes vectorizing ingredients with TF-IDF and applying k-means to form clusters.'
+tags:
+  - Programming
+  - ML
+  - Unsupervised Learning
+date: 2025-08-25T00:00:00.000Z
 ---
 ## Introduction to Unsupervised Learning
 

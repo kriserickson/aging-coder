@@ -1,10 +1,15 @@
 ---
 layout: post
-category: AI 
-title: "Experiments in Supervised Learning Part 3"
+category: AI
+title: Experiments in Supervised Learning Part 3
 imagefeature: blog/supervised-part-3.webp
-description:
-tags: ["Programming", "ML", "Supervised Learning", "AI"]
+description: 'The article documents a recipe data extractor that underperformed, mislabeling buttons and duplicating ingredients. It outlines planned incremental improvements with feature enrichment to approach production readiness.'
+tags:
+  - Programming
+  - ML
+  - Supervised Learning
+  - AI
+featured: true
 ---
 
 In the [previous post](/posts/2025-06-14-experiments-in-supervised-learning-part-2) we built a simple model 

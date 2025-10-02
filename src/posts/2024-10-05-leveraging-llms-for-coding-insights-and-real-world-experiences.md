@@ -3,7 +3,7 @@ layout: post
 category: Programming
 title: "Leveraging LLMs for Coding: Insights and Real-World Experiences"
 imagefeature: blog/llms.webp
-description: 
+description: "I've been using LLMs like GitHub Copilot, ChatGPT, Gemini, and Claude for the past couple of years to assist with coding, automate repetitive tasks, and even do language translations—both for computer languages and for generating initial translations for languages like Spanish and French."
 tags: ["Programming", "LLM"]
 featured: true
 ---

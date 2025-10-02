@@ -1,10 +1,15 @@
 ---
 layout: post
 category: AI
-title: "Experiments in Supervised Learning Part 4"
+title: Experiments in Supervised Learning Part 4
 imagefeature: blog/supervised-part-4.webp
-description:
-tags: ["Programming", "ML", "Supervised Learning", "AI"]
+description: 'This article discusses speeding up ML training loops by caching serialized features to reduce repeated data processing time. It covers loading cached features, memory profiling, and evaluating a Logistic Regression model with performance…'
+tags:
+  - Programming
+  - ML
+  - Supervised Learning
+  - AI
+featured: true
 ---
 
 ### Speeding up the Training Loop

@@ -1,11 +1,15 @@
 ---
 layout: post
-category: "Machine Learning" 
-title: "Serving the Cookbook: Creating an Endpoint for Recipe Recommendations"
+category: Machine Learning
+title: 'Serving the Cookbook: Creating an Endpoint for Recipe Recommendations'
 imagefeature: blog/unsupervised-2.webp
-description: 
-tags: ["Programming", "ML", "Unsupervised Learning", "API"]
-date: 2025-08-30
+description: 'The post describes creating a FastAPI endpoint to return recipes based on input ingredients, using a prebuilt model and saved artifacts. It covers setup, artifact loading, sanity checks, and cluster-to-index mappings for quick lookups.'
+tags:
+  - Programming
+  - ML
+  - Unsupervised Learning
+  - API
+date: 2025-08-30T00:00:00.000Z
 ---
 ### Introduction
 
