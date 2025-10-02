@@ -18,6 +18,15 @@ function getPosts(collectionApi) {
 }
 
 module.exports = function (eleventyConfig) {
+    // Simple HTML escaper used for Mermaid content
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
     eleventyConfig.addFilter('cgi_encode', function (str) {
         return encodeURIComponent(str);
@@ -377,7 +386,33 @@ module.exports = function (eleventyConfig) {
         .use(markdownItKatex)
         .use(markdownItAnchor);
 
+    // Support for Mermaid diagrams in Markdown using fenced blocks
+    // Usage in Markdown:
+    // ```mermaid
+    // graph TD; A-->B;
+    // ```
+    const defaultFence = mdLib.renderer.rules.fence || function (tokens, idx, options, env, self) {
+        return self.renderToken(tokens, idx, options, env, self);
+    };
+    mdLib.renderer.rules.fence = function (tokens, idx, options, env, self) {
+        const token = tokens[idx];
+        const info = (token.info || '').trim().toLowerCase();
+        if (info === 'mermaid') {
+            const code = token.content || '';
+            // Mermaid expects the raw text content inside an element with class "mermaid"
+            return `<pre class="mermaid">${escapeHtml(code)}</pre>`;
+        }
+        return defaultFence(tokens, idx, options, env, self);
+    };
+
     eleventyConfig.setLibrary("md", mdLib);
+
+    // Nunjucks paired shortcode for Mermaid
+    // Usage in Nunjucks or Markdown with njk engine:
+    // {% mermaid %}graph TD; A-->B;{% endmermaid %}
+    eleventyConfig.addPairedShortcode('mermaid', function (content = '') {
+        return `<pre class="mermaid">${escapeHtml(content)}</pre>`;
+    });
 
     return {
         dir: {

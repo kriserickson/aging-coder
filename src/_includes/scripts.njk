@@ -99,8 +99,54 @@
                 setTheme(null); saveTheme(null); // back to Auto
             }
             updateIcons();
+            // After theme change, re-apply Mermaid theme if present
+            if (window.__initMermaid) {
+                try { window.__initMermaid(true); } catch (e) {}
+            }
         });
 
         updateTheme();
+    })();
+
+    (function () {
+        const hasMermaid = !!document.querySelector('.mermaid');
+        if (!hasMermaid) {
+            return;
+        }
+
+        function currentTheme() {
+            const mode = document.documentElement.getAttribute('data-theme');
+            // Map our site theme to mermaid themes
+            return (mode === 'dark') ? 'dark' : 'default';
+        }
+
+        async function loadMermaid() {
+            if (window.mermaid) {
+                return window.mermaid;
+            }
+            // Use ESM CDN with a pinned major version for stability
+            const mod = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
+            window.mermaid = mod.default || mod;
+            return window.mermaid;
+        }
+
+        window.__initMermaid = async function (rerender = false) {
+            const mermaid = await loadMermaid();
+            try {
+                mermaid.initialize({ startOnLoad: false, theme: currentTheme(), securityLevel: 'strict' });
+                if (rerender && mermaid.contentLoaded) {
+                    // Try to re-render diagrams when theme changes
+                    mermaid.contentLoaded();
+                } else {
+                    mermaid.run({ querySelector: '.mermaid' });
+                }
+            } catch (e) {
+                // Avoid breaking the page on init errors
+                console && console.warn && console.warn('Mermaid init failed:', e);
+            }
+        };
+
+        // Kick off initial render
+        window.__initMermaid();
     })();
 </script>

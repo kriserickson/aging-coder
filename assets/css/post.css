@@ -21,6 +21,13 @@ body {
     display: inline-block;
 }
 
+.mermaid {
+    text-align: center;
+    background: var(--diagram-bg);
+    padding: 1rem;
+    border-radius: 1rem;
+}
+
 .post-template .bg-img {
     position: absolute;
     overflow: hidden;
@@ -340,7 +347,7 @@ iframe {
     padding: 8px 0;
     border-bottom: 1px solid #ccc;
     border-bottom: 1px solid rgba(0, 0, 0, .1);
-    *zoom: 1;
+    zoom: 1;
 }
 
 .post-list li:after,

@@ -16,6 +16,7 @@
     --footer-link: #ffd1d1; /* links on footer */
     --tag-bg: #ffe0e0; /* pill background */
     --code-bg: #fdf6e3; /* code/pre background */
+    --diagram-bg: #85837e; /* diagram background, same for dark mode */
     --code-fg: #586e75; /* code/pre text */
     --code-border: #eee8d5; /* thin inner border for code blocks */
 
@@ -40,13 +41,13 @@
     --muted-color: #c98e8e;
     --primary: #ff5c5c;
     --link: #ff5c5c;
-    --header-bg: #0f0909;
+    --header-bg: #741b1b;
     --header-fg: #f5e9e9;
     --header-border: rgba(255, 255, 255, 0.10);
-    --footer-bg: #0f0909;
+    --footer-bg: #741b1b;
     --footer-fg: #ffd6d6;
     --footer-link: #ffaaaa;
-    --tag-bg: #241313;
+    --tag-bg: #581d1d;
     --code-bg: #002b36;
     --code-fg: #93a1a1;
     --code-border: #073642;

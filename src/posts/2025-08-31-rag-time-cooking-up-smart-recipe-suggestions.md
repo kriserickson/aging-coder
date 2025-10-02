@@ -2,7 +2,8 @@
 layout: post
 category: Artificial Intelligence
 title: "RAG Time: Cooking Up Smart Recipe Suggestions with AI and a Dash of Retrieval"
-imagefeature: null
+imagefeature: rag-time-cooking.webp
+imagecaption: "Turning ingredients into recipes via embeddings and AI retrieval"
 description: "This article explores how Retrieval Augmented Generation (RAG) can be used with large language models to suggest recipes based on user-provided ingredients. It walks through building a recipe recommendation system using embeddings, vector search, and prompt engineering, complete with code examples and a simple web interface."
 draft: true
 tags:
@@ -35,30 +36,30 @@ and install the requirements for this blog post:
 # or
 source ./.venv/bin/activate # Linux/MacOS
 pip install -r requirements.txt
-```
-
-Now we can look at the notebook that we’ll be using to explore this idea.  Open the `notebooks/rag.ipynb` file in Jupyter notebook.  You have to run the first cell, but it just imports the required libraries and sets up some paths—we don’t really need to include it here, except the final line:
-
-```python
-# Load a small pre-trained embedding model (open local model)
-model = SentenceTransformer('all-MiniLM-L6-v2')  # open-source embedding model
-```
-
-This loads the SentenceTransformer model that we’ll use to create the embeddings for the recipes. The model is downloaded from the internet the first time it’s run, so the first time it’s loaded, it’ll take a little time.
+    Start([Start: Query Ingredients])
+    Encode([Encode Query])
+    QNorm([L2 Norm of q_vec])
+    Mat([Matrix of Stored Embeddings])
+    MNorm([L2 Norm per row])
+    Denom([Build Denominator])
+    Dot([Dot Product])
+    Compute([Compute sims])
+    Scores([Cosine Similarity Scores])
+    Top([Top N Matches])
 
 ```python
 # Ensure the labels directory exists
-if not labels_dir.exists():
-    print(f"Directory {labels_dir} does not exist. Please create it and add JSON files.")
-    exit(1)
-```
-
-### SentenceTransformers
-
-Next, we load the JSON files that contain the recipes. We’ll use the `SentenceTransformer` model to create embeddings for each recipe, and store the embeddings in a database that we’ll use to create the recipe-suggestion system. We use the ipywidgets library to display a progress bar while we’re loading the recipes and creating the embeddings.
-
-```python
-# Collect JSON files
+    Start --> Encode
+    Encode --> QNorm
+    Encode --> Mat
+    Mat --> MNorm
+    QNorm --> Denom
+    MNorm --> Denom
+    Mat --> Dot
+    Dot --> Compute
+    Denom --> Compute
+    Compute --> Scores
+    Scores --> Top
 files = sorted([p for p in labels_dir.iterdir() if p.is_file() and p.suffix == '.json'])
 
 progress = widgets.IntProgress(value=0, min=0, max=len(files), description='Progress:')
@@ -156,6 +157,35 @@ In the `_find_best_matches` function, we first generate the encoding for the ing
 - Compute the L2 norm for each row of `mat` (each stored embedding), e.g., `mat_norms = np.linalg.norm(mat, axis=1)`. This gives a 1‑D array of length N (one norm per stored vector).
 - Build the denominator for cosine similarity (`denom = mat_norms * (q_norm if q_norm != 0 else 1e-12)`): elementwise product of each stored-vector norm and the query norm. If the query norm is zero, substitute a tiny epsilon (1e-12) to avoid division by zero.
 - Finally, compute cosine similarity in a vectorized way: `sims = (mat @ q_vec) / denom`, where `mat @ q_vec` produces the dot product between the query and each stored vector (shape (N,)), and dividing by `denom` yields the cosine similarity for each stored vector.
+
+```mermaid
+flowchart TD
+
+    A["Start: Query Ingredients"]
+    B["Encode Query\n(q_vec)"]
+    C["L2 Norm of q_vec\n(q_norm)"]
+    D["Matrix of Stored Embeddings\n(mat)"]
+    E["L2 Norm per row\n(mat_norms)"]
+    F["Build Denominator\ndenom = mat_norms * q_norm\n(if q_norm == 0 -> 1e-12)"]
+    G["Dot Product\n(mat @ q_vec)\n(numerator_vec)"]
+    H["Compute sims\nnumerator_vec / denom"]
+    I["Cosine Similarity Scores\n(sims, length N)"]
+    J["Top N Matches"]
+
+    %% separate declarations from edges to avoid parser token concatenation
+
+    A --> B
+    B --> C
+    B --> D
+    D --> E
+    C --> F
+    E --> F
+    D --> G
+    G --> H
+    F --> H
+    H --> I
+    I --> J
+```
 
 We’re computing [cosine similarity](/posts/2025-08-30-serving-the-cookbook-creating-an-endpoint-for-recipe-recommendations#startup-script) (which we discussed in the previous [blog post](/posts/2025-08-30-serving-the-cookbook-creating-an-endpoint-for-recipe-recommendations#startup-script)) to find recipes that have ingredients contained in the query. The top 10 results are returned in the `matches` variable, and we just output them in the notebook.
 
