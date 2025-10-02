@@ -55,7 +55,7 @@ extra_css:
             </p>
             {% if imagefeature %}
                 <figure aria-hidden="false">
-                    <img src="/img/{{ imagefeature }}" alt="Cover image for {{ title }}" class="img-thumb"
+                    <img src="/img/{{ imagefeature }}" alt="{{ imagecaption | default('Cover image for ' ~ title) }}" class="img-thumb"
                          loading="lazy" decoding="async">
                 </figure>
             {% endif %}

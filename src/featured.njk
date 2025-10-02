@@ -21,7 +21,7 @@ extra_css:
             <article class="post-card featured-card" role="listitem">
                 {% if post.data.imagefeature %}
                     <div class="cover-thumb">
-                        {% thumbnail post.data.imagefeature, post.data.title %}
+                        {% thumbnail post.data.imagefeature, post.data.title, alt=(post.data.imagecaption or ('Cover image for ' ~ post.data.title)) %}
                     </div>
                 {% else %}
                     <div class="cover-thumb cover-thumb--square">
