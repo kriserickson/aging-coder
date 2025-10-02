@@ -511,11 +511,11 @@ This little SPA demonstrates how Retrieval Augmented Generation (RAG) can be com
 
 ### Conclusion
 
-And there you have it - a full tour of how Retrieval Augmented Generation (RAG) can turn a pile of ingredients into a smart recipe suggestion, all with a little help from modern AI and a dash of prompt engineering. We started with a Jupyter notebook, wrangled some embeddings, built a FastAPI service, and wrapped it all up in a tiny SPA that’s actually fun to use. The result is a system that feels surprisingly helpful, and maybe even a little bit magical, especially when it nails a recipe you’d never have thought of.
+And there you have it - a full tour of how Retrieval Augmented Generation (RAG) can turn a list of ingredients into a smart recipe suggestion, by using RAG in our prompt. We started with a Jupyter notebook, wrangled some embeddings, built a FastAPI service, and wrapped it all up in a tiny SPA. The result is a system that feels surprisingly helpful, and maybe even a little bit magical, especially when it nails a recipe you’d never have thought of.
 
-Of course, there’s plenty of room to tinker and improve. If you’re thinking about putting something like this online, rate limiting is a must—LLM calls aren’t free, and you don’t want a runaway script eating your API quota. Try experimenting with different prompt styles or system messages; you’ll be amazed at how much the phrasing can change the results (sometimes for the better, sometimes for the weirder). You could swap in a different embedding model, or plug in a real vector database like Chroma or Faiss for scale. Want to get fancy? Add support for dietary restrictions, cuisine types, or even let users rate the suggestions and feed that back into the system.
+Of course, there’s plenty of room to tinker and improve. If you’re thinking about putting something like this online, rate limiting is a must—LLM calls aren’t free, and you don’t want a runaway script eating your API quota. Also spend somtime experimenting with different prompt styles or system messages; it is surprising how much the phrasing can change the results (sometimes for the better, sometimes for the weirder). Want to get fancy? Add support for dietary restrictions, cuisine types, or even let users rate the suggestions and feed that back into the system.
 
-While this is just demonstrating the tip of the spear 
+While this is just demonstrating the tip of the spear of what you can do with RAG, and is about the most simple form of RAG that possible.  The real challenge of RAG is the "Retreval" part, and getting relevent data to augment the prompt with.  We have done the most simple thing possible here by creating a very simple database of vectors in memory and using Cosiine simularity.  This works for this example, but in the real world you are going to need a vector database and store the data there.  We will be looking into that in the future.
 
 
 
