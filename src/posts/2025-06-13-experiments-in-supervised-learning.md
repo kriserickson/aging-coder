@@ -120,6 +120,7 @@ pip install -r requirements.txt
 * Terminal should show `(.venv)` prefix when activated
 * You can now install packages, run, and debug your Python code
 
+<div id="validate_and_filter_recipes"></div>
 **4. Create the Recipe Data:**
 
 * Go to Run and Debug view (`Ctrl+Shift+D` or Click the Icon on the left that has Play Triangle with a Bug on it)
