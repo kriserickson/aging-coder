@@ -3,7 +3,16 @@
 <meta name="description" content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
 
 {% if page.tags and page.tags.length %}
-    <meta name="keywords" content="{{ page.tags | join(', ') }}">
+    {# Build a comma-separated keywords string in a separate variable to avoid inline loop parsing issues #}
+    {% set keywords = '' %}
+    {% for t in page.tags %}
+        {% if loop.first %}
+            {% set keywords = t %}
+        {% else %}
+            {% set keywords = keywords + ', ' + t %}
+        {% endif %}
+    {% endfor %}
+    <meta name="keywords" content="{{ keywords }}">
 {% endif %}
 
 {# Twitter Card #}
@@ -50,14 +59,14 @@
 {# Pico CSS #}
 <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
 {# Custom site CSS overrides (optional, for later steps) #}
-<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | assetUrl }}">
 
 <!-- Extra Pages -->
 {# Accept extra_css from frontmatter (preferred) or fallback to page.extra_css #}
 {% set _extraCss = extra_css or page.extra_css %}
 {% if _extraCss %}
     {% for css in _extraCss %}
-        <link rel="stylesheet" href="/assets/css/{{ css }}">
+        <link rel="stylesheet" href="{{ css | resolveCss }}">
     {% endfor %}
 {% endif %}
 <!-- End Extra Pages -->

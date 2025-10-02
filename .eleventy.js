@@ -32,6 +32,53 @@ module.exports = function (eleventyConfig) {
         return encodeURIComponent(str);
     });
 
+    // Helper: produce a cache-busted URL for a local path based on file mtime
+    function getCacheBusted(inputPath, fallback) {
+        try {
+            if (!inputPath) {
+                return typeof fallback !== 'undefined' ? fallback : inputPath;
+            }
+            // Preserve remote URLs
+            if (/^https?:\/\//i.test(inputPath) || /^\/\//.test(inputPath)) {
+                return inputPath;
+            }
+            const relPath = inputPath.startsWith('/') ? inputPath : `/${inputPath}`;
+            const fullPath = path.join(process.cwd(), relPath);
+            const stat = fs.statSync(fullPath);
+            const mtime = new Date(stat.mtime);
+            const ver = mtime.getUTCFullYear().toString().padStart(4, '0') +
+                String(mtime.getUTCMonth() + 1).padStart(2, '0') +
+                String(mtime.getUTCDate()).padStart(2, '0') +
+                String(mtime.getUTCHours()).padStart(2, '0') +
+                String(mtime.getUTCMinutes()).padStart(2, '0');
+            return `${relPath}?v=${ver}`;
+        } catch (e) {
+            // If stat fails, return the provided fallback (original ref) to preserve previous behavior
+            return typeof fallback !== 'undefined' ? fallback : inputPath;
+        }
+    }
+
+    // Asset URL cache-busting filter: append ?v=YYYYMMDDHHMM based on file mtime
+    eleventyConfig.addFilter('assetUrl', function (assetPath) {
+        return getCacheBusted(assetPath, assetPath);
+    });
+
+    // Resolve a CSS reference from frontmatter or template and return a cache-busted href
+    eleventyConfig.addFilter('resolveCss', function (cssRef) {
+        if (!cssRef) return '';
+        // If this looks like an absolute/remote URL, return as-is
+        if (/^https?:\/\//i.test(cssRef) || /^\/\//.test(cssRef)) {
+            return cssRef;
+        }
+        // If it's not a leading slash path, treat it as a filename under /assets/css/
+        if (!cssRef.startsWith('/')) {
+            const candidate = `/assets/css/${cssRef}`;
+            return getCacheBusted(candidate, cssRef);
+        }
+        // Leading slash path: use cache-busted version but fall back to original cssRef on error
+        return getCacheBusted(cssRef, cssRef);
+    });
+
     // Transform images: wrap <img> tags and add lazy/loading attributes and a lightweight class
     // Also ensure an alt attribute exists (empty if necessary) to improve accessibility
     eleventyConfig.addTransform('wrapImages', function (content, outputPath) {
@@ -366,7 +413,7 @@ module.exports = function (eleventyConfig) {
             // Image.generateHTML returns a string with figure/img markup — wrap in cover-thumb container
             return Image.generateHTML(metadata, imageAttributes).replace(/<figure(.*?)>/i, function (m, attrs) {
                 if (/class=/.test(attrs)) {
-                    return `<figure${attrs.replace(/class=(['"])((?:[^'\"]*?))\1/i, function (_, q, v) {
+                    return `<figure${attrs.replace(/class=(['"])([^'"]*?)\1/i, function (_, q, v) {
                         return `class=${q}${v} cover-thumb${q}`;
                     })}>`;
                 }

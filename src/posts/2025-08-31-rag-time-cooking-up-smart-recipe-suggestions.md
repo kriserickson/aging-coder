@@ -25,6 +25,8 @@ Imagine typing in a handful of ingredients—say, carrots, edamame, corn, and po
 
 Let’s use a Jupyter notebook to explore this idea. First, let’s switch to the rag branch of the repository.
 
+If you haven't checked out the project yet, checkou the 
+
 ```bash
 git checkout rag
 ```

@@ -1,10 +1,10 @@
 Aging Coder — Modernized Eleventy Site
 
-This repository is the Aging Coder blog (Eleventy). The site has been modernized to use Pico CSS and a small set of lightweight custom styles. This README explains how to build, preview, and customize the site, and documents helpful developer utilities added during modernization.
+This repository is the Aging Coder blog (Eleventy). The site has been modernized to use Pico CSS, lightweight custom styles, improved image handling, and a few developer utilities to make authoring and maintenance easier.
 
 Quick commands
 
-- Install dependencies (if you haven't already):
+- Install dependencies:
 
 ```bash
 npm install
@@ -22,40 +22,127 @@ npm run build
 npm run serve
 ```
 
-What changed (high level)
+High-level architecture
 
-- Replaced the legacy Foundation-based styles with Pico CSS (CDN) and small CSS overrides in `assets/css/overrides.css`.
-- Implemented a site-wide dark/light toggle that respects user system preference and persists the user's choice in `localStorage`.
-- Removed Disqus and legacy comment embed code and disabled comments in site data.
-- Neutralized legacy Notepad/Foundation CSS via `assets/css/overrides.css` and reduced `assets/css/style.css` to a minimal variables file to avoid regressions.
-- Replaced large external icon sets with a small set of inline SVG assets in `assets/img/icons/` (and retained Font Awesome 7 for additional icons).
-- Added a simple thumbnail shortcode and an HTML transform to improve image handling across content and templates.
+- Eleventy (`.eleventy.js`) is the static site generator and central place for collection, shortcode, filter, and transform configuration.
+- Markdown is processed with `markdown-it` plus plugins for KaTeX and anchors. Mermaid fenced blocks are rendered into `<pre class="mermaid">...</pre>` so client-side Mermaid can initialize them.
+- Collections provided: `posts`, `categories`, `tags`, `featured`, `feedPosts`, and `static-snippets`.
+- A transform rewrites plain `<img>` markup in generated HTML to add `loading="lazy"`, `decoding="async"`, a class `img-inline`, and wraps the image in `<p class="with-image">` so CSS can style inline images consistently.
+- Shortcodes:
+  - `thumbnail` — responsive thumbnail generator (uses `@11ty/eleventy-img` for local images, falls back to plain `<img>` for remote images).
+  - `mermaid` paired shortcode for embedding Mermaid blocks in templates.
+  - `snippetRawLink` — link to raw markdown for a snippet.
 
-Developer utilities added
+Where to put content
 
-- Thumbnail shortcode: `{% thumbnail src, alt %}`
-  - Usage: in any Nunjucks template you can write `{% thumbnail post.data.imagefeature, post.data.title %}`
-  - Behavior: emits `<figure class="cover-thumb"><img src="/img/..." alt="..." class="img-thumb" loading="lazy" decoding="async"></figure>`
-  - Note: This is a lightweight helper for consistent markup and lazy-loading. It does not resize images. For resized/optimized images you can replace the shortcode with Eleventy Image plugin usage.
+- Posts
+  - Put posts under `src/posts/`. Nested folders are supported — the site canonicalizes post permalinks so files moved into nested folders (for example `src/posts/older/`) continue to publish at `/posts/<slug>/`.
+  - Example frontmatter:
 
-- Image transform: A transform in `.eleventy.js` rewrites plain `<img ...>` in generated HTML to ensure images receive `loading="lazy"`, `decoding="async"` and a class `img-inline`, and wraps them in a `<p class="with-image">` container. This improves perceived performance and helps CSS target images uniformly.
+```yaml
+---
+title: "My Post"
+date: 2025-10-01
+tags: [eleventy, notes]
+category: Blog
+draft: true    # remove or set to false to publish
+featured: false
+description: "A short two-sentence summary shown in listings"
+---
+```
 
-- CSS helpers in `assets/css/overrides.css`:
-  - `.cover-thumb` and `.img-thumb` for consistent aspect-ratio thumbnails and object-fit cover behavior.
-  - `.avatar` for author avatar images.
-  - Focus outlines and small accessibility helpers.
+- Static snippets
+  - Add Markdown files to `src/static-snippets/` and include a `snippet: name` value in frontmatter. These are loaded into the `static-snippets` collection and get `data.rawMarkdown` and `data.raw_permalink` attached for easy embedding.
+  - Use the `findSnippetByName` filter/shortcode from templates to pull a snippet by name.
 
-Notes about legacy CSS
+- Mermaid diagrams
+  - Use fenced code blocks in Markdown:
 
-- `assets/css/style.css` was intentionally trimmed to a minimal variables set and small defaults to prevent regressions; heavy Notepad/Foundation rules were neutralized in `overrides.css`. The site works with Pico CSS and `overrides.css` providing site-specific fixes. We left `style.css` minimal to make future pruning and consolidation safe.
+```markdown
+```mermaid
+graph TD; A-->B;
+`` `
+```
 
-Accessibility and performance
+  - Or use the paired Nunjucks shortcode in templates:
 
-- Basic accessibility improvements were applied: ARIA labels for nav, focus outlines for interactive controls, `alt` attributes on images, and better keyboard focus visibility.
-- For a full audit run Lighthouse or axe against a running local server. This requires `npm run serve` (the site is assumed to be available at `http://localhost:8080` in your environment). If you'd like, I can run automated audits from this environment, but that requires installing additional tools.
+```njk
+{% mermaid %}
+graph TD; A-->B;
+{% endmermaid %}
+```
+
+  - The code block is rendered to `<pre class="mermaid">…</pre>` so client-side Mermaid (if included) converts it to a diagram.
+
+Thumbnail and image handling
+
+- Use the `thumbnail` Nunjucks shortcode where you want a feature image: `{% thumbnail post.data.imagefeature, post.data.title %}`.
+  - For local images this generates WebP + JPEG variants and `srcset` using `@11ty/eleventy-img` and writes files into `_site/img/`.
+  - For remote images it emits a lazy `<img>` fallback.
+- The `wrapImages` transform ensures inline images get consistent attributes and a wrapper so CSS can style them.
+
+Drafts and publishing workflow
+
+- There are two common ways this project handles drafts: frontmatter flags (manual) and the convenience npm scripts in `package.json` (`npm run draft` and `npm run publish`). Below is the precise behavior of those helper scripts so you know what they do and how to call them.
+
+- Frontmatter method (manual): Mark a post as a draft by adding `draft: true` to its frontmatter.  To publish a draft using this method: remove `draft: true` (or set it to `false`) and run the production build.
+
+- Npm scripts method (convenient): Use the `npm run draft` script to create a new draft post:
+
+```cmd
+npm run publish
+```
+
+- Notes & recommendations:
+  - Because `js/publish-draft.js` only scans the immediate files in `src/posts/`, drafts located in nested directories (for example `src/posts/older/my-draft.md`) will not be found by the `publish` script. If you rely on nested draft locations you can either move drafts to the top-level `src/posts/` before running `npm run publish` or I can update the script to search recursively.
+  - The `create-post.js` script enforces a title argument and marks the new post as a draft. If you want a different frontmatter template (for example to pre-fill `category` or `tags`) we can adjust the template in that script.
+  - The publish script is conservative: it only removes a line that exactly matches `draft: true` (case-insensitive) and otherwise preserves existing frontmatter formatting and fields.
+
+Permalinks and moving files
+
+- Posts under `src/posts/**` are canonicalized so the output permalink ignores intermediate folders and only uses the file slug, e.g. `src/posts/older/my-post.md` -> `/posts/my-post/`. This makes reorganizing old posts safe without changing the public URL.
+- Be cautious of duplicate slugs (two files named `my-post.md` in different folders will conflict); `.eleventy.js` emits a console warning for duplicate slugs at build time.
+
+Categories, tags, and featured
+
+- `categories` and `tags` collections gather posts across `src/posts/**` (including nested folders). Categories are returned sorted alphabetically; each category entry contains `name`, `size` (post count), and `posts` (sorted by date newest-first).
+- `featured` collects posts with a truthy `featured` frontmatter value and respects the same draft filtering.
+
+Developer utilities and scripts
+
+- `scripts/` contains utility scripts used for maintenance or one-off tasks (image processing helpers, content generation, small data transforms). Each script is intended to be run from the project root with Node:
+
+```bash
+node scripts/<script-name>.js
+```
+
+- Brief ideas of what scripts do (check each file for options):
+  - generate-descriptions.js — can be used to auto-provision `description` frontmatter for posts (if integrated with an LLM).
+  - apply-palette.js / screenshot-themes.js — helpers for theme previews and CSS palette automation.
+
+Filters and shortcodes summary
+
+- Filters: `excerpt` (prefers `description`, falls back to stripped content), `sortByName`, `findSnippetByName`, date filter via `nunjucks-date`.
+- Shortcodes: `thumbnail` (Nunjucks async), `mermaid` (paired), `snippetRawLink`.
+
+Adding a new post (quick)
+
+1. Create `src/posts/YYYY-MM-DD-slug.md` (or `slug.md` where you prefer).
+2. Add frontmatter as shown above (include `description` for better search/listing results).
+3. Preview locally with `npm run serve` (drafts are included by default when not running the production build env).
+4. When ready, remove `draft: true` and run the production build with `ELEVENTY_RUN_MODE=build`.
+
+Tips and next steps
+
+- Mermaid: include the Mermaid client script on pages where diagrams should render (the project may already include this in a template).
+- Static snippets: use them to centralize frequently-used content snippets or reusable examples.
+- Thumbnail usage: prefer local images for best performance (the shortcode will generate optimized variants).
+- If you're adding many descriptions programmatically, consider rate limiting and batching requests when calling external APIs.
 
 Changelog (recent)
 
-- 2025-09-29: Integrated Pico CSS, dark-mode toggle, removed Disqus/comment code, neutralized legacy Notepad/Foundation rules, added CV placeholder, implemented thumbnail shortcode and image transform, replaced icons with SVGs and updated templates and CSS overrides.
+- 2025-09-29: Modernized Eleventy setup, added image shortcodes and transforms, enabled Mermaid/KaTeX support, added static-snippets collection and developer scripts.
 
-If you'd like me to: run automated Lighthouse/a11y audits, wire the Eleventy Image plugin for on-demand image resizing, or continue pruning `assets/css/style.css` into `overrides.css`, tell me which and I'll proceed.
+License and contributing
+
+- See the repository root for LICENSE and contribution guidelines.
