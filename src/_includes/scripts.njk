@@ -86,19 +86,47 @@
             const t = e.target.closest && e.target.closest('#theme-toggle');
             if (!t) return;
 
-            // Note: clicking always sets an explicit preference, overriding Auto
+            // Determine current explicit theme (null means Auto)
             const current = root.getAttribute('data-theme');
-            if (!current) {
-                // Auto -> set opposite of system
+
+            // Toggle explicitly between 'dark' and 'light'. If Auto (no explicit
+            // attribute) then set to the opposite of the system theme.
+            if (current === 'dark') {
+                // dark -> light
+                setTheme('light');
+                saveTheme('light');
+            } else if (current === 'light') {
+                // light -> dark
+                setTheme('dark');
+                saveTheme('dark');
+            } else {
+                // Auto -> set to opposite of system
                 const sys = getSystemTheme();
                 const next = (sys === 'dark') ? 'light' : 'dark';
-                setTheme(next); saveTheme(next);
-            } else if (current === 'light') {
-                setTheme('dark'); saveTheme('dark');
-            } else {
-                setTheme(null); saveTheme(null); // back to Auto
+                setTheme(next);
+                saveTheme(next);
             }
+
+            // Update icons after DOM attribute changes
             updateIcons();
+
+            // Mirror data-theme to <body> so any scripts that inspect body also
+            // notice the change, and set the CSS color-scheme property so
+            // native UI widgets (form controls, scrollbars) can update.
+            const applied = root.getAttribute('data-theme');
+            if (applied) {
+                document.body.setAttribute('data-theme', applied);
+                try { document.documentElement.style.setProperty('color-scheme', applied); } catch (e) {}
+            } else {
+                document.body.removeAttribute('data-theme');
+                try { document.documentElement.style.removeProperty('color-scheme'); } catch (e) {}
+            }
+
+            // Dispatch an event so other scripts can react to the theme change
+            try {
+                window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: applied } }));
+            } catch (e) {}
+
             // After theme change, re-apply Mermaid theme if present
             if (window.__initMermaid) {
                 try { window.__initMermaid(true); } catch (e) {}
