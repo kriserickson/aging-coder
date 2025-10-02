@@ -2,7 +2,7 @@
 layout: post
 category: Artificial Intelligence
 title: "RAG Time: Cooking Up Smart Recipe Suggestions with AI and a Dash of Retrieval"
-imagefeature: rag-time-cooking.webp
+imagefeature: blog/rag-time-cooking.webp
 imagecaption: "Turning ingredients into recipes via embeddings and AI retrieval"
 description: "This article explores how Retrieval Augmented Generation (RAG) can be used with large language models to suggest recipes based on user-provided ingredients. It walks through building a recipe recommendation system using embeddings, vector search, and prompt engineering, complete with code examples and a simple web interface."
 draft: true
