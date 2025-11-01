@@ -11,7 +11,7 @@ I have been passionate about computers and programming since I first found the T
 
  Although I didn't have a computer at the time, I spent hours writing out adventure games in Basic in longhand for the computer I one day dreamed of owning.  I spent hours at the local Radio Shack playing with the TRS-80 there (typing in the code I had memorized from the book and being exctatic when it worked):
  
- <img src="/img/about/hey-may-it-works.webp" alt="Hey Ma!  It works!" style="max-width:350px;"/>
+ <img src="/img/about/hey-ma-it-works.webp" alt="Hey Ma!  It works!" style="max-width:350px;"/>
 
  My Dad also brought home an old book on [Cardiac](https://en.wikipedia.org/wiki/CARDboard_Illustrative_Aid_to_Computation) a cardboard computer.  When our family did finally get an Apple II+ computer, I was in seventh heaven.  I buried myself in the families "Computer room" programming computer games in Basic, I took a course at the local University to learn Pascal and eventually taught myself 6502 Assembly to be able to program real "video games" from the book [Apple Graphics and Arcade Game Design](https://archive.org/details/AppleGraphicsArcadeGameDesign).
 
