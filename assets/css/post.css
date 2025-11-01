@@ -261,13 +261,6 @@ body {
     }
 }
 
-.page-content > div:not(.page-title) p.with-image {
-    text-align: center;
-    padding-top: 1.125rem;
-    padding-bottom: 1.125rem;
-    max-width: 75rem;
-}
-
 @media screen and (max-width: 47em) {
     .page-title,
     .page-content {
