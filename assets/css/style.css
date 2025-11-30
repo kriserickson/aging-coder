@@ -174,6 +174,14 @@ body {
     padding: 1.25rem 1rem; /* give breathing room on mobile */
 }
 
+
+.page-content > div:not(.page-title) p.with-image {
+    text-align: center;
+    padding-top: 1.125rem;
+    padding-bottom: 1.125rem;
+    max-width: 75rem;
+}
+
 /* Post layout hooks */
 .post-main {
     max-width: 1180px;
