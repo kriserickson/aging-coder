@@ -65,7 +65,9 @@ module.exports = function (eleventyConfig) {
 
     // Resolve a CSS reference from frontmatter or template and return a cache-busted href
     eleventyConfig.addFilter('resolveCss', function (cssRef) {
-        if (!cssRef) return '';
+        if (!cssRef) {
+          return '';
+        }
         // If this looks like an absolute/remote URL, return as-is
         if (/^https?:\/\//i.test(cssRef) || /^\/\//.test(cssRef)) {
             return cssRef;
@@ -78,6 +80,24 @@ module.exports = function (eleventyConfig) {
         // Leading slash path: use cache-busted version but fall back to original cssRef on error
         return getCacheBusted(cssRef, cssRef);
     });
+
+  // Resolve a Js reference from frontmatter or template and return a cache-busted href
+  eleventyConfig.addFilter('resolveJs', function (jsRef) {
+    if (!jsRef) {
+      return '';
+    }
+    // If this looks like an absolute/remote URL, return as-is
+    if (/^https?:\/\//i.test(jsRef) || /^\/\//.test(jsRef)) {
+      return jsRef;
+    }
+    // If it's not a leading slash path, treat it as a filename under /assets/css/
+    if (!jsRef.startsWith('/')) {
+      const candidate = `/assets/js/${jsRef}`;
+      return getCacheBusted(candidate, jsRef);
+    }
+    // Leading slash path: use cache-busted version but fall back to original jsRef on error
+    return getCacheBusted(jsRef, jsRef);
+  });
 
     // Transform images: wrap <img> tags and add lazy/loading attributes and a lightweight class
     // Also ensure an alt attribute exists (empty if necessary) to improve accessibility
@@ -130,6 +150,21 @@ module.exports = function (eleventyConfig) {
     //     return dateFilter(date, format, timezone);
     // });
     eleventyConfig.addFilter('date', dateFilter);
+    eleventyConfig.addFilter('escapeDataAttribute', value => {
+      if (typeof value !== 'string') {
+        return value;
+      }
+      return value.replace(/[&<>"']/g, function(char) {
+        switch (char) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case "'": return '&#x27;'; // or &#039;
+          default: return char;
+        }
+      });
+    });
 
     // Excerpt filter: prefer frontmatter.description; otherwise extract from templateContent
     eleventyConfig.addFilter('excerpt', function (post, length = 200) {
@@ -221,6 +256,9 @@ module.exports = function (eleventyConfig) {
         },
 
     });
+
+    // Expose build-mode flag to templates so they can conditionally include analytics, etc.
+    eleventyConfig.addGlobalData('isBuild', isBuild);
 
     eleventyConfig.addCollection('posts', function (collectionApi) {
         const posts = getPosts(collectionApi);

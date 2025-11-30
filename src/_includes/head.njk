@@ -61,7 +61,7 @@
 {# Custom site CSS overrides (optional, for later steps) #}
 <link rel="stylesheet" href="{{ '/assets/css/style.css' | assetUrl }}">
 
-<!-- Extra Pages -->
+<!-- Extra Css -->
 {# Accept extra_css from frontmatter (preferred) or fallback to page.extra_css #}
 {% set _extraCss = extra_css or page.extra_css %}
 {% if _extraCss %}
@@ -69,7 +69,18 @@
         <link rel="stylesheet" href="{{ css | resolveCss }}">
     {% endfor %}
 {% endif %}
-<!-- End Extra Pages -->
+<!-- End Extra Css -->
+
+<!-- Extra Js -->
+{# Accept extra_js from frontmatter (preferred) or fallback to page.extra_js #}
+{% set _extraJs = extra_js or page.extra_js %}
+{% if _extraJs %}
+    {% for js in _extraJs %}
+        <script src="{{ js | resolveJs }}"></script>
+    {% endfor %}
+{% endif %}
+<!-- End Extra Js -->
+
 
 {# Icons #}
 <link rel="shortcut icon" href="/favicon.ico">

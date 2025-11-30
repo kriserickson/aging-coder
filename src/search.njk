@@ -1,0 +1,44 @@
+---
+layout: page.njk
+title: Search
+permalink: /search/
+tags: [Search]
+description: "An searchable archive of posts."
+eleventyExcludeFromCollections: true
+extra_css:
+- categories.css
+extra_js:
+- search.js
+---
+
+<ul class="tag-box inline">
+
+    <div style="display:flex; align-items: center; width: 100%; position: relative">
+        <label for="search-posts" style="margin-right: 1rem;">Search: </label>
+        <input style="flex:1; width: 100%" id="search-posts" type="text"/>
+        <button id="clear-search"
+                style="position: absolute; right: 5px; border-radius: 50%; height: 50px; width: 50px; padding: 0; top: 6px;">
+            X
+        </button>
+    </div>
+
+</ul>
+
+<ul class="post-list">
+    {% for post in collections.posts %}
+        <li data-title="{{ post.data.title | escapeDataAttribute }}"
+            data-tag="{{ post.data.tags | escapeDataAttribute }}"
+            data-summary="{{ post | excerpt(240) | escapeDataAttribute }}"
+        >
+            <a href="{{ post.url }}">
+                {{ post.data.title }}
+                <span class="entry-date">
+                     <time datetime="{{ post.date | date('Y-MM-dd\'T\'HH:mm:ssXXX') }}">
+                                {{ post.date | date('MMMM D, yyyy') }}
+                     </time>
+                </span>
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+
