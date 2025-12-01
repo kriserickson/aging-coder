@@ -40,6 +40,10 @@
     {
       "title": "Categories",
       "url": "/categories"
+    },
+    {
+      "title": "Search",
+      "url": "/search"
     }
   ]
 }
