@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Coding ike it's 1999"
+title: "Coding Like it's 1999"
 description: ""
 category: Programming
 tags: [xcode, mac]
@@ -12,7 +12,7 @@ I was working at [Triumf](http://www.triumf.ca/) in the mid 90's and working in
 X-Designer 4 on VMS.  Ok, they do seem to have most of the features of a modern IDE (we don't have a Refactor menu in
 1996, I am sure), but wow is it hard to find anything without the help of the [goog](http://google.com).
 
-I mean, obviously comment out a line would be on some menu that looked like a a very wide S (eventually I
+I mean, obviously comment out a line would be on some menu that looked like a very wide S (eventually I
 discovered this was User Scripts).  Really?  Shouldn't features like Comment Out, Clean and Build, etc have
 migrated to an actual menu item rather than a User Script?  Don't get me started about the default behavior of End and
 Home keys on the Mac, but I recognize that isn't XCode's fault but that of the Mac in general
