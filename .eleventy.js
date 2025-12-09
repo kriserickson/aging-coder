@@ -391,7 +391,6 @@ module.exports = function (eleventyConfig) {
         tags_sorted.sort((a,b) => {
             return a.name.localeCompare(b.name);
         });
-        console.log(tags_sorted);
         return tags_sorted;
     });
 
