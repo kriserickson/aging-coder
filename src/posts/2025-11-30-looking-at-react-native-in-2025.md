@@ -9,7 +9,7 @@ imagefeature: blog/react-native3.jpg
 featured: true
 ---
 
-Back in 2015 and 2018 I wrote a small trilogy of posts about NativeScript, React Native, and what I dubbed the “MobileNativeJavaScript” (MNJS) movement – basically, using JavaScript to build native mobile apps (a term that to my never ending chagrin never took off). At the time I was mostly skeptical: the tooling was fragile, the UI story was awkward, and every framework demo seemed carefully cropped to avoid anything that looked like a real app.
+Back in 2015 and 2018 I wrote a small trilogy of posts about NativeScript, React Native, and what I dubbed the "MobileNativeJavaScript" (MNJS) movement. Basically, using JavaScript to build native mobile apps (a term that to my never ending chagrin never took off). At the time I was mostly skeptical: the tooling was fragile, the UI story was awkward, and every framework demo seemed carefully cropped to avoid anything that looked like a real app.
 
 Nearly a decade later, I’ve gone back to React Native for a fresh project built on the current 0.82.1 version, and the experience was vastly different. Before I talk about today, it’s worth quickly recapping where I left things.
 
@@ -133,7 +133,7 @@ It is quite clear that React Native itself has matured and improved greatly in t
 The debugging story is not perfect, but it’s years ahead of what it was in 2018.
 - The JavaScript debugger works pretty well now for the common case of stepping through app logic.
 - Breakpoints, call stacks, and basic inspection are good enough that you don’t dread wiring it up.
-- The Network tab is still labeled “unstable,” and it earns that label — I never saw a network call in it.
+- The Network tab is still labeled "unstable," and it earns that label. I never saw a network call in it.
 - The components tab is a bit overwhelming to navigate due to the deeply nested component hierarchy.  I don't really know what could be done here except being able to mark sections of components as Black Box to be ignored.
 
 It’s not as smooth as debugging a web React app in Chrome, but it’s far better than the “hope and console.log” era.
@@ -148,8 +148,8 @@ You still can build separate UIs for iOS and Android when it matters, but the de
 
 The economic story is stronger now too. If you don’t have the budget to staff full native teams for both iOS and Android, React Native lets you ship a credible, modern app without duplicating the work and having two completely different codebases to maintain (and potentially two different apps to have to support Customers with, if there are differences in the iOS and Android app appearance or functionality). And if you already have a React-heavy web app, you can bring in developers who know your product and React, rather than starting from scratch with purely native specialists.
 
-On this project I barely had to touch the native layers at all. I had to go in and change some Gradle settings but this was because I built the app before realizing I had to change the app.json to give it a proper package name), but I never had to dive into Swift, Kotlin, or Xcode project files to get core functionality working. For a simple app, that’s a huge change from 2015/2018. For anything truly complex I’d still want real mobile developers involved—but you may need fewer of them, and you can lean more on people who understand your domain and business logic.
+On this project I barely had to touch the native layers at all. I had to go in and change some Gradle settings but this was because I built the app before realizing I had to change the app.json to give it a proper package name), but I never had to dive into Swift, Kotlin, or Xcode project files to get core functionality working. For a simple app, that's a huge change from 2015/2018. For anything truly complex I'd still want real mobile developers involved. You may need fewer of them, and you can lean more on people who understand your domain and business logic.
 
 The rough edges aren’t gone: the component tree is still noisy, the debugging tools still have their quirks, and you can’t completely ignore iOS/Android realities. But the day-to-day experience has shifted from “tempting quagmire” to “this is actually a nice, sustainable way to build a mobile app.”
 
-React Native finally feels like something I’d recommend to past‑me — the guy who wrote those skeptical MNJS posts a decade ago.
+React Native finally feels like something I'd recommend to past-me. The guy who wrote those skeptical MNJS posts a decade ago.
