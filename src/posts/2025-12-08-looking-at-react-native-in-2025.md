@@ -3,10 +3,10 @@ layout: post
 title: "Looking at React Native in 2025"
 description: “Ten years, three articles, and one more trip through MobileNativeJavaScript land.”
 category: Mobile
-draft: true
 tags: [React Native,Mobile,MNJS,JavaScript,TypeScript,Programming]
 imagefeature: blog/react-native-2025.jpg
 featured: true
+date: 2025-12-08
 ---
 
 Back in 2015 and 2018 I wrote a small trilogy of posts about NativeScript, React Native, and what I dubbed the "MobileNativeJavaScript" (MNJS) movement. Basically, using JavaScript to build native mobile apps (a term that to my never ending chagrin never took off). At the time I was mostly skeptical: the tooling was fragile, the UI story was awkward, and every framework demo seemed carefully cropped to avoid anything that looked like a real app.
