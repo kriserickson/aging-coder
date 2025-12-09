@@ -5,16 +5,8 @@ permalink: /tags/
 description: "An archive of posts ordered by tag."
 eleventyExcludeFromCollections: true
 ---
-<ul class="tag-box inline">
-
 {% for tag in collections.tags %}
-	<li><a href="#{{ tag[0] }}">{{ tag.name | capitalize }} <span>{{ tag.size }}</span></a></li>
-{% endfor %}
-
-</ul>
-
-{% for tag in collections.tags %}
-	<h2 id="{{ tag[0] }}">{{ tag.name | capitalize }}</h2>
+	<h2 id="{{ tag.link }}">{{ tag.name | capitalize }}</h2>
 	<ul class="post-list">
 		{% for post in tag.posts %}
 			<li>

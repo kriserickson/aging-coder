@@ -2,10 +2,10 @@
 layout: post
 title: "Looking at React Native in 2025"
 description: “Ten years, three articles, and one more trip through MobileNativeJavaScript land.”
-category: Programming
+category: Mobile
 draft: true
-tags: [React Native,Mobile,MNJS,JavaScript,Programming]
-imagefeature: blog/react-native3.jpg
+tags: [React Native,Mobile,MNJS,JavaScript,TypeScript,Programming]
+imagefeature: blog/react-native-2025.jpg
 featured: true
 ---
 
@@ -103,7 +103,7 @@ After I had everything working the way I wanted, I went and made a release versi
 
 My only real issue I had between the development versions and the release versions was that in Expo App the KeyboardAvoidingView seemed to work for my Expense Entry modal (this is a React Native Component that you wrap around other components to ensure that the text fields are visibile when the keyboard is activated), but when running the Apps code in either as a standalone app (rather than Expo) it looked like this:
 
-<img src="/img/reactnative/keyboard-avoiding-view.png" alt="React Native Debugger" class="border"/>
+<img src="/img/reactnative/keyboard-avoiding-view.png" alt="React Native Debugger" class="border" style="max-width: 500px;"/>
 
 The [KeyboardAvoidingView](https://reactnative.dev/docs/keyboardavoidingview) component does appear to work, just not with the modal implementation I used.  This may be due to the new Fabric rendering system, but whatever was the cause I found I had to manually resize the modal to ensure the text input would show on screen.  It took a while to get it to get rendering properly (because of course it did), but once I figured it out it worked fine.
 
