@@ -1,9 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
+const readline = require('readline');
 
-// Define the directory where posts are stored
-const postsDir = path.join('src', 'posts');
+// Define the directory where posts are stored (resolve relative to this script)
+const postsDir = path.join(__dirname, '..', 'src', 'posts');
+if (!fs.existsSync(postsDir)) {
+  console.error(`Posts directory not found: ${path.resolve(postsDir)}`);
+  process.exitCode = 1;
+}
 
 // Get local date as YYYY-MM-DD
 function getToday() {
@@ -35,7 +40,15 @@ function findDraftPosts() {
         continue;
       }
 
-      if (!entry.isFile()) {
+      // Some Dirent types (symlinks etc) might not report isFile() reliably.
+      // Use fs.statSync to verify this is a regular file; skip otherwise.
+      let stat;
+      try {
+        stat = fs.statSync(fullPath);
+      } catch (e) {
+        continue;
+      }
+      if (!stat.isFile()) {
         continue;
       }
 
@@ -52,7 +65,7 @@ function findDraftPosts() {
         continue;
       }
 
-      if (/(^|\r?\n)\s*draft\s*:\s*true\s*($|\r?\n)/i.test(content)) {
+      if (/(^|\r?\n)\s*draft\s*:\s*(?:true|yes)\s*($|\r?\n)/i.test(content)) {
         // push the path relative to postsDir so publishDraft can join it
         results.push(relative);
       }
@@ -159,10 +172,90 @@ function maybeRenameWithDatePrefix(fileName, today) {
   return relNew;
 }
 
+// Simple interactive selector using arrow keys (TTY) with [*]/[ ] markers and a numbered fallback
+function interactiveSelect(choices, message = 'Select an option:') {
+  return new Promise((resolve, reject) => {
+    // Non-TTY fallback: print numbered list and ask for a number
+    if (!process.stdin.isTTY) {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      console.log(message);
+      choices.forEach((c, i) => console.log(` ${i + 1}) ${c.name}`));
+      rl.question('Enter number of selection: ', (ans) => {
+        rl.close();
+        const n = parseInt(ans, 10);
+        if (!Number.isFinite(n) || n < 1 || n > choices.length) {
+          reject(new Error('invalid_selection'));
+          return;
+        }
+        resolve(choices[n - 1].value);
+      });
+      return;
+    }
+
+    const rlInterface = readline.createInterface({ input: process.stdin, output: process.stdout });
+    readline.emitKeypressEvents(process.stdin, rlInterface);
+    if (process.stdin.setRawMode) process.stdin.setRawMode(true);
+
+    let selected = 0;
+    let first = true;
+
+    function render() {
+      if (first) {
+        process.stdout.write(message + '\n');
+        for (let i = 0; i < choices.length; i++) {
+          process.stdout.write(`${i === selected ? '[*]' : '[ ]'} ${choices[i].name}\n`);
+        }
+        first = false;
+      } else {
+        // Move cursor up by the number of choice lines so we can redraw them in place
+        process.stdout.write(`\x1b[${choices.length}A`);
+        for (let i = 0; i < choices.length; i++) {
+          // Clear the current line and write the updated entry
+          process.stdout.write('\x1b[2K\r' + `${i === selected ? '[*]' : '[ ]'} ${choices[i].name}\n`);
+        }
+      }
+    }
+
+    function cleanup() {
+      process.stdin.removeListener('keypress', onKey);
+      if (process.stdin.setRawMode) process.stdin.setRawMode(false);
+      rlInterface.close();
+      process.stdout.write('\n');
+    }
+
+    function onKey(str, key) {
+      if (key && key.name === 'up') {
+        selected = (selected - 1 + choices.length) % choices.length;
+        render();
+      } else if (key && key.name === 'down') {
+        selected = (selected + 1) % choices.length;
+        render();
+      } else if (key && (key.name === 'return' || key.name === 'enter')) {
+        cleanup();
+        resolve(choices[selected].value);
+      } else if (key && key.ctrl && key.name === 'c') {
+        cleanup();
+        reject(new Error('cancelled'));
+      }
+    }
+
+    render();
+    process.stdin.on('keypress', onKey);
+  });
+}
+
 // Function to publish a draft: remove 'draft: true' and set today's date, and rename file if needed
 function publishDraft(fileName) {
   const filePath = path.join(postsDir, fileName);
-  const orig = fs.readFileSync(filePath, 'utf-8');
+
+  // Read the file; if it fails, report an error and return
+  let orig;
+  try {
+    orig = fs.readFileSync(filePath, 'utf-8');
+  } catch (e) {
+    console.error(`Cannot read selected draft (expected a file): ${filePath}`, e);
+    return;
+  }
   const today = getToday();
 
   const updated = updateFrontMatter(orig, today);
@@ -180,6 +273,18 @@ function publishDraft(fileName) {
 // Main function to run the script
 async function run() {
   const drafts = findDraftPosts();
+
+  // Debug output: show whether each draft path points to a file or directory
+  console.log('Found drafts:');
+  for (const d of drafts) {
+    const full = path.join(postsDir, d);
+    let type = 'missing';
+    try {
+      const s = fs.statSync(full);
+      type = s.isFile() ? 'file' : s.isDirectory() ? 'dir' : 'other';
+    } catch (e) {}
+    console.log(`  ${d} -> ${type}`);
+  }
 
   if (drafts.length === 0) {
     console.log('No drafts found.');
@@ -228,20 +333,65 @@ async function run() {
     console.log(`One draft found: ${drafts[0]}`);
     publishDraft(drafts[0]);
   } else {
-    // If multiple drafts, prompt the user to select one
-    const prompt = inquirer.createPromptModule();
-    try {
-      const answers = await prompt([
-        {
-          type: 'list',
-          name: 'selectedDraft',
-          message: 'Select a draft to publish:',
-          choices: drafts
+    // If multiple drafts, prompt the user to select one with a cursor (up/down + enter).
+    // Build choices as objects so the displayed label can be friendly but the returned value
+    // is the actual relative filename we need to publish.
+    const choices = drafts
+      .map(d => {
+        const base = path.basename(d);
+        const m = base.match(/^(\d{4}-\d{2}-\d{2})-(.+)$/);
+        const name = m ? `${m[1]} \u2014 ${m[2]}` : base; // 'YYYY-MM-DD — rest'
+        return { name, value: d, short: base };
+      })
+      .filter(c => {
+        // Double-check each choice points to a real file; filter out any unexpected dirs
+        try {
+          const s = fs.statSync(path.join(postsDir, c.value));
+          return s.isFile();
+        } catch (e) {
+          return false;
         }
-      ]);
-      publishDraft(answers.selectedDraft);
+      });
+
+    if (choices.length === 0) {
+      console.log('No valid files available to publish.');
+      return;
+    }
+
+    try {
+      const selectedValue = await interactiveSelect(choices, 'Select a draft to publish (use ↑/↓ and Enter):');
+      console.log(`Selected raw value: ${JSON.stringify(selectedValue)}`);
+
+      // Validate and resolve selection to a real file inside postsDir
+      let resolved = null;
+      if (typeof selectedValue === 'string' && selectedValue.length > 0) {
+        const full = path.join(postsDir, selectedValue);
+        try {
+          const s = fs.statSync(full);
+          if (s.isFile()) resolved = selectedValue;
+        } catch (e) {
+          // ignore and try basename matching below
+        }
+
+        if (!resolved) {
+          const byBase = drafts.find(d => {
+            const b = path.basename(d);
+            return b === selectedValue || b.includes(String(selectedValue)) || selectedValue.includes(b);
+          });
+          if (byBase) resolved = byBase;
+        }
+      }
+
+      if (!resolved) {
+        console.error('Cannot resolve selection to a valid draft file. Selection:', selectedValue);
+        console.error('Available drafts:\n  ' + drafts.join('\n  '));
+        return;
+      }
+
+      publishDraft(resolved);
     } catch (error) {
-      console.error('Error:', error);
+      if (error && error.message === 'cancelled') return;
+      console.error('Error during interactive selection:', error);
     }
   }
 }
