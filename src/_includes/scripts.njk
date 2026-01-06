@@ -2,10 +2,7 @@
     <script data-cfasync="false"  async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
     <script data-cfasync="false" >
         window.dataLayer = window.dataLayer || [];
-
-        function gtag(...args) {
-            window.dataLayer.push(args);
-        }
+        function gtag(){ dataLayer.push(arguments); }
 
         gtag('js', new Date());
 

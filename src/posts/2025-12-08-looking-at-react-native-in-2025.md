@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Looking at React Native in 2025"
-description: “Ten years, three articles, and one more trip through MobileNativeJavaScript land.”
+description: Ten years, three articles, and one more trip through MobileNativeJavaScript land.
 category: Mobile
 tags: [React Native,Mobile,MNJS,JavaScript,TypeScript,Programming]
 imagefeature: blog/react-native-2025.jpg
