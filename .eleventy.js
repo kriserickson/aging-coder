@@ -29,7 +29,7 @@ module.exports = function (eleventyConfig) {
     }
 
     eleventyConfig.addFilter('cgi_encode', function (str) {
-        return encodeURIComponent(str);
+        return encodeURIComponent(str.toLowerCase());
     });
 
     // Helper: produce a cache-busted URL for a local path based on file mtime
@@ -367,19 +367,31 @@ module.exports = function (eleventyConfig) {
                 return;
             }
             post.data.tags.forEach((tag) => {
-                if (!tags[tag]) {
-                    tags[tag] = {
-                        name: tag,
+                const tagLower = tag.toLowerCase();
+                const tagProperCase = tag.split(' ').map(word => {
+                    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                }).join(' ');
+
+
+                if (!tags[tagLower]) {
+                    tags[tagLower] = {
+                        name: tagProperCase,
+                        link: tag.toLowerCase(),
                         size: 1,
                         posts: [post]
                     };
                 } else {
-                    tags[tag].size++;
-                    tags[tag].posts.push(post);
+                    tags[tagLower].size++;
+                    tags[tagLower].posts.push(post);
                 }
             });
         });
-        return Object.values(tags);
+
+        const tags_sorted = Object.values(tags);
+        tags_sorted.sort((a,b) => {
+            return a.name.localeCompare(b.name);
+        });
+        return tags_sorted;
     });
 
     eleventyConfig.addCollection('static-snippets', function (collectionApi) {
