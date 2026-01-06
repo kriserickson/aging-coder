@@ -9,6 +9,15 @@
 
         gtag('js', new Date());
 
+        // Set default consent states: deny ad-related and analytics by default
+        // (we'll update analytics_storage to 'granted' only if user accepts)
+        gtag('consent', 'default', {
+            'ad_storage': 'denied',
+            'ad_personalization': 'denied',
+            'ad_user_data': 'denied',
+            'analytics_storage': 'denied'
+        });
+
         gtag('config', '{{ site.google_analytics }}');
     </script>
 {% endif %}
@@ -177,4 +186,131 @@
         // Kick off initial render
         window.__initMermaid();
     })();
+</script>
+
+<!-- Simple cookie consent banner: asks only for analytics_storage -->
+<style id="cookie-banner-style">
+  #cookie-banner {
+    display: none;
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    color: #111;
+    border: 1px solid rgba(0,0,0,0.12);
+    padding: 0.8rem 1rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border-radius: 6px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  }
+  #cookie-banner p { margin: 0; flex: 1 1 auto; font-size: 0.95rem; }
+  #cookie-banner .cb-actions { display:flex; gap:0.5rem; flex: 0 0 auto; }
+  #cookie-banner button { cursor: pointer; border: none; padding: 0.5rem 0.8rem; border-radius: 4px; font-size: 0.9rem; }
+  #cookie-accept { background: #0b74de; color: #fff; }
+  #cookie-decline { background: transparent; border: 1px solid rgba(0,0,0,0.08); color: inherit; }
+  @media (prefers-color-scheme: dark) {
+    #cookie-banner { background: #0b0b0b; color: #ddd; border-color: rgba(255,255,255,0.06); }
+    #cookie-decline { border-color: rgba(255,255,255,0.06); }
+  }
+</style>
+
+<div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent">
+  <p>
+    We use a minimal analytics cookie to help understand site usage. You can accept analytics or decline.
+  </p>
+  <div class="cb-actions">
+    <button id="cookie-decline" type="button">Decline</button>
+    <button id="cookie-accept" type="button">Accept</button>
+  </div>
+</div>
+
+<script id="cookie-banner-script">
+  (function () {
+    const KEY = 'site_cookie_consent_v1';
+    const banner = document.getElementById('cookie-banner');
+    const accept = document.getElementById('cookie-accept');
+    const decline = document.getElementById('cookie-decline');
+
+    function read() {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function write(obj) {
+      try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch (e) {}
+    }
+
+    function hide() {
+      banner.style.display = 'none';
+      banner.setAttribute('aria-hidden', 'true');
+    }
+
+    function show() {
+      banner.style.display = 'flex';
+      banner.removeAttribute('aria-hidden');
+      // focus the primary action for keyboard users
+      accept && accept.focus();
+    }
+
+    function setGtagConsent(state) {
+      // state: 'granted' or 'denied'
+      if (typeof window.gtag === 'function') {
+        try {
+          gtag('consent', 'update', { analytics_storage: state });
+          // re-configure analytics so page_view is sent after consent granted
+          if (state === 'granted') {
+            {% if site.google_analytics %}
+            gtag('config', '{{ site.google_analytics }}');
+            {% endif %}
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
+    // Ensure ad-related storage remains denied explicitly
+    if (typeof window.gtag === 'function') {
+      try {
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          ad_personalization: 'denied',
+          ad_user_data: 'denied'
+        });
+      } catch (e) {}
+    }
+
+    const state = read();
+    if (state && (state.analytics === true || state.analytics === false)) {
+      // Apply stored preference
+      setGtagConsent(state.analytics ? 'granted' : 'denied');
+      hide();
+      return;
+    }
+
+    // No preference stored — show banner
+    show();
+
+    accept.addEventListener('click', function () {
+      write({ analytics: true });
+      setGtagConsent('granted');
+      hide();
+    });
+
+    decline.addEventListener('click', function () {
+      write({ analytics: false });
+      setGtagConsent('denied');
+      hide();
+    });
+  })();
 </script>

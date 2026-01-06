@@ -290,7 +290,16 @@ module.exports = function (eleventyConfig) {
         const md = markdownIt({html: true}).use(markdownItKatex).use(markdownItAnchor);
         return getPosts(collectionApi)
             .map((item) => {
-                const raw = fs.readFileSync(item.inputPath, 'utf8');
+                // Some files may have been renamed or removed by other scripts (e.g., publish-draft).
+                // If the source file is missing, log a warning and skip this entry instead of failing the build.
+                let raw;
+                try {
+                    raw = fs.readFileSync(item.inputPath, 'utf8');
+                } catch (e) {
+                    console.warn(`feedPosts: skipping missing file ${item.inputPath}: ${e && e.message}`);
+                    return null;
+                }
+
                 // Strip top YAML front matter
                 const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
                 const markdown = fm.test(raw) ? raw.replace(fm, '') : raw;
@@ -302,6 +311,7 @@ module.exports = function (eleventyConfig) {
                     content: html
                 };
             })
+            .filter(Boolean)
             .reverse();
     });
 
