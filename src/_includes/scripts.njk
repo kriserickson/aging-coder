@@ -1,188 +1,213 @@
-{% if site.google_analytics and isBuild %}
-    <script data-cfasync="false"  async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
-    <script data-cfasync="false" >
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
+{% if site.google_analytics %}
+<script
+  data-cfasync="false"
+  async
+  src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"
+></script>
+<script data-cfasync="false">
+  window.dataLayer = window.dataLayer || []
+  function gtag() {
+    dataLayer.push(arguments)
+  }
 
-        gtag('js', new Date());
+  gtag("js", new Date())
 
-        // Set default consent states: deny ad-related and analytics by default
-        // (we'll update analytics_storage to 'granted' only if user accepts)
-        gtag('consent', 'default', {
-            'ad_storage': 'denied',
-            'ad_personalization': 'denied',
-            'ad_user_data': 'denied',
-            'analytics_storage': 'denied'
-        });
+  // Set default consent states: deny ad-related and analytics by default
+  // (we'll update analytics_storage to 'granted' only if user accepts)
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    ad_personalization: "denied",
+    ad_user_data: "denied",
+    analytics_storage: "denied",
+    wait_for_update: 500,
+  })
 
-        gtag('config', '{{ site.google_analytics }}');
-    </script>
+  gtag("config", "{{ site.google_analytics }}")
+</script>
 {% endif %}
 
 <!-- Theme toggle script (uses inline SVGs so it doesn't depend on external icon fonts) -->
 <script>
-    (function () {
-        const root = document.documentElement;
+  ;(function () {
+    const root = document.documentElement
 
-        function setTheme(mode) {
-            if (mode === 'dark') {
-                root.setAttribute('data-theme', 'dark');
-            } else if (mode === 'light') {
-                root.setAttribute('data-theme', 'light');
-            } else {
-                root.removeAttribute('data-theme');
-            }
+    function setTheme(mode) {
+      if (mode === "dark") {
+        root.setAttribute("data-theme", "dark")
+      } else if (mode === "light") {
+        root.setAttribute("data-theme", "light")
+      } else {
+        root.removeAttribute("data-theme")
+      }
+    }
+
+    function getSystemTheme() {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+    }
+
+    function getQueryTheme() {
+      try {
+        const qp = new URLSearchParams(window.location.search)
+        const t = (qp.get("theme") || "").toLowerCase()
+        if (t === "light" || t === "dark") {
+          // force without persisting
+          return t
         }
-
-        function getSystemTheme() {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (t === "auto") {
+          // explicitly request auto
+          return null
         }
+      } catch (e) {}
+      return undefined
+    }
 
-        function getQueryTheme() {
-            try {
-                const qp = new URLSearchParams(window.location.search);
-                const t = (qp.get('theme') || '').toLowerCase();
-                if (t === 'light' || t === 'dark') { // force without persisting
-                    return t;
-                }
-                if (t === 'auto') { // explicitly request auto
-                    return null;
-                }
-            } catch (e) {}
-            return undefined;
+    function getSavedTheme() {
+      const q = getQueryTheme()
+      if (q !== undefined) {
+        return q
+      } // honor query override if present
+      const saved = localStorage.getItem("theme")
+      return saved || getSystemTheme()
+    }
+
+    function saveTheme(mode) {
+      if (mode) {
+        localStorage.setItem("theme", mode)
+      } else {
+        localStorage.removeItem("theme")
+      }
+    }
+
+    function svgFor(name) {
+      if (name === "dark") {
+        return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 0111.21 3c.12 0 .24 0 .36.01A7 7 0 1021 12.79z" fill="currentColor"/></svg>'
+      } else {
+        return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 8h2v-3h-2v3zM17.24 4.84l1.79 1.79 1.79-1.79-1.8-1.79-1.78 1.79zM20 11v2h3v-2h-3zM4.22 19.78l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79zM12 6a6 6 0 100 12 6 6 0 000-12zM19.78 19.78l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79z" fill="currentColor"/></svg>'
+      }
+    }
+
+    function updateIcons() {
+      document.querySelectorAll("#theme-toggle-icon").forEach(function (icon) {
+        icon.innerHTML = svgFor(root.getAttribute("data-theme"))
+      })
+    }
+
+    function updateTheme() {
+      setTheme(getSavedTheme())
+      updateIcons()
+    }
+
+    document.addEventListener("click", function (e) {
+      const t = e.target.closest && e.target.closest("#theme-toggle")
+      if (!t) return
+
+      // Determine current explicit theme (null means Auto)
+      const current = root.getAttribute("data-theme")
+
+      // Toggle explicitly between 'dark' and 'light'. If Auto (no explicit
+      // attribute) then set to the opposite of the system theme.
+      if (current === "dark") {
+        // dark -> light
+        setTheme("light")
+        saveTheme("light")
+      } else if (current === "light") {
+        // light -> dark
+        setTheme("dark")
+        saveTheme("dark")
+      } else {
+        // Auto -> set to opposite of system
+        const sys = getSystemTheme()
+        const next = sys === "dark" ? "light" : "dark"
+        setTheme(next)
+        saveTheme(next)
+      }
+
+      // Update icons after DOM attribute changes
+      updateIcons()
+
+      // Mirror data-theme to <body> so any scripts that inspect body also
+      // notice the change, and set the CSS color-scheme property so
+      // native UI widgets (form controls, scrollbars) can update.
+      const applied = root.getAttribute("data-theme")
+      if (applied) {
+        document.body.setAttribute("data-theme", applied)
+        try {
+          document.documentElement.style.setProperty("color-scheme", applied)
+        } catch (e) {}
+      } else {
+        document.body.removeAttribute("data-theme")
+        try {
+          document.documentElement.style.removeProperty("color-scheme")
+        } catch (e) {}
+      }
+
+      // Dispatch an event so other scripts can react to the theme change
+      try {
+        window.dispatchEvent(
+          new CustomEvent("themechange", { detail: { theme: applied } }),
+        )
+      } catch (e) {}
+
+      // After theme change, re-apply Mermaid theme if present
+      if (window.__initMermaid) {
+        try {
+          window.__initMermaid(true)
+        } catch (e) {}
+      }
+    })
+
+    updateTheme()
+  })()
+
+  ;(function () {
+    const hasMermaid = !!document.querySelector(".mermaid")
+    if (!hasMermaid) {
+      return
+    }
+
+    function currentTheme() {
+      const mode = document.documentElement.getAttribute("data-theme")
+      // Map our site theme to mermaid themes
+      return mode === "dark" ? "dark" : "default"
+    }
+
+    async function loadMermaid() {
+      if (window.mermaid) {
+        return window.mermaid
+      }
+      // Use ESM CDN with a pinned major version for stability
+      const mod = await import(
+        "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"
+      )
+      window.mermaid = mod.default || mod
+      return window.mermaid
+    }
+
+    window.__initMermaid = async function (rerender = false) {
+      const mermaid = await loadMermaid()
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: currentTheme(),
+          securityLevel: "strict",
+        })
+        if (rerender && mermaid.contentLoaded) {
+          // Try to re-render diagrams when theme changes
+          mermaid.contentLoaded()
+        } else {
+          mermaid.run({ querySelector: ".mermaid" })
         }
+      } catch (e) {
+        // Avoid breaking the page on init errors
+        console && console.warn && console.warn("Mermaid init failed:", e)
+      }
+    }
 
-        function getSavedTheme() {
-            const q = getQueryTheme();
-            if (q !== undefined) {
-                return q;
-            } // honor query override if present
-            const saved = localStorage.getItem('theme');
-            return saved || getSystemTheme();
-        }
-
-        function saveTheme(mode) {
-            if (mode) {
-                localStorage.setItem('theme', mode);
-            } else {
-                localStorage.removeItem('theme');
-            }
-        }
-
-        function svgFor(name) {
-            if (name === 'dark') {
-                return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 0111.21 3c.12 0 .24 0 .36.01A7 7 0 1021 12.79z" fill="currentColor"/></svg>';
-            } else {
-                return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 8h2v-3h-2v3zM17.24 4.84l1.79 1.79 1.79-1.79-1.8-1.79-1.78 1.79zM20 11v2h3v-2h-3zM4.22 19.78l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79zM12 6a6 6 0 100 12 6 6 0 000-12zM19.78 19.78l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79z" fill="currentColor"/></svg>';
-            }
-        }
-
-        function updateIcons() {
-            document.querySelectorAll('#theme-toggle-icon').forEach(function (icon) {
-                icon.innerHTML = svgFor(root.getAttribute('data-theme'));
-            });
-        }
-
-        function updateTheme() {
-            setTheme(getSavedTheme());
-            updateIcons();
-        }
-
-        document.addEventListener('click', function (e) {
-            const t = e.target.closest && e.target.closest('#theme-toggle');
-            if (!t) return;
-
-            // Determine current explicit theme (null means Auto)
-            const current = root.getAttribute('data-theme');
-
-            // Toggle explicitly between 'dark' and 'light'. If Auto (no explicit
-            // attribute) then set to the opposite of the system theme.
-            if (current === 'dark') {
-                // dark -> light
-                setTheme('light');
-                saveTheme('light');
-            } else if (current === 'light') {
-                // light -> dark
-                setTheme('dark');
-                saveTheme('dark');
-            } else {
-                // Auto -> set to opposite of system
-                const sys = getSystemTheme();
-                const next = (sys === 'dark') ? 'light' : 'dark';
-                setTheme(next);
-                saveTheme(next);
-            }
-
-            // Update icons after DOM attribute changes
-            updateIcons();
-
-            // Mirror data-theme to <body> so any scripts that inspect body also
-            // notice the change, and set the CSS color-scheme property so
-            // native UI widgets (form controls, scrollbars) can update.
-            const applied = root.getAttribute('data-theme');
-            if (applied) {
-                document.body.setAttribute('data-theme', applied);
-                try { document.documentElement.style.setProperty('color-scheme', applied); } catch (e) {}
-            } else {
-                document.body.removeAttribute('data-theme');
-                try { document.documentElement.style.removeProperty('color-scheme'); } catch (e) {}
-            }
-
-            // Dispatch an event so other scripts can react to the theme change
-            try {
-                window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: applied } }));
-            } catch (e) {}
-
-            // After theme change, re-apply Mermaid theme if present
-            if (window.__initMermaid) {
-                try { window.__initMermaid(true); } catch (e) {}
-            }
-        });
-
-        updateTheme();
-    })();
-
-    (function () {
-        const hasMermaid = !!document.querySelector('.mermaid');
-        if (!hasMermaid) {
-            return;
-        }
-
-        function currentTheme() {
-            const mode = document.documentElement.getAttribute('data-theme');
-            // Map our site theme to mermaid themes
-            return (mode === 'dark') ? 'dark' : 'default';
-        }
-
-        async function loadMermaid() {
-            if (window.mermaid) {
-                return window.mermaid;
-            }
-            // Use ESM CDN with a pinned major version for stability
-            const mod = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
-            window.mermaid = mod.default || mod;
-            return window.mermaid;
-        }
-
-        window.__initMermaid = async function (rerender = false) {
-            const mermaid = await loadMermaid();
-            try {
-                mermaid.initialize({ startOnLoad: false, theme: currentTheme(), securityLevel: 'strict' });
-                if (rerender && mermaid.contentLoaded) {
-                    // Try to re-render diagrams when theme changes
-                    mermaid.contentLoaded();
-                } else {
-                    mermaid.run({ querySelector: '.mermaid' });
-                }
-            } catch (e) {
-                // Avoid breaking the page on init errors
-                console && console.warn && console.warn('Mermaid init failed:', e);
-            }
-        };
-
-        // Kick off initial render
-        window.__initMermaid();
-    })();
+    // Kick off initial render
+    window.__initMermaid()
+  })()
 </script>
 
 <!-- Simple cookie consent banner: asks only for analytics_storage -->
@@ -197,30 +222,69 @@
     margin: 0 auto;
     background: #fff;
     color: #111;
-    border: 1px solid rgba(0,0,0,0.12);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     padding: 0.8rem 1rem;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     border-radius: 6px;
     z-index: 9999;
     display: flex;
     align-items: center;
     gap: 1rem;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-family:
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial;
   }
-  #cookie-banner p { margin: 0; flex: 1 1 auto; font-size: 0.95rem; }
-  #cookie-banner .cb-actions { display:flex; gap:0.5rem; flex: 0 0 auto; }
-  #cookie-banner button { cursor: pointer; border: none; padding: 0.5rem 0.8rem; border-radius: 4px; font-size: 0.9rem; }
-  #cookie-accept { background: #0b74de; color: #fff; }
-  #cookie-decline { background: transparent; border: 1px solid rgba(0,0,0,0.08); color: inherit; }
+  #cookie-banner p {
+    margin: 0;
+    flex: 1 1 auto;
+    font-size: 0.95rem;
+  }
+  #cookie-banner .cb-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+  }
+  #cookie-banner button {
+    cursor: pointer;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  #cookie-accept {
+    background: #0b74de;
+    color: #fff;
+  }
+  #cookie-decline {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: inherit;
+  }
   @media (prefers-color-scheme: dark) {
-    #cookie-banner { background: #0b0b0b; color: #ddd; border-color: rgba(255,255,255,0.06); }
-    #cookie-decline { border-color: rgba(255,255,255,0.06); }
+    #cookie-banner {
+      background: #0b0b0b;
+      color: #ddd;
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+    #cookie-decline {
+      border-color: rgba(255, 255, 255, 0.06);
+    }
   }
 </style>
 
-<div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent">
+<div
+  id="cookie-banner"
+  role="dialog"
+  aria-live="polite"
+  aria-label="Cookie consent"
+>
   <p>
-    We use a minimal analytics cookie to help understand site usage. You can accept analytics or decline.
+    We use a minimal analytics cookie to help understand site usage. You can
+    accept analytics or decline.
   </p>
   <div class="cb-actions">
     <button id="cookie-decline" type="button">Decline</button>
@@ -229,85 +293,52 @@
 </div>
 
 <script id="cookie-banner-script">
-  (function () {
+    document.addEventListener('DOMContentLoaded', () => {
     const KEY = 'site_cookie_consent_v1';
-    const banner = document.getElementById('cookie-banner');
-    const accept = document.getElementById('cookie-accept');
+    const banner  = document.getElementById('cookie-banner');
+    const accept  = document.getElementById('cookie-accept');
     const decline = document.getElementById('cookie-decline');
 
-    function read() {
-      try {
-        return JSON.parse(localStorage.getItem(KEY) || '{}');
-      } catch (e) {
-        return {};
-      }
-    }
+    // If banner isn’t on this page, don’t crash (and keep analytics denied)
+    if (!banner || !accept || !decline) return;
 
-    function write(obj) {
-      try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch (e) {}
-    }
+    const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
+    const write = (obj) => { try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch {} };
 
-    function hide() {
-      banner.style.display = 'none';
-      banner.setAttribute('aria-hidden', 'true');
-    }
+    const hide = () => { banner.style.display = 'none'; banner.setAttribute('aria-hidden', 'true'); };
+    const show = () => { banner.style.display = 'flex'; banner.removeAttribute('aria-hidden'); accept.focus(); };
 
-    function show() {
-      banner.style.display = 'flex';
-      banner.removeAttribute('aria-hidden');
-      // focus the primary action for keyboard users
-      accept && accept.focus();
-    }
-
-    function setGtagConsent(state) {
-      // state: 'granted' or 'denied'
-      if (typeof window.gtag === 'function') {
-        try {
-          gtag('consent', 'update', { analytics_storage: state });
-          // re-configure analytics so page_view is sent after consent granted
-          if (state === 'granted') {
-            {% if site.google_analytics %}
-            gtag('config', '{{ site.google_analytics }}');
-            {% endif %}
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
-    }
-
-    // Ensure ad-related storage remains denied explicitly
-    if (typeof window.gtag === 'function') {
-      try {
-        gtag('consent', 'default', {
-          ad_storage: 'denied',
-          ad_personalization: 'denied',
-          ad_user_data: 'denied'
+    {% if site.google_analytics %}
+        const sendPageViewNow = () => {
+        gtag('event', 'page_view', {
+            page_location: location.href,
+            page_path: location.pathname + location.search,
+            page_title: document.title
         });
-      } catch (e) {}
-    }
+        };
+
+        const grant = () => {
+        gtag('consent', 'update', { analytics_storage: 'granted' });
+        // OK to keep config call; page_view is sent explicitly below
+        gtag('config', 'G-90YGBLJTS2');
+        sendPageViewNow();
+        };
+
+        const deny = () => {
+        gtag('consent', 'update', { analytics_storage: 'denied' });
+        };
+    {% else %}
+        const grant = () => {};
+        const deny = () => {};
+    {% endif %}
 
     const state = read();
-    if (state && (state.analytics === true || state.analytics === false)) {
-      // Apply stored preference
-      setGtagConsent(state.analytics ? 'granted' : 'denied');
-      hide();
-      return;
-    }
+    if (state.analytics === true)  { grant(); hide(); return; }
+    if (state.analytics === false) { deny();  hide(); return; }
 
-    // No preference stored — show banner
     show();
 
-    accept.addEventListener('click', function () {
-      write({ analytics: true });
-      setGtagConsent('granted');
-      hide();
-    });
-
-    decline.addEventListener('click', function () {
-      write({ analytics: false });
-      setGtagConsent('denied');
-      hide();
-    });
-  })();
+    accept.addEventListener('click', () => { write({ analytics: true });  grant(); hide(); });
+    decline.addEventListener('click', () => { write({ analytics: false }); deny();  hide(); });
+  });
 </script>
