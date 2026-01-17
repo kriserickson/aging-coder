@@ -300,13 +300,17 @@
     const decline = document.getElementById('cookie-decline');
 
     // If banner isn’t on this page, don’t crash (and keep analytics denied)
-    if (!banner || !accept || !decline) return;
+    if (!banner || !accept || !decline) {
+      return;
+    }
 
     const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
     const write = (obj) => { try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch {} };
 
     const hide = () => { banner.style.display = 'none'; banner.setAttribute('aria-hidden', 'true'); };
-    const show = () => { banner.style.display = 'flex'; banner.removeAttribute('aria-hidden'); accept.focus(); };
+    const show = () => { 
+      banner.style.display = 'flex'; banner.removeAttribute('aria-hidden'); accept.focus(); 
+    };
 
     {% if site.google_analytics %}
         const sendPageViewNow = () => {
