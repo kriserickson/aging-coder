@@ -1,0 +1,197 @@
+{
+  "personal": {
+    "name": "Kris Erickson",
+    "location": "Vancouver, BC",
+    "email": "kristian.erickson@gmail.com",
+    "phone": "604-908-0432",
+    "github": "https://github.com/kriserickson",
+    "linkedin": "https://linkedin.com/in/kristian-l-erickson"
+  },
+  "summary": [
+    "25+ years of building and modernizing enterprise SaaS and software platforms, with expertise in scalable, reliable, and maintainable systems.",
+    "Helped architect and develop systems which processed millions of prints per year across 10+ countries; web + kiosk platforms handled ~$1B in annual sales at peak.",
+    "Successfully managed, mentored, and grew high-performing development teams of up to 15 programmers. Championed adoption of modern development practices, including AI coding tools (Copilot since 2021; Cursor, Windsurf; modern agentic tooling) to accelerate delivery and code quality.",
+    "Expert in modernizing and integrating legacy systems into scalable, maintainable platforms used by major retailers and high-volume consumer channels.",
+    "Passionate about leveraging AI/ML and emerging technologies to deliver real-world products. Experienced in applying machine learning and automation to improve workflows and customer experiences.",
+    "Pragmatic problem solver, recognized for delivering robust, maintainable solutions on time."
+  ],
+  "experience": [
+    {
+      "title": "Director of Software Development",
+      "company": "Storefront.com / Macdonald Harris and Associates",
+      "location": "Vancouver, BC",
+      "period": "August 2020 – July 2025",
+      "achievements": [
+        "Directed company-wide software strategy, architecture, and full-cycle delivery across web, mobile, and kiosk platforms.",
+        "Created and delivered consumer-facing mobile applications in accelerated timelines, achieving widespread adoption and measurable customer impact.",
+        "Led modernization of critical legacy systems, integrating web and mobile platforms, improving maintainability, reducing operational costs, and increasing system performance and stability.",
+        "Co-architected and delivered a distributed SaaS platform for customizable products and e-commerce integrations, leveraging microservices and APIs.",
+        "Oversaw development of core libraries and production systems, ensuring accuracy, efficiency, and reliability in high-volume workflows.",
+        "Managed and mentored teams of up to 10 developers; implemented structured career development paths, guiding early-career engineers into senior and leadership roles."
+      ]
+    },
+    {
+      "title": "Team Lead / Senior Software Architect",
+      "company": "Storefront.com / Macdonald Harris and Associates",
+      "location": "Vancouver, BC",
+      "period": "January 2010 – July 2020",
+      "achievements": [
+        "Led the launch and architecture of new Android-based platforms that doubled engagement and revenue while improving security and user experience.",
+        "Designed and developed the Kiosk File Transfer and Payment system in Node.js and React, enabling seamless photo transfer from mobile devices to kiosks and secure phone-based payments — eliminating kiosk credit card hardware costs and security risks. Adopted by thousands of legacy Windows and modern Android kiosks across multiple major retailers.",
+        "Architected and implemented the Storefront Remote Management platform for centralized monitoring, remote access, scheduling, and automated error reporting for kiosks, lab software, and printers. Scaled to over 30,000 devices and sustained backend throughput of 12,000 requests per minute.",
+        "Directed agile teams of 10–15 developers through multiple full-cycle deliveries, integrating product, QA, and operations teams to accelerate time-to-market.",
+        "Enhanced the Storefront E-Commerce platform and backend administrative tools with dozens of new features, streamlining retailer workflows, increasing adoption rates, and improving the end-customer experience.",
+        "Delivered retailer-specific integrations and plugins enabling online customization and ordering of photo products — including photo books, calendars, and template-based prints — directly from partner websites, expanding market reach and transaction volume."
+      ]
+    },
+    {
+      "title": "Senior Software Developer",
+      "company": "Storefront.com / Macdonald Harris and Associates",
+      "location": "Vancouver, BC",
+      "period": "December 1998 – December 2009",
+      "achievements": [
+        "Architected and developed the Storefront E-Commerce Platform (launched 2000; still operational after 25 years), powering photo product ordering for 10+ major retailers including Rite Aid, Costco Mexico, Fred Meyer, Smiths, Duane Reade, King Soopers, London Drugs, Benavides, and Dodd's Photo.",
+        "Served as lead architect for the Storefront Windows Photo Kiosk (launched 2005), which processed millions of prints annually and drove over $1B in photo product sales by 2010.",
+        "Designed and implemented scalable templating and rendering engines that powered dynamic content generation for enterprise platforms."
+      ]
+    },
+    {
+      "title": "Programmer",
+      "company": "Canadian Forest Products (Canfor)",
+      "location": "Vancouver, BC",
+      "period": "Mar 1998 – Dec 1998",
+      "achievements": [
+        "Developed a Visual Basic system for importing, cataloging, and displaying Material Safety Data Sheets (MSDS), replacing a multi-binder paper process with a searchable digital platform accessible from terminals across all Canfor operations, improving compliance and retrieval times.",
+        "Built and maintained internal and external websites using HTML and ASP, supporting corporate communications and operational needs."
+      ]
+    },
+    {
+      "title": "Programmer",
+      "company": "TRIUMF",
+      "location": "Vancouver, BC",
+      "period": "May 1997 – Dec 1997",
+      "achievements": [
+        "Migrated legacy Oracle Forms from mainframe terminals to TRIUMF's intranet using the Borland IntraBuilder web platform, enabling easier access and modernizing data workflows for researchers and administrative staff.",
+        "Developed applications in Oracle Developer 2000 (Forms 4.5), Pro*C, and CAMAC under OpenVMS to support experimental data acquisition and internal operations."
+      ]
+    },
+    {
+      "title": "Technical Writer & Course Marker",
+      "company": "Langara College",
+      "location": "Vancouver, BC",
+      "period": "Sept 1996 – July 1998",
+      "achievements": [
+        "Authored comprehensive technical manuals for computer labs, producing both instructor and student editions that improved course delivery and lab usability.",
+        "Provided grading, detailed feedback, and mentorship for programming coursework, helping students progress from foundational coding skills to more advanced software development practices."
+      ]
+    }
+  ],
+  "skills": {
+    "frontend": {
+      "technologies": ["TypeScript", "JavaScript", "Vue", "React", "Angular", "HTML", "CSS"],
+      "tools": ["Vite", "Webpack", "Rollup", "Gulp", "Websockets", "PWAs"],
+      "description": "Expert in modern frontend development with complex build systems and real-time applications."
+    },
+    "backend": {
+      "technologies": ["PHP", "C#", "Node.js", "Python"],
+      "integration": ["Solace", "Kafka", "RabbitMQ", "REST APIs", "GraphQL"],
+      "description": "Strong backend development experience with message buses and API design."
+    },
+    "ai_ml": {
+      "technologies": ["PyTorch", "OpenCV", "Scikit-learn", "Hugging Face Transformers"],
+      "specialties": ["Fine-tuning LLMs (LoRA, SIT)", "prompt engineering", "AI-assisted coding tools"],
+      "tools": ["GitHub Copilot", "Cursor", "Windsurf", "agentic development environments"],
+      "description": "Passionate about AI/ML with hands-on experience in machine learning and modern AI tools."
+    },
+    "mobile": {
+      "platforms": ["Android", "iOS", "cross-platform"],
+      "technologies": ["Java", "Kotlin", "Jetpack Compose", "Swift", "SwiftUI", "Flutter", "Cordova"],
+      "description": "Full-stack mobile development experience across native and cross-platform technologies."
+    },
+    "databases": {
+      "technologies": ["MySQL", "PostgreSQL", "SQLite", "MongoDB", "Redis", "CouchDB"],
+      "description": "Extensive database experience with both SQL and NoSQL technologies."
+    },
+    "practices": {
+      "methodologies": ["Agile/Lean", "TDD", "code review leadership"],
+      "architecture": ["scalable microservices architecture", "system modernization"],
+      "description": "Strong foundation in modern development practices and architectural patterns."
+    },
+    "devops": {
+      "technologies": ["Docker", "Kubernetes", "Helm Charts", "Kustomize"],
+      "cicd": ["GitHub Actions", "GitLab CI", "Jenkins", "Kaniko"],
+      "architecture": ["containerized build pipelines", "event-driven architecture"],
+      "description": "Comprehensive DevOps experience with containerization and CI/CD pipelines."
+    },
+    "languages": {
+      "breadth": "Released production code in 10+ languages; experience in 20+ programming languages",
+      "description": "Polyglot developer with extensive language experience across different paradigms."
+    }
+  },
+  "education": [
+    {
+      "institution": "Langara College",
+      "location": "Vancouver, BC",
+      "period": "1995 – 1998",
+      "program": "Advanced Computer Studies and Technology Program (ACST)"
+    },
+    {
+      "institution": "University of Western Ontario",
+      "location": "London, ON",
+      "period": "Graduated 1993",
+      "degree": "Honours BA in English Literature"
+    }
+  ],
+  "chat": {
+    "welcome": "What would you like to know about Kris's experience?",
+    "sample_questions": [
+      "Tell me about Kris's experience with ECommerce",
+      "How did Kris quickly build a mobile app for Fuji Mexico and Telcel?",
+      "What are Kris's key technical skills?",
+      "Describe Kris's management experience",
+      "What major projects has Kris led?",
+      "How has Kris worked with AI/ML technologies?",
+      "Tell me about Kris's background in mobile development",
+      "What's Kris's experience with system architecture?",
+      "How has Kris modernized legacy systems?",
+      "What's Kris's educational background?"
+    ]
+  },
+  "projects": {
+    "storefront_ecommerce": {
+      "name": "Storefront E-Commerce Platform",
+      "period": "2000 - Present",
+      "description": "Architected and developed enterprise e-commerce platform powering photo product ordering for 10+ major retailers",
+      "impact": "Still operational after 25 years, processing millions of orders",
+      "technologies": ["Web", "E-commerce", "Enterprise Systems"]
+    },
+    "storefront_kiosk": {
+      "name": "Storefront Windows Photo Kiosk",
+      "period": "2005 - Present",
+      "description": "Lead architect for Windows photo kiosk system",
+      "impact": "Processed millions of prints annually, drove over $1B in sales by 2010",
+      "technologies": ["Windows", "Kiosk Systems", "Photo Processing"]
+    },
+    "file_transfer_payment": {
+      "name": "Kiosk File Transfer and Payment System",
+      "period": "2010s",
+      "description": "Node.js and React system for mobile-to-kiosk photo transfer and phone-based payments",
+      "impact": "Eliminated credit card hardware costs and security risks, adopted by thousands of kiosks",
+      "technologies": ["Node.js", "React", "Mobile Integration", "Payment Systems"]
+    },
+    "remote_management": {
+      "name": "Storefront Remote Management Platform",
+      "period": "2010s",
+      "description": "Centralized monitoring and remote management platform for kiosks and lab equipment",
+      "impact": "Scaled to 30,000+ devices with 12,000 requests/minute throughput",
+      "technologies": ["Distributed Systems", "Monitoring", "Remote Management"]
+    },
+    "saas_platform": {
+      "name": "Distributed SaaS Platform",
+      "period": "2020s",
+      "description": "Microservices-based SaaS platform for customizable products and e-commerce integrations",
+      "impact": "Enabled rapid partner integration and scalability",
+      "technologies": ["Microservices", "SaaS", "APIs", "Cloud Architecture"]
+    }
+  }
+}
