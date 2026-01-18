@@ -86,48 +86,128 @@
       ]
     }
   ],
-  "skills": {
-    "frontend": {
-      "technologies": ["TypeScript", "JavaScript", "Vue", "React", "Angular", "HTML", "CSS"],
-      "tools": ["Vite", "Webpack", "Rollup", "Gulp", "Websockets", "PWAs"],
+  "skills": [
+    {
+      "id": "frontend",
+      "title": "Frontend",
+      "items": [
+        {
+          "label": "Technologies",
+          "values": ["TypeScript", "JavaScript", "Vue", "React", "Angular", "HTML", "CSS"]
+        },
+        {
+          "label": "Tools",
+          "values": ["Vite", "Webpack", "Rollup", "Gulp", "Websockets", "PWAs"]
+        }
+      ],
       "description": "Expert in modern frontend development with complex build systems and real-time applications."
     },
-    "backend": {
-      "technologies": ["PHP", "C#", "Node.js", "Python"],
-      "integration": ["Solace", "Kafka", "RabbitMQ", "REST APIs", "GraphQL"],
+    {
+      "id": "backend",
+      "title": "Backend",
+      "items": [
+        {
+          "label": "Technologies",
+          "values": ["PHP", "C#", "Node.js", "Python"]
+        },
+        {
+          "label": "Integration",
+          "values": ["Solace", "Kafka", "RabbitMQ", "REST APIs", "GraphQL"]
+        }
+      ],
       "description": "Strong backend development experience with message buses and API design."
     },
-    "ai_ml": {
-      "technologies": ["PyTorch", "OpenCV", "Scikit-learn", "Hugging Face Transformers"],
-      "specialties": ["Fine-tuning LLMs (LoRA, SIT)", "prompt engineering", "AI-assisted coding tools"],
-      "tools": ["GitHub Copilot", "Cursor", "Windsurf", "agentic development environments"],
+    {
+      "id": "ai_ml",
+      "title": "AI/ML",
+      "items": [
+        {
+          "label": "Technologies",
+          "values": ["PyTorch", "OpenCV", "Scikit-learn", "Hugging Face Transformers"]
+        },
+        {
+          "label": "Specialties",
+          "values": ["Fine-tuning LLMs (LoRA, SIT)", "Prompt engineering", "AI-assisted coding tools"]
+        },
+        {
+          "label": "Tools",
+          "values": ["GitHub Copilot", "Cursor", "Windsurf", "agentic development environments"]
+        }
+      ],
       "description": "Passionate about AI/ML with hands-on experience in machine learning and modern AI tools."
     },
-    "mobile": {
-      "platforms": ["Android", "iOS", "cross-platform"],
-      "technologies": ["Java", "Kotlin", "Jetpack Compose", "Swift", "SwiftUI", "Flutter", "Cordova"],
+    {
+      "id": "mobile",
+      "title": "Mobile",
+      "items": [
+        {
+          "label": "Platforms",
+          "values": ["Android", "iOS", "cross-platform"]
+        },
+        {
+          "label": "Technologies",
+          "values": ["Java", "Kotlin", "Jetpack Compose", "Swift", "SwiftUI", "Flutter", "Cordova"]
+        }
+      ],
       "description": "Full-stack mobile development experience across native and cross-platform technologies."
     },
-    "databases": {
-      "technologies": ["MySQL", "PostgreSQL", "SQLite", "MongoDB", "Redis", "CouchDB"],
+    {
+      "id": "databases",
+      "title": "Databases",
+      "items": [
+        {
+          "label": "Technologies",
+          "values": ["MySQL", "PostgreSQL", "SQLite", "MongoDB", "Redis", "CouchDB"]
+        }
+      ],
       "description": "Extensive database experience with both SQL and NoSQL technologies."
     },
-    "practices": {
-      "methodologies": ["Agile/Lean", "TDD", "code review leadership"],
-      "architecture": ["scalable microservices architecture", "system modernization"],
+    {
+      "id": "practices",
+      "title": "Practices",
+      "items": [
+        {
+          "label": "Methodologies",
+          "values": ["Agile/Lean", "TDD", "code review leadership"]
+        },
+        {
+          "label": "Architecture",
+          "values": ["scalable microservices architecture", "system modernization"]
+        }
+      ],
       "description": "Strong foundation in modern development practices and architectural patterns."
     },
-    "devops": {
-      "technologies": ["Docker", "Kubernetes", "Helm Charts", "Kustomize"],
-      "cicd": ["GitHub Actions", "GitLab CI", "Jenkins", "Kaniko"],
-      "architecture": ["containerized build pipelines", "event-driven architecture"],
+    {
+      "id": "devops",
+      "title": "DevOps",
+      "items": [
+        {
+          "label": "Technologies",
+          "values": ["Docker", "Kubernetes", "Helm Charts", "Kustomize"]
+        },
+        {
+          "label": "CI/CD",
+          "values": ["GitHub Actions", "GitLab CI", "Jenkins", "Kaniko"]
+        },
+        {
+          "label": "Architecture",
+          "values": ["containerized build pipelines", "event-driven architecture"]
+        }
+      ],
       "description": "Comprehensive DevOps experience with containerization and CI/CD pipelines."
     },
-    "languages": {
-      "breadth": "Released production code in 10+ languages; experience in 20+ programming languages",
+    {
+      "id": "languages",
+      "title": "Languages",
+      "items": [
+        {
+          "label": "Breadth",
+          "values": ["Released production code in 10+ languages; experience in 20+ programming languages"]
+        }
+      ],
       "description": "Polyglot developer with extensive language experience across different paradigms."
     }
-  },
+  ],
   "education": [
     {
       "institution": "Langara College",
@@ -157,41 +237,46 @@
       "What's Kris's educational background?"
     ]
   },
-  "projects": {
-    "storefront_ecommerce": {
+  "projects": [
+    {
+      "id": "storefront_ecommerce",
       "name": "Storefront E-Commerce Platform",
       "period": "2000 - Present",
       "description": "Architected and developed enterprise e-commerce platform powering photo product ordering for 10+ major retailers",
       "impact": "Still operational after 25 years, processing millions of orders",
       "technologies": ["Web", "E-commerce", "Enterprise Systems"]
     },
-    "storefront_kiosk": {
+    {
+      "id": "storefront_kiosk",
       "name": "Storefront Windows Photo Kiosk",
       "period": "2005 - Present",
       "description": "Lead architect for Windows photo kiosk system",
       "impact": "Processed millions of prints annually, drove over $1B in sales by 2010",
       "technologies": ["Windows", "Kiosk Systems", "Photo Processing"]
     },
-    "file_transfer_payment": {
+    {
+      "id": "file_transfer_payment",
       "name": "Kiosk File Transfer and Payment System",
       "period": "2010s",
       "description": "Node.js and React system for mobile-to-kiosk photo transfer and phone-based payments",
       "impact": "Eliminated credit card hardware costs and security risks, adopted by thousands of kiosks",
       "technologies": ["Node.js", "React", "Mobile Integration", "Payment Systems"]
     },
-    "remote_management": {
+    {
+      "id": "remote_management",
       "name": "Storefront Remote Management Platform",
       "period": "2010s",
       "description": "Centralized monitoring and remote management platform for kiosks and lab equipment",
       "impact": "Scaled to 30,000+ devices with 12,000 requests/minute throughput",
       "technologies": ["Distributed Systems", "Monitoring", "Remote Management"]
     },
-    "saas_platform": {
+    {
+      "id": "saas_platform",
       "name": "Distributed SaaS Platform",
       "period": "2020s",
       "description": "Microservices-based SaaS platform for customizable products and e-commerce integrations",
       "impact": "Enabled rapid partner integration and scalability",
       "technologies": ["Microservices", "SaaS", "APIs", "Cloud Architecture"]
     }
-  }
+  ]
 }

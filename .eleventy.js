@@ -544,6 +544,19 @@ module.exports = function (eleventyConfig) {
         watch: ["_site/assets/**/*.css", "_site/assets/**/*.js"]
     });
 
+    // After build: copy the generated CV data into the API worker so it stays in sync
+    eleventyConfig.on('afterBuild', () => {
+        try {
+            const srcFile = path.join(process.cwd(), 'src', '_data', 'cv.json');
+            const destDir = path.join(process.cwd(), 'api-worker', 'src', 'rag-data');
+            fs.mkdirSync(destDir, { recursive: true });
+            fs.copyFileSync(srcFile, path.join(destDir, 'cv.json'));
+            console.log('✅ Copied cv.json to api-worker/src/rag-data');
+        } catch (e) {
+            console.warn('⚠️ Failed to copy cv.json to api-worker/src/rag-data: ' + (e && e.message));
+        }
+    });
+
     return {
         dir: {
             input: 'src',

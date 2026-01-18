@@ -133,8 +133,13 @@ body.modal-open {
 }
 
 .exp-toggle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     transition: transform 0.3s ease;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0;
 }
 
 .exp-toggle.expanded {
@@ -191,11 +196,48 @@ body.modal-open {
     box-shadow: 0 12px 22px rgba(var(--cv-shadow-rgb), 0.08);
 }
 
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
 .skill-category-title {
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.skill-toggle {
+    font-size: 1.05rem;
+    transition: transform 0.3s ease;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0;
+}
+
+.skill-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.skill-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.skill-details.expanded {
+    max-height: 600px;
+}
+
+.skill-line {
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
 }
 
 .skill-details > div {
@@ -237,6 +279,20 @@ body.modal-open {
     align-items: center;
     flex-wrap: wrap;
     gap: 0.5rem;
+}
+
+.project-toggle {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0;
+}
+
+.project-toggle.expanded {
+    transform: rotate(180deg);
 }
 
 .project-title {
