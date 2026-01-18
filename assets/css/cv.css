@@ -1,7 +1,7 @@
 .cv-container {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 0 2rem;
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     line-height: 1.6;
     font-size: 0.95rem;
@@ -60,10 +60,11 @@ body.modal-open {
 }
 
 .cv-summary {
+    position: relative;
     font-size: 0.95rem;
     line-height: 1.7;
     background: var(--surface);
-    padding: 1.5rem 1.8rem;
+    padding: 1.5rem 1.8rem 3rem;
     border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--muted-color) 25%, transparent);
     box-shadow: 0 12px 24px rgba(var(--cv-shadow-rgb), 0.08);
@@ -132,35 +133,33 @@ body.modal-open {
     color: var(--muted-color);
 }
 
-.exp-toggle {
-    font-size: 1.1rem;
+/* Shared toggle styles for all section toggles (exp-toggle, project-toggle) */
+.toggle {
+    font-size: 1.05rem;
     transition: transform 0.3s ease;
     background: transparent;
     border: none;
     color: var(--text-color);
     cursor: pointer;
     padding: 0;
-    /* Remove default outline by default (for mouse interaction),
-       but preserve keyboard focus styling via :focus-visible below. */
     outline: none;
 }
 
-/* Keep the rotation behavior for expanded state */
-.exp-toggle.expanded {
+/* Keep rotation behavior for expanded state */
+.toggle.expanded {
     transform: rotate(180deg);
 }
 
-/* Preserve clear focus styling for keyboard users only */
-.exp-toggle:focus-visible {
+/* Focus styles for keyboard users only */
+.toggle:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--link) 80%, transparent);
     outline-offset: 3px;
     border-radius: 6px;
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 12%, transparent);
 }
 
-/* Fallback: ensure mouse-induced focus doesn't show outline in browsers
-   without :focus-visible by explicitly hiding focus for mouse interactions */
-.exp-toggle:focus:not(:focus-visible) {
+/* Fallback so mouse-induced focus doesn't show outline in browsers without :focus-visible */
+.toggle:focus:not(:focus-visible) {
     outline: none;
     box-shadow: none;
 }
@@ -216,6 +215,164 @@ body.modal-open {
     border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--muted-color) 25%, transparent);
     box-shadow: 0 12px 22px rgba(var(--cv-shadow-rgb), 0.08);
+    position: relative;
+}
+
+.exp-actions,
+.project-actions {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.more-info-btn {
+    background: #eee;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+}
+
+.more-info-btn:hover {
+    background: #e4e4e4;
+}
+
+.more-info-btn:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--link) 80%, transparent);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+/* Summary-specific placement and primary styling */
+.cv-summary {
+    position: relative;
+}
+
+.summary-actions {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 0;
+}
+
+.summary-actions .more-info-btn {
+    background: var(--link);
+    color: white;
+    border: none;
+    box-shadow: 0 6px 18px rgba(var(--cv-shadow-rgb), 0.08);
+}
+
+.summary-actions .more-info-btn:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+/* Detail action placement for expanded sections (Experience, Skills, Projects, Education) */
+.exp-details,
+.skill-details,
+.project-details,
+.education-item {
+    position: relative;
+}
+
+/* Provide room for the action button when the detail is expanded */
+.exp-details.expanded,
+.project-details.expanded,
+.skill-category {
+    padding-bottom: 3rem;
+    /* Ensure button doesn't overlap content */
+}
+
+.detail-actions {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 0;
+}
+
+.detail-actions .more-info-btn {
+    background: var(--link);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(var(--cv-shadow-rgb), 0.06);
+    font-size: 0.9rem;
+}
+
+.detail-actions .more-info-btn:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+    .summary-actions {
+        position: static;
+        margin-top: 1rem;
+    }
+
+    .summary-actions .more-info-btn {
+        width: 100%;
+    }
+
+    .exp-details.expanded,
+    .skill-details,
+    .project-details,
+    .education-item {
+        padding-bottom: 0.75rem;
+    }
+
+    .detail-actions {
+        position: static;
+        display: block;
+        margin-top: 1rem;
+        text-align: right;
+    }
+
+    .detail-actions .more-info-btn {
+        width: auto;
+        min-width: 140px;
+    }
+}
+
+.summary-actions .more-info-btn {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .more-info-btn {
+        padding: 6px 10px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Sample question boxes */
+.sample-question {
+    display: inline-block;
+    margin: 6px 6px 0 0;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--surface) 85%, var(--muted-color) 15%);
+    border: 1px solid color-mix(in srgb, var(--muted-color) 20%, transparent);
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.sample-question:hover,
+.sample-question:focus {
+    background: color-mix(in srgb, var(--surface) 75%, var(--muted-color) 25%);
+    outline: none;
+}
+
+.sample-question:focus {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--link) 10%, transparent);
 }
 
 .skill-category-title {
@@ -285,20 +442,6 @@ body.modal-open {
     gap: 0.5rem;
 }
 
-.project-toggle {
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    cursor: pointer;
-    padding: 0;
-}
-
-.project-toggle.expanded {
-    transform: rotate(180deg);
-}
-
 .project-title {
     font-size: 1.05rem;
     font-weight: 600;
@@ -313,14 +456,6 @@ body.modal-open {
     margin-right: 1.5rem;
 }
 
-.project-toggle {
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-}
-
-.project-toggle.expanded {
-    transform: rotate(180deg);
-}
 
 .project-details {
     max-height: 0;
@@ -620,7 +755,7 @@ body.modal-open {
 
 @media (max-width: 768px) {
     .cv-container {
-        padding: 1rem;
+        padding: 0 1rem;
     }
 
     .cv-name {

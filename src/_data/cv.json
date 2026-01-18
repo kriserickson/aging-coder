@@ -237,6 +237,248 @@
       "What's Kris's educational background?"
     ]
   },
+  "more_info": {
+    "summary": [
+      {
+        "more_info_questions": [
+          "Can you expand on Kris's enterprise SaaS experience?",
+          "What measurable outcomes came from those projects?"
+        ],
+        "more_info_answers": [
+          "Kris led architecture and delivery for large SaaS and enterprise platforms, focusing on reliability and maintainability.",
+          "These projects improved performance and reduced operational costs while supporting high transaction volumes."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "Tell me more about the high-volume processing systems Kris built.",
+          "Which countries or partners were involved?"
+        ],
+        "more_info_answers": [
+          "Kris helped design systems handling millions of prints per year across multiple countries and retail partners.",
+          "These systems integrated with POS and retail partners across North America and Mexico."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "How has Kris used AI/ML and modern tools to improve delivery?",
+          "Which AI tools has Kris adopted?"
+        ],
+        "more_info_answers": [
+          "Kris has championed AI-assisted coding tools like GitHub Copilot and agentic tooling to speed delivery and improve code quality.",
+          "Tools include GitHub Copilot, Cursor, and modern model-driven or agentic workflows."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "Can you describe Kris's approach to modernizing legacy systems?"
+        ],
+        "more_info_answers": [
+          "Kris evaluates legacy chokepoints and incrementally refactors to service-based components, introducing observability and automated testing to reduce risk."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What kinds of machine learning / automation has Kris applied?"
+        ],
+        "more_info_answers": [
+          "Practical ML work has included fine-tuning models for specific tasks, using PyTorch and Hugging Face for prototypes and integrating results into automation workflows."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "How would someone contact Kris to discuss opportunities?"
+        ],
+        "more_info_answers": [
+          "Email at kristian.erickson@gmail.com or visit Kris's GitHub and LinkedIn profiles linked on the CV page."
+        ]
+      }
+    ],
+    "experience": [
+      {
+        "more_info_questions": [
+          "What were the key responsibilities as Director of Software Development?",
+          "What team size and scope did that role cover?"
+        ],
+        "more_info_answers": [
+          "Directed company-wide software strategy, architecture, and delivery across web, mobile, and kiosk platforms.",
+          "Managed and mentored teams of up to 10 developers and coordinated cross-functional stakeholders."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What was the Android-based platform project and its impact?",
+          "How did the kiosk file transfer and payment system work?"
+        ],
+        "more_info_answers": [
+          "The Android platform replaced older Windows kiosks and improved security and engagement metrics.",
+          "The file transfer and phone-payment system used Node.js and React, enabling mobile to kiosk workflows and phone-based payments, reducing hardware costs."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What long-running projects were maintained during the Senior Developer role?"
+        ],
+        "more_info_answers": [
+          "The Storefront E-Commerce Platform and Windows Photo Kiosk were long-running projects that handled large production loads and retail integrations."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What systems were modernized at Canfor?"
+        ],
+        "more_info_answers": [
+          "A Visual Basic system replaced paper MSDS and improved compliance and retrieval times across operations."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What legacy migration work was done at TRIUMF?"
+        ],
+        "more_info_answers": [
+          "Migrated Oracle Forms and built web-based access for researchers, modernizing data workflows."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What teaching and documentation work did Kris do at Langara?"
+        ],
+        "more_info_answers": [
+          "Authored technical manuals and provided mentoring and grading for programming coursework."
+        ]
+      }
+    ],
+    "skills": {
+      "frontend": {
+        "more_info_questions": [
+          "Which frontend frameworks are you most experienced with?",
+          "Do you have experience building PWAs?"
+        ],
+        "more_info_answers": [
+          "Extensive work in React, Vue, and Angular, with TypeScript used in production applications.",
+          "Yes — built progressive web apps and real-time frontend features with service workers and websockets."
+        ]
+      },
+      "backend": {
+        "more_info_questions": [
+          "Which back-end languages and integration patterns have you used?"
+        ],
+        "more_info_answers": [
+          "Experience with Node.js, PHP, C#, Python and integrating with message buses like Kafka and RabbitMQ."
+        ]
+      },
+      "ai_ml": {
+        "more_info_questions": [
+          "Which ML frameworks have you used and for what?"
+        ],
+        "more_info_answers": [
+          "Prototyped models with PyTorch and Hugging Face; used OpenCV and Scikit-learn for specific vision and ML tasks."
+        ]
+      },
+      "mobile": {
+        "more_info_questions": [
+          "Platform experience and native vs cross-platform?"
+        ],
+        "more_info_answers": [
+          "Native Android and iOS experience alongside cross-platform work using Flutter and Cordova."
+        ]
+      },
+      "databases": {
+        "more_info_questions": [
+          "Which databases are you familiar with?"
+        ],
+        "more_info_answers": [
+          "MySQL, PostgreSQL, SQLite, MongoDB, Redis, and CouchDB for various storage needs."
+        ]
+      },
+      "practices": {
+        "more_info_questions": [
+          "What development methodologies do you prefer?"
+        ],
+        "more_info_answers": [
+          "Agile/Lean, TDD, and strong code review practices for maintainable outcomes."
+        ]
+      },
+      "devops": {
+        "more_info_questions": [
+          "What CI/CD and containerization experience do you have?"
+        ],
+        "more_info_answers": [
+          "Docker and Kubernetes in production along with GitHub Actions and Jenkins CI/CD pipelines."
+        ]
+      },
+      "languages": {
+        "more_info_questions": [
+          "How many programming languages have you worked with?"
+        ],
+        "more_info_answers": [
+          "Released production code in 10+ languages and experimented with 20+ languages in total."
+        ]
+      }
+    },
+    "projects": [
+      {
+        "more_info_questions": [
+          "What is the Storefront E-Commerce Platform?",
+          "What was your role in it?"
+        ],
+        "more_info_answers": [
+          "An enterprise e-commerce system for photo products used by multiple retailers; Kris architected and developed the platform.",
+          "Provided long-term maintenance and scaling work to keep it operational for decades."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "Tell me about the kiosk system and its impact."
+        ],
+        "more_info_answers": [
+          "The Windows kiosk processed millions of prints and drove significant retail revenue; Kris was lead architect."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What problem did the file transfer and payment system solve?"
+        ],
+        "more_info_answers": [
+          "Enabled mobile-to-kiosk transfer and phone payment, removing the need for credit-card hardware and reducing PCI scope."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What does the Remote Management Platform do?"
+        ],
+        "more_info_answers": [
+          "Centralized monitoring and remote control for kiosks and lab equipment; scaled to tens of thousands of devices."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "How did the distributed SaaS platform help partners?"
+        ],
+        "more_info_answers": [
+          "Made it simpler for partners to integrate with APIs and scale customization in a microservices architecture."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "more_info_questions": [
+          "What did Kris study at Langara College?"
+        ],
+        "more_info_answers": [
+          "Advanced Computer Studies and Technology Program focusing on practical systems and software development."
+        ]
+      },
+      {
+        "more_info_questions": [
+          "What did Kris study at University of Western Ontario?"
+        ],
+        "more_info_answers": [
+          "Honours BA in English Literature — which supports communication, writing, and documentation skills."
+        ]
+      }
+    ]
+  },
   "projects": [
     {
       "id": "storefront_ecommerce",

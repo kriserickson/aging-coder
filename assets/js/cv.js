@@ -62,12 +62,23 @@ function toggleChat() {
     const isActive = modal.classList.toggle('active');
 
     document.body.classList.toggle('modal-open', isActive);
+
+    // When the chat is closed, restore the default intro text so per-item instructions don't persist
+    if (!isActive) {
+        const intro = document.getElementById('chat-intro');
+        if (intro && window.CV_CHAT_DEFAULT_INTRO) {
+            intro.textContent = window.CV_CHAT_DEFAULT_INTRO;
+        }
+    }
 }
 
 function askSampleQuestion(question) {
     const input = document.getElementById('chat-input');
-    input.value = question;
-    sendMessage();
+    // Populate the input with the selected sample question but do NOT auto-send
+    if (input) {
+        input.value = question;
+        input.focus();
+    }
 }
 
 function setupExperienceToggles() {
@@ -124,6 +135,112 @@ function setupSampleQuestions() {
     questions.forEach((question) => {
         question.addEventListener('click', () => {
             askSampleQuestion(question.textContent.trim());
+        });
+    });
+}
+
+async function openChatWithMoreInfo(section, index, skillId) {
+    // Ensure we have the more_info data available; fetch it if not injected
+    if (!window.CV_MORE_INFO) {
+        try {
+            const res = await fetch('/cv/cv.json');
+            if (res.ok) {
+                const data = await res.json();
+                window.CV_MORE_INFO = data.more_info || {};
+            } else {
+                window.CV_MORE_INFO = {};
+            }
+        } catch (err) {
+            console.error('Failed to fetch /cv.json for more info', err);
+            window.CV_MORE_INFO = {};
+        }
+    }
+
+    const info = window.CV_MORE_INFO || {};
+    let item = null;
+
+    if (section === 'skills') {
+        if (skillId && info.skills && info.skills[skillId]) {
+            item = info.skills[skillId];
+        } else if (info.skills && info.skills[index]) {
+            item = info.skills[index];
+        }
+    } else if (section === 'summary') {
+        // If no index provided, merge all summary entries into a single item
+        if (index === undefined || index === null) {
+            if (Array.isArray(info.summary)) {
+                const questions = info.summary.flatMap((x) => x.more_info_questions || []);
+                const answers = info.summary.flatMap((x) => x.more_info_answers || []);
+                item = { more_info_questions: questions, more_info_answers: answers };
+            }
+        } else if (info.summary && info.summary[index]) {
+            item = info.summary[index];
+        }
+    } else if (info[section] && info[section][index] !== undefined) {
+        item = info[section][index];
+    }
+
+    if (!item) return;
+
+    const instruction = item.instruction || ('Please provide concise answers about this ' + section + ' item and expand where useful.');
+    const questions = item.more_info_questions || [];
+
+    // Open chat modal
+    const modal = document.getElementById('chat-modal');
+    if (!modal.classList.contains('active')) toggleChat();
+
+    // Do NOT prepopulate the input. Instead show instruction text and render question boxes
+    const intro = document.getElementById('chat-intro');
+    if (intro) {
+        intro.textContent = instruction || 'Select a question below to populate the chat input. Edit it if needed, then press Send to submit.';
+    }
+
+    // Replace sample questions in the UI with clickable boxes that populate the input (but do NOT send)
+    const sampleContainer = document.getElementById('sample-questions');
+    if (sampleContainer) {
+        sampleContainer.innerHTML = '';
+        questions.forEach((q) => {
+            const btn = document.createElement('button');
+            btn.className = 'sample-question';
+            btn.type = 'button';
+            btn.textContent = q;
+            btn.addEventListener('click', () => askSampleQuestion(q));
+            sampleContainer.appendChild(btn);
+        });
+    }
+
+    // If answers are available, show them as an initial bot message
+    const answers = item.more_info_answers || [];
+    if (answers.length) {
+        const messages = document.getElementById('chat-messages');
+        const botMessage = document.createElement('div');
+        botMessage.className = 'chat-message bot';
+        botMessage.textContent = answers.join('\n\n');
+        messages.appendChild(botMessage);
+        scrollChatToBottom();
+    }
+}
+
+function setupMoreInfoButtons() {
+    const buttons = document.querySelectorAll('.more-info-btn');
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            const section = btn.getAttribute('data-section');
+            const indexAttr = btn.getAttribute('data-index');
+            const skillId = btn.getAttribute('data-skill-id');
+
+            // If this is a skills button, prefer the skill id (if present)
+            if (section === 'skills') {
+                openChatWithMoreInfo(section, indexAttr !== null ? Number(indexAttr) : undefined, skillId);
+            } else if (indexAttr !== null) {
+                // Section with an explicit index (experience, projects, education)
+                openChatWithMoreInfo(section, Number(indexAttr));
+            } else {
+                // Section-only button (e.g., summary). Call chat without index to use aggregated summary behavior.
+                openChatWithMoreInfo(section);
+            }
+
+            e.stopPropagation();
         });
     });
 }
@@ -219,6 +336,12 @@ async function sendMessage() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('chat-input');
+    const intro = document.getElementById('chat-intro');
+
+    // Save default intro text so it can be restored after viewing item-specific instructions
+    if (intro) {
+        window.CV_CHAT_DEFAULT_INTRO = intro.textContent;
+    }
 
     if (input) {
         input.addEventListener('keypress', (event) => {
@@ -232,4 +355,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupProjectToggles();
     setupChatHandlers();
     setupSampleQuestions();
+    setupMoreInfoButtons();
 });
