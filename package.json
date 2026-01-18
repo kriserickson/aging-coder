@@ -10,7 +10,8 @@
     "draft": "node js/create-post.js",
     "publish": "node js/publish-draft.js",
     "screenshot:themes": "node scripts/screenshot-themes.js",
-    "apply:palette": "node scripts/apply-palette.js"
+    "apply:palette": "node scripts/apply-palette.js",
+    "dev:cv-chat": "node scripts/start-cv-chat-local.js"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "markdown-it-katex": "^2.0.3",
     "nunjucks-date": "^1.5.0",
     "puppeteer": "^24.22.3",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "dotenv": "^16.4.5"
   }
 }

@@ -5,7 +5,10 @@ const dateFilter = require('nunjucks-date');
 const markdownIt = require("markdown-it");
 const markdownItKatex = require("markdown-it-katex");
 const markdownItAnchor = require("markdown-it-anchor");
+const dotenv = require('dotenv');
 const isBuild = process.env.ELEVENTY_RUN_MODE === 'build';
+
+dotenv.config();
 
 const Image = require('@11ty/eleventy-img');
 const path = require('node:path');
@@ -259,6 +262,7 @@ module.exports = function (eleventyConfig) {
 
     // Expose build-mode flag to templates so they can conditionally include analytics, etc.
     eleventyConfig.addGlobalData('isBuild', isBuild);
+    eleventyConfig.addGlobalData('env', process.env);
 
     eleventyConfig.addCollection('posts', function (collectionApi) {
         const posts = getPosts(collectionApi);

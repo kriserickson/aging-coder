@@ -4,10 +4,20 @@ compatibility_date = "2024-01-01"
 
 [vars]
 # Add your environment variables here
-# OPENAI_API_KEY = "your-key-here"
+# CHAT_API_KEY = "your-key-here"
+# CHAT_MODEL = "gpt-4o-mini"
+# CHAT_BASE_URL = "https://openrouter.ai/api/v1"
+# CHAT_APP_NAME = "aging-coder-cv-chat"
+# CHAT_APP_URL = "https://agingcoder.com"
 # DAILY_LIMIT = "30"
+# STREAM_DELAY_MS = "16"
+# CORS_ORIGINS = "http://localhost:8888,https://agingcoder.com"
+# LOG_ANALYTICS = "false"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
 id = "your-kv-namespace-id"
 preview_id = "your-kv-preview-id"
+
+[ai]
+binding = "AI"

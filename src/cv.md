@@ -8,6 +8,10 @@ extra_js:
   - /assets/js/cv.js
 ---
 
+<script>
+    window.CV_CHAT_ENDPOINT = "{{ env.CV_CHAT_ENDPOINT | default('') }}";
+</script>
+
 <div class="cv-container">
     <header class="cv-header">
         <div class="cv-name">{{ cv.personal.name }}</div>
@@ -25,9 +29,9 @@ extra_js:
         <h2 class="cv-section-title">Executive Summary</h2>
         <div class="cv-summary">
             <ul>
-                {% for bullet in cv.summary %}
-                <li>{{ bullet }}</li>
-                {% endfor %}
+                {%- for bullet in cv.summary %}
+                <li><span>{{ bullet }}</span></li>
+                {%- endfor %}
             </ul>
         </div>
     </section>

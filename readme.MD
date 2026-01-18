@@ -139,6 +139,35 @@ Tips and next steps
 - Thumbnail usage: prefer local images for best performance (the shortcode will generate optimized variants).
 - If you're adding many descriptions programmatically, consider rate limiting and batching requests when calling external APIs.
 
+CV chat (local + Cloudflare)
+
+- Copy `.env.example` to `.env` and set `CV_CHAT_ENDPOINT`.
+- Run `npm install` and then `npm run dev:cv-chat` to start the worker and site together.
+- Visit `http://localhost:8888/cv/` for the chat UI.
+
+Cloudflare deploy
+
+- From `api-worker/`, run `npm install`.
+- Configure secrets/vars:
+  - `npx wrangler secret put CHAT_API_KEY`
+  - `npx wrangler secret put CHAT_MODEL`
+  - `npx wrangler secret put CHAT_BASE_URL`
+  - `npx wrangler secret put CHAT_APP_NAME`
+  - `npx wrangler secret put CHAT_APP_URL`
+  - `npx wrangler secret put DAILY_LIMIT`
+  - `npx wrangler secret put CORS_ORIGINS`
+  - `npx wrangler secret put STREAM_DELAY_MS`
+  - `npx wrangler secret put LOG_ANALYTICS`
+- Ensure the Worker has the AI binding enabled (see `api-worker/wrangler.toml`). Without it, the service will skip RAG search and send all data as context.
+- Deploy with `npx wrangler deploy`.
+- Update `.env` `CV_CHAT_ENDPOINT` with the deployed worker URL.
+
+RAG data
+
+- Add new JSON files under `api-worker/src/rag-data/`.
+- Register them in `api-worker/src/rag-config.json`.
+- Import the JSON files in `api-worker/src/rag.js` and map them in `sourceData`.
+
 Changelog (recent)
 
 - 2025-09-29: Modernized Eleventy setup, added image shortcodes and transforms, enabled Mermaid/KaTeX support, added static-snippets collection and developer scripts.
