@@ -223,6 +223,9 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addPassthroughCopy('video');
     eleventyConfig.addPassthroughCopy('favicon.*');
 
+    // Expose cv.json in the built site at /cv/cv.json so client-side JS can fetch it
+    eleventyConfig.addPassthroughCopy({ 'src/_data/cv.json': 'cv/cv.json' });
+
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
