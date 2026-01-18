@@ -31,6 +31,13 @@
     --code-token-atrule: #268bd2; /* and attr-value/keyword */
     --code-token-function: #2aa198; /* and class-name */
     --code-token-regex: #dc322f; /* and important/variable */
+
+    /* CV theme accents */
+    --cv-shadow-rgb: 30, 11, 11;
+    --cv-shadow-strong-rgb: 180, 0, 0;
+    --cv-overlay-rgb: 18, 10, 10;
+    --cv-header-deep: #400000;
+    --cv-header-title: #ffffff;
 }
 
 /* Dark theme overrides */
@@ -63,9 +70,18 @@
     --code-token-atrule: #268bd2;
     --code-token-function: #2aa198;
     --code-token-regex: #dc322f;
+
+    /* CV theme accents */
+    --cv-shadow-rgb: 30, 11, 11;
+    --cv-shadow-strong-rgb: 180, 0, 0;
+    --cv-overlay-rgb: 18, 10, 10;
+    --cv-header-deep: #400000;
+    --cv-header-title: #ffffff;
 }
 
+
 /* Basic sensible defaults kept here */
+
 body {
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     color: var(--text-color);

@@ -521,15 +521,15 @@ module.exports = function (eleventyConfig) {
         return `<pre class="mermaid">${escapeHtml(content)}</pre>`;
     });
 
-    // Debounce rebuilds: wait until files have stopped changing for 60 seconds before triggering
+    // Debounce rebuilds: wait until files have stopped changing for 10 seconds before triggering
     // a rebuild. This avoids multiple rapid rebuilds while editors or other tools write files.
-    eleventyConfig.setWatchThrottleWaitTime(60 * 1000); // 60s
+    eleventyConfig.setWatchThrottleWaitTime(10 * 1000); // 10s
 
     // Use chokidar's awaitWriteFinish so the watcher waits until files are stable
     // (no further writes) for 60s before acting. Good for editors and tools that write in multiple chunks.
     eleventyConfig.setChokidarConfig({
         awaitWriteFinish: {
-            stabilityThreshold: 60 * 1000,
+            stabilityThreshold: 10 * 1000,
             pollInterval: 100
         }
     });
