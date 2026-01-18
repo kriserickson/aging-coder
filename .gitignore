@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 reports
 .env*
+.dev.vars
 
 # Cloudflare Wrangler
 .wrangler
