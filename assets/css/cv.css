@@ -140,10 +140,29 @@ body.modal-open {
     color: var(--text-color);
     cursor: pointer;
     padding: 0;
+    /* Remove default outline by default (for mouse interaction),
+       but preserve keyboard focus styling via :focus-visible below. */
+    outline: none;
 }
 
+/* Keep the rotation behavior for expanded state */
 .exp-toggle.expanded {
     transform: rotate(180deg);
+}
+
+/* Preserve clear focus styling for keyboard users only */
+.exp-toggle:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--link) 80%, transparent);
+    outline-offset: 3px;
+    border-radius: 6px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 12%, transparent);
+}
+
+/* Fallback: ensure mouse-induced focus doesn't show outline in browsers
+   without :focus-visible by explicitly hiding focus for mouse interactions */
+.exp-toggle:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
 }
 
 .exp-company {
@@ -172,6 +191,7 @@ body.modal-open {
     padding-left: 1.5rem;
     margin-bottom: 0.8rem;
     line-height: 1.6;
+    list-style-type: none;
 }
 
 .exp-achievements li:before {
@@ -181,6 +201,8 @@ body.modal-open {
     color: var(--link);
     font-weight: bold;
 }
+
+
 
 .cv-skills-grid {
     display: grid;
@@ -194,14 +216,6 @@ body.modal-open {
     border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--muted-color) 25%, transparent);
     box-shadow: 0 12px 22px rgba(var(--cv-shadow-rgb), 0.08);
-}
-
-.skill-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
 }
 
 .skill-category-title {
@@ -225,22 +239,12 @@ body.modal-open {
     transform: rotate(180deg);
 }
 
-.skill-details {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-}
-
-.skill-details.expanded {
-    max-height: 600px;
-}
-
 .skill-line {
     margin-bottom: 0.45rem;
     font-size: 0.9rem;
 }
 
-.skill-details > div {
+.skill-details>div {
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
 }
@@ -300,11 +304,13 @@ body.modal-open {
     font-weight: 600;
     color: var(--text-color);
     margin: 0;
+    flex: 1;
 }
 
 .project-period {
     color: var(--muted-color);
     font-size: 0.85rem;
+    margin-right: 1.5rem;
 }
 
 .project-toggle {
@@ -327,7 +333,7 @@ body.modal-open {
     max-height: 500px;
 }
 
-.project-details > div {
+.project-details>div {
     padding: 0.5rem 1.5rem;
 }
 
@@ -440,6 +446,7 @@ body.modal-open {
         opacity: 0;
         transform: scale(0.96) translateY(-12px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -495,7 +502,7 @@ body.modal-open {
     background: linear-gradient(135deg, var(--header-bg), color-mix(in srgb, var(--header-bg) 70%, var(--cv-header-deep) 30%));
     color: var(--header-fg);
     padding: 0.45rem 0.75rem;
-    border-radius: 10px 10px 0 0;
+    border-radius: 8px 8px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -602,6 +609,7 @@ body.modal-open {
     font-weight: 600;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     font-size: 0.82rem;
+    margin-bottom: 0;
 }
 
 .chat-input-container button:hover {

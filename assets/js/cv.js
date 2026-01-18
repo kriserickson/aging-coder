@@ -56,34 +56,6 @@ function toggleProject(index) {
     }
 }
 
-function toggleSkill(index) {
-    const details = document.getElementById(`skill-details-${index}`);
-    const header = details?.previousElementSibling;
-    const toggle = header?.querySelector('.skill-toggle');
-
-    if (!details || !toggle) return;
-
-    const allDetails = document.querySelectorAll('.skill-details');
-    const allToggles = document.querySelectorAll('.skill-toggle');
-    const isCurrentlyExpanded = details.classList.contains('expanded');
-
-    allDetails.forEach((panel) => {
-        panel.classList.remove('expanded');
-        panel.setAttribute('aria-hidden', 'true');
-    });
-
-    allToggles.forEach((button) => {
-        button.classList.remove('expanded');
-        button.setAttribute('aria-expanded', 'false');
-    });
-
-    if (!isCurrentlyExpanded) {
-        details.classList.add('expanded');
-        details.setAttribute('aria-hidden', 'false');
-        toggle.classList.add('expanded');
-        toggle.setAttribute('aria-expanded', 'true');
-    }
-}
 
 function toggleChat() {
     const modal = document.getElementById('chat-modal');
@@ -101,13 +73,11 @@ function askSampleQuestion(question) {
 function setupExperienceToggles() {
     const headers = document.querySelectorAll('.exp-header');
     headers.forEach((header) => {
-        header.addEventListener('click', (event) => {
-            if (event.target.closest('.exp-toggle')) {
-                const index = header.getAttribute('data-exp-index');
-                if (index !== null) {
-                    toggleExperience(index);
-                }
-            }
+        header.addEventListener('click', (event) => {            
+            const index = header.getAttribute('data-exp-index');
+            if (index !== null) {
+                toggleExperience(index);
+            }            
         });
     });
 }
@@ -120,20 +90,6 @@ function setupProjectToggles() {
                 const index = project.getAttribute('data-project-index');
                 if (index !== null) {
                     toggleProject(index);
-                }
-            }
-        });
-    });
-}
-
-function setupSkillToggles() {
-    const skills = document.querySelectorAll('.skill-category');
-    skills.forEach((skill) => {
-        skill.addEventListener('click', (event) => {
-            if (event.target.closest('.skill-toggle')) {
-                const index = skill.getAttribute('data-skill-index');
-                if (index !== null) {
-                    toggleSkill(index);
                 }
             }
         });
@@ -274,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupExperienceToggles();
     setupProjectToggles();
-    setupSkillToggles();
     setupChatHandlers();
     setupSampleQuestions();
 });
