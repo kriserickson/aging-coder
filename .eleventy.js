@@ -454,15 +454,20 @@ module.exports = function (eleventyConfig) {
             return `<figure class="cover-thumb"><img src="${src}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
         }
 
-        // Resolve local source path. Accept '/img/...' or 'blog/...' style paths
+        // Resolve local source path. Accept '/img/...' or 'blog/...' style paths.
+        // Media files have been moved under 'assets', so map requests accordingly.
         let inputPath;
-        if (src.startsWith('/')) {
-            // leading slash, treat as project-rooted path
-            inputPath = path.join(process.cwd(), src);
-        } else if (src.startsWith('img' + path.sep) || src.startsWith('img/')) {
-            inputPath = path.join(process.cwd(), src);
+        let normalized = src.startsWith('/') ? src.slice(1) : src;
+
+        if (normalized.startsWith('img/')) {
+            // '/img/...' or 'img/...' -> assets/img/...
+            inputPath = path.join(process.cwd(), 'assets', normalized);
+        } else if (normalized.includes('/')) {
+            // 'blog/...', 'reactnative/...' etc -> assets/img/<normalized>
+            inputPath = path.join(process.cwd(), 'assets', 'img', normalized);
         } else {
-            inputPath = path.join(process.cwd(), 'img', src);
+            // simple filename -> assets/img/<filename>
+            inputPath = path.join(process.cwd(), 'assets', 'img', normalized);
         }
 
         try {
