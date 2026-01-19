@@ -689,10 +689,13 @@ function resetFitModal() {
 }
 
 function setupFitModal() {
-    const closeBtn = document.querySelector('.fit-close');
-    const overlay = document.querySelector('.fit-modal-overlay');
+    const fitModalEl = document.getElementById('fit-modal');
+    if (!fitModalEl) return;
+
+    const closeBtn = fitModalEl.querySelector('.chat-close, .fit-close');
+    const overlay = fitModalEl.querySelector('.chat-modal-overlay, .fit-modal-overlay');
     const submitBtn = document.getElementById('fit-submit');
-    const tabs = document.querySelectorAll('.fit-tab');
+    const tabs = fitModalEl.querySelectorAll('.fit-tab');
 
     if (closeBtn) {
         closeBtn.addEventListener('click', closeFitModal);
@@ -710,10 +713,10 @@ function setupFitModal() {
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
 
-            document.querySelectorAll('.fit-tab-content').forEach(content => {
+            fitModalEl.querySelectorAll('.fit-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            document.getElementById(`tab-${targetTab}`).classList.add('active');
+            fitModalEl.querySelector(`#tab-${targetTab}`).classList.add('active');
         });
     });
 
