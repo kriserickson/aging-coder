@@ -1,0 +1,16 @@
+{
+  "name": "cv-bundle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:dev": "vite build --mode development --watch",
+    "build:prod": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8",
+    "vitest": "^4.0.17"
+  }
+}

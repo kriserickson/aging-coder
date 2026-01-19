@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "eleventy",
+    "build": "npm --prefix cv run build:prod && eleventy",
     "serve": "eleventy --serve --port=8888",
     "clean": "rm -Rf ./_site/*",
     "draft": "node js/create-post.js",
@@ -34,7 +34,6 @@
     "markdown-it-katex": "^2.0.3",
     "nunjucks-date": "^1.5.0",
     "puppeteer": "^24.22.3",
-    "slugify": "^1.6.6",
-    "vitest": "^4.0.17"
+    "slugify": "^1.6.6"
   }
 }

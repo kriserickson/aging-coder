@@ -8,3 +8,5 @@ reports
 
 # Cloudflare Wrangler
 .wrangler
+
+assets/js/cv.*
