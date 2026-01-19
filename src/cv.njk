@@ -9,8 +9,8 @@ extra_js:
 ---
 
 <script>
-  window.CV_CHAT_ENDPOINT = "{{ env.CV_CHAT_ENDPOINT | default('') }}";
-  window.CV_FIT_ENDPOINT = "{{ env.CV_FIT_ENDPOINT | default('') }}";
+  window.CV_CHAT_ENDPOINT = "{{ env.CV_CHAT_ENDPOINT | default('') }}"
+  window.CV_FIT_ENDPOINT = "{{ env.CV_FIT_ENDPOINT | default('') }}"
 </script>
 
 <div class="cv-container">
@@ -25,9 +25,15 @@ extra_js:
       <a href="{{ cv.personal.linkedin }}" target="_blank">LinkedIn</a>
     </div>
     <div class="cv-actions">
-      <button type="button" class="cv-action-btn" id="btn-digital-assistant">Digital Assistant</button>
-      <button type="button" class="cv-action-btn" id="btn-fit-assessment">Fit Assessment</button>
-      <button type="button" class="cv-action-btn" id="btn-about-cv">About this Interactive CV</button>
+      <button type="button" class="cv-action-btn" id="btn-digital-assistant">
+        Digital Assistant
+      </button>
+      <button type="button" class="cv-action-btn" id="btn-fit-assessment">
+        Fit Assessment
+      </button>
+      <button type="button" class="cv-action-btn" id="btn-about-cv">
+        About this Interactive CV
+      </button>
     </div>
   </header>
 
@@ -244,11 +250,19 @@ extra_js:
       </div>
       <div class="chat-messages">
         <div class="fit-input-section" id="fit-input-section">
-          <p class="fit-intro">Paste a job description or provide a URL to a public job posting, and I'll give you an honest assessment of how well Kris's experience matches your requirements.</p>
+          <p class="fit-intro">
+            Paste a job description or provide a URL to a public job posting,
+            and I'll give you an honest assessment of how well Kris's experience
+            matches your requirements.
+          </p>
 
           <div class="fit-tabs">
-            <button type="button" class="fit-tab active" data-tab="paste">Paste Job Description</button>
-            <button type="button" class="fit-tab" data-tab="url">Job Posting URL</button>
+            <button type="button" class="fit-tab active" data-tab="paste">
+              Paste Job Description
+            </button>
+            <button type="button" class="fit-tab" data-tab="url">
+              Job Posting URL
+            </button>
           </div>
 
           <div class="fit-tab-content active" id="tab-paste">
@@ -265,18 +279,22 @@ extra_js:
               id="fit-job-url"
               placeholder="https://example.com/jobs/senior-engineer"
             />
-            <p class="fit-url-note">Enter a publicly accessible job posting URL</p>
+            <p class="fit-url-note">
+              Enter a publicly accessible job posting URL
+            </p>
           </div>
 
-          <button type="button" class="fit-submit" id="fit-submit">Analyze Fit</button>
+          <button type="button" class="fit-submit" id="fit-submit">
+            Analyze Fit
+          </button>
         </div>
 
-        <div class="fit-loading" id="fit-loading" style="display: none;">
+        <div class="fit-loading" id="fit-loading" style="display: none">
           <div class="fit-spinner"></div>
           <p>Analyzing job requirements against Kris's experience...</p>
         </div>
 
-        <div class="fit-results" id="fit-results" style="display: none;">
+        <div class="fit-results" id="fit-results" style="display: none">
           <!-- Results rendered by JavaScript -->
         </div>
       </div>
