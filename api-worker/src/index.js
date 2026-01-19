@@ -318,7 +318,7 @@ app.post('/api/chat', async (c) => {
     let responseText = '';
 
     try {
-      const chatResponse = await fetchChatCompletion(c.env, exactMatch ? [] : messages, ragContext);
+      const chatResponse = await fetchChatCompletion(c.env, exactMatch ? messages.slice(-1) : messages, ragContext);
       const stream = streamCompletionResponse(chatResponse, {
         delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 0
       });
