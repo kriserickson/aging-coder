@@ -746,6 +746,11 @@ async function submitFitAssessment() {
         return;
     }
 
+    // Build payload matching server API: { type: 'paste', content } or { type: 'url', url }
+    const payload = (activeTab === 'paste')
+        ? { type: 'paste', content: jobInput }
+        : { type: 'url', url: jobInput };
+
     // Show loading
     document.getElementById('fit-input-section').style.display = 'none';
     document.getElementById('fit-loading').style.display = 'block';
@@ -754,14 +759,19 @@ async function submitFitAssessment() {
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: activeTab,
-                input: jobInput
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-            throw new Error(`Request failed: ${response.status}`);
+            // Try to extract a helpful error message from JSON body
+            let msg = `Request failed: ${response.status}`;
+            try {
+                const bodyErr = await response.json();
+                if (bodyErr && bodyErr.error) msg = bodyErr.error;
+            } catch (e) {
+                // ignore JSON parse errors
+            }
+            throw new Error(msg);
         }
 
         const result = await response.json();
@@ -771,7 +781,7 @@ async function submitFitAssessment() {
         console.error('Fit assessment error:', error);
         document.getElementById('fit-loading').style.display = 'none';
         document.getElementById('fit-input-section').style.display = 'block';
-        alert('Failed to analyze job fit. Please try again.');
+        alert(error && error.message ? `Error: ${error.message}` : 'Failed to analyze job fit. Please try again.');
     }
 }
 
@@ -781,14 +791,28 @@ function renderFitResults(result, jobInput) {
     const resultsContainer = document.getElementById('fit-results');
     resultsContainer.style.display = 'block';
 
-    const isStrongFit = result.verdict === 'strong';
-    const verdictClass = isStrongFit ? 'strong-fit' : 'weak-fit';
-    const verdictTitle = isStrongFit ? 'Strong Fit — Let\'s Talk' : 'Honest Assessment — Probably Not Your Person';
-    const verdictSubtext = isStrongFit
-        ? 'Your requirements align well with my experience. Here\'s the specific evidence:'
-        : 'I want to be direct with you. Here\'s why this might not be the right fit:';
+    const verdict = (result.verdict || '').toLowerCase();
+    const isStrong = verdict === 'strong';
+    const isModerate = verdict === 'moderate';
+
+    // Explicit verdict classes: strong, moderate, or weak
+    const verdictClass = isStrong ? 'strong-fit' : (isModerate ? 'moderate-fit' : 'weak-fit');
+
+    let verdictTitle;
+    let verdictSubtext;
+    if (isStrong) {
+        verdictTitle = 'Strong Fit — Let\'s Talk';
+        verdictSubtext = 'Your requirements align well with my experience. Here\'s the specific evidence:';
+    } else if (isModerate) {
+        verdictTitle = 'Moderate Fit — Worth Considering';
+        verdictSubtext = 'This role has several relevant matches; here are the strengths and areas to watch:';
+    } else {
+        verdictTitle = 'Honest Assessment — Probably Not Your Person';
+        verdictSubtext = 'I want to be direct with you. Here\'s why this might not be the right fit:';
+    }
 
     const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
+    const moderateIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4"/></svg>`;
     const warningIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
 
     // Build job preview snippet
@@ -807,7 +831,7 @@ function renderFitResults(result, jobInput) {
 
         <div class="fit-verdict ${verdictClass}">
             <div class="fit-verdict-icon">
-                ${isStrongFit ? checkIcon : warningIcon}
+                ${isStrong ? checkIcon : (isModerate ? moderateIcon : warningIcon)}
             </div>
             <div class="fit-verdict-content">
                 <h4>${verdictTitle}</h4>
@@ -818,12 +842,12 @@ function renderFitResults(result, jobInput) {
 
     // Matches section
     if (result.matches && result.matches.length > 0) {
-        html += `<div class="fit-section-header">${isStrongFit ? 'Where I Match' : 'What Does Transfer'}</div>`;
+        html += `<div class="fit-section-header">${(isStrong || isModerate) ? 'Where I Match' : 'What Does Transfer'}</div>`;
         result.matches.forEach(match => {
             html += `
-                <div class="fit-card ${isStrongFit ? 'match' : 'transfer'}">
+                <div class="fit-card ${(isStrong || isModerate) ? 'match' : 'transfer'}">
                     <div class="fit-card-header">
-                        <span class="fit-card-icon">${isStrongFit ? '✓' : '○'}</span>
+                        <span class="fit-card-icon">${isStrong ? '✓' : (isModerate ? '•' : '○')}</span>
                         <span class="fit-card-title">${escapeHtml(match.title)}</span>
                     </div>
                     <p class="fit-card-description">${escapeHtml(match.description)}</p>
@@ -834,12 +858,12 @@ function renderFitResults(result, jobInput) {
 
     // Gaps section
     if (result.gaps && result.gaps.length > 0) {
-        html += `<div class="fit-section-header">${isStrongFit ? 'Gaps to Note' : 'Where I Don\'t Fit'}</div>`;
+        html += `<div class="fit-section-header">${(isStrong || isModerate) ? 'Gaps to Note' : 'Where I Don\'t Fit'}</div>`;
         result.gaps.forEach(gap => {
             html += `
                 <div class="fit-card gap">
                     <div class="fit-card-header">
-                        <span class="fit-card-icon">${isStrongFit ? '○' : '✗'}</span>
+                        <span class="fit-card-icon">${(isStrong || isModerate) ? '○' : '✗'}</span>
                         <span class="fit-card-title">${escapeHtml(gap.title)}</span>
                     </div>
                     <p class="fit-card-description">${escapeHtml(gap.description)}</p>
@@ -851,7 +875,7 @@ function renderFitResults(result, jobInput) {
     // Recommendation
     if (result.recommendation) {
         html += `
-            <div class="fit-recommendation">
+            <div class="fit-recommendation ${verdictClass}">
                 <div class="fit-recommendation-header">My Recommendation</div>
                 <p>${escapeHtml(result.recommendation)}</p>
             </div>
