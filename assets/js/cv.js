@@ -12,15 +12,17 @@ const openedTopics = new Set();
 
 function getConversationHistory() {
     try {
-        const stored = localStorage.getItem(CONVERSATION_STORAGE_KEY);
-        if (!stored) return [];
+        const stored = sessionStorage.getItem(CONVERSATION_STORAGE_KEY);
+        if (!stored) {
+            return [];
+        }
 
         const data = JSON.parse(stored);
         const now = Date.now();
 
         // Check if expired
         if (data.timestamp && (now - data.timestamp) > CONVERSATION_EXPIRY_MS) {
-            localStorage.removeItem(CONVERSATION_STORAGE_KEY);
+            sessionStorage.removeItem(CONVERSATION_STORAGE_KEY);
             return [];
         }
 
@@ -37,7 +39,7 @@ function saveConversationHistory(messages) {
             timestamp: Date.now(),
             messages: messages
         };
-        localStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(data));
+        sessionStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(data));
     } catch (err) {
         console.warn('Error saving conversation history:', err);
     }
@@ -51,20 +53,41 @@ function addToConversationHistory(role, content) {
 }
 
 function getTopicKey(section, index, skillId) {
-    if (section === 'about') return 'about';
-    if (section === 'default') return 'default';
-    if (section === 'skills' && skillId) return `skills:${skillId}`;
-    if (section && index !== null && index !== undefined) return `${section}:${index}`;
-    if (section) return section;
+    switch (section) {
+        case 'about':
+            return 'about';
+        case 'default':
+            return 'default';
+        case 'skills':
+            if (skillId) {
+                return `skills:${skillId}`;
+            }
+            break; // fall through to generic handling
+        default:
+            break;
+    }
+
+    if (section && index !== null && index !== undefined) {
+        return `${section}:${index}`;
+    }
+
+    if (section) {
+        return section;
+    }
+
     return 'default';
 }
 
 function restoreConversationUI() {
     const history = getConversationHistory();
-    if (history.length === 0) return;
+    if (history.length === 0) {
+        return;
+    }
 
     const messagesContainer = document.getElementById('chat-messages');
-    if (!messagesContainer) return;
+    if (!messagesContainer) {
+        return;
+    }
 
     // Clear existing messages
     messagesContainer.innerHTML = '';
@@ -85,7 +108,9 @@ function restoreConversationUI() {
 
 // Load chat configuration
 async function loadChatConfig() {
-    if (chatConfig) return chatConfig;
+    if (chatConfig) {
+        return chatConfig;
+    }
 
     try {
         const res = await fetch('/cv/chat-config.json');
@@ -1006,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load chat config early
     await loadChatConfig();
 
-    // Restore conversation from localStorage if any
+    // Restore conversation from sessionStorage if any
     restoreConversationUI();
 
     // Setup all handlers
