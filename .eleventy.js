@@ -217,10 +217,11 @@ module.exports = function (eleventyConfig) {
     // Passthrough copy for assets directory
     eleventyConfig.addPassthroughCopy('assets');
 
-    // Passthrough copy for img directory
-    eleventyConfig.addPassthroughCopy('img');
-    eleventyConfig.addPassthroughCopy('audio');
-    eleventyConfig.addPassthroughCopy('video');
+    // Map assets subdirectories to site root paths so existing URLs like /img/* continue to work
+    eleventyConfig.addPassthroughCopy({ 'assets/img': 'img' });
+    eleventyConfig.addPassthroughCopy({ 'assets/audio': 'audio' });
+    eleventyConfig.addPassthroughCopy({ 'assets/video': 'video' });
+
     eleventyConfig.addPassthroughCopy('favicon.*');
 
     // Expose cv.json in the built site at /cv/cv.json so client-side JS can fetch it
