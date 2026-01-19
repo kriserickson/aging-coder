@@ -12,7 +12,7 @@
   "topics": {
     "summary": {
       "title": "About Kris's Background",
-      "message": "Kris has 25+ years of experience building enterprise SaaS platforms and leading development teams. Here are some questions to explore further.",
+      "message": "Kris brings 25+ years building and modernizing enterprise SaaS and high-volume commerce platforms, plus a track record leading teams and shipping reliable systems at scale. Here are a few questions to dig into depth, impact, and how he operates day-to-day.",
       "questions": [
         "Can you expand on Kris's enterprise SaaS experience?",
         "What measurable outcomes came from those projects?",
@@ -55,7 +55,6 @@
         "title": "Programmer at Canfor",
         "message": "At Canadian Forest Products (1998), Kris developed systems for digital document management.",
         "questions": [
-          "What systems were modernized at Canfor?",
           "How did the MSDS system improve compliance?",
           "What technologies were used?"
         ]
@@ -71,11 +70,10 @@
       },
       "5": {
         "title": "Technical Writer at Langara",
-        "message": "At Langara College (1996-1998), Kris authored technical manuals and provided mentorship for programming courses.",
+        "message": "At Langara College (1996-1998), Kris helped edit technical manuals and provided mentorship for programming courses.",
         "questions": [
-          "What teaching and documentation work did Kris do?",
-          "What kinds of manuals were authored?",
-          "How did this support students' learning?"
+          "What teaching-assistant work and documentation work did Kris do?",
+          "What kinds of manuals were edited?"
         ]
       }
     },

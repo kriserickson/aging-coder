@@ -2,11 +2,11 @@
   "questions": [
     {
       "name": "What are Kris's key technical skills?",
-      "context": "Kris has deep expertise across the full stack: Frontend (TypeScript, JavaScript, Vue, React, Angular, PWAs), Backend (PHP, C#, Node.js, Python), Mobile (Android, iOS, Kotlin, Swift, Flutter), Databases (MySQL, PostgreSQL, MongoDB, Redis), DevOps (Docker, Kubernetes, CI/CD), and AI/ML (PyTorch, Hugging Face, fine-tuning LLMs). He's released production code in 10+ languages."
+      "context": "Kris has deep expertise across the full stack: Frontend (TypeScript, JavaScript, Vue, React, Angular, PWAs), Backend (PHP, C#, Node.js, Python), Mobile (Android, iOS, Kotlin, Swift, Flutter), Databases (MySQL, PostgreSQL, MongoDB, Redis), DevOps (Docker, Kubernetes, CI/CD), and AI/ML (PyTorch, Hugging Face, fine-tuning LLMs).  He is very comfortable learning new languages and frameworks and has over the years pushed and championed the adoption of proven technologies at work, and used bleeding technologies on side-projects in his own time. He's released production code in 10+ languages."
     },
     {
       "name": "Tell me about Kris's management experience",
-      "context": "As Director of Software Development at Storefront.com (2020-2025), Kris directed company-wide software strategy and managed teams of up to 10 developers. He implemented structured career development paths, guiding early-career engineers into senior and leadership roles. As Team Lead (2010-2020), he directed agile teams of 10-15 developers through multiple full-cycle deliveries."
+      "context": "At Storefront—a small company that ultimately ran with a tight, high-impact development group—Kris led delivery by coordinating closely with the development team and project managers while partnering directly with key business stakeholders to decide what to build next and why, consistently prioritizing the work that delivered the most value. In his Director of Software Development role, he owned the practical “glue” work: aligning goals, translating business outcomes into clear technical plans, unblocking execution, and keeping the roadmap grounded in real constraints and customer impact. He also invested heavily in team growth, mentoring senior engineers while coaching newer developers across a wide range of backgrounds—from boot-camp grads with strong prior careers to PhD-level hires who were brilliant technically but new to shipping software in a business context—so the team could move faster without sacrificing quality or reliability."
     },
     {
       "name": "What major projects has Kris led?",

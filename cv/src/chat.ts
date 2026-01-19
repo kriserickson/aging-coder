@@ -1,5 +1,6 @@
 import type { ChatMessage } from './types';
 import { dedupeConversationPairs } from './utils/dedupeConversationPairs';
+import * as smd from 'streaming-markdown';
 
 type TopicConfig = {
   title: string;
@@ -207,9 +208,9 @@ export function setupScrollDetection() {
 
   function checkScroll() {
     if (window.scrollY > scrollThreshold) {
-      chatToggle.classList.add('visible');
+      chatToggle?.classList.add('visible');
     } else {
-      chatToggle.classList.remove('visible');
+      chatToggle?.classList.remove('visible');
     }
   }
 
@@ -338,6 +339,46 @@ function hideTypingIndicator() {
   if (indicator) {
     indicator.remove();
   }
+}
+
+/**
+ * Create a renderer that appends text in small chunks with a short delay so
+ * streamed markdown looks like it's being typed and the page scrolls smoothly.
+ */
+function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chunkSize?: number }) {
+  const base = smd.default_renderer(element);
+  const delayMs = opts?.delayMs ?? 20;
+  const chunkSize = opts?.chunkSize ?? 3;
+  const queue: Array<{ text: string; target: Element }> = [];
+  let processing = false;
+
+  const processQueue = async () => {
+    if (processing) return;
+    processing = true;
+    while (queue.length) {
+      const { text, target } = queue.shift()!;
+      for (let i = 0; i < text.length; i += chunkSize) {
+        const chunk = text.slice(i, i + chunkSize);
+        target.appendChild(document.createTextNode(chunk));
+        scrollChatToBottom();
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    processing = false;
+  };
+
+  const add_text = (data: any, text: string) => {
+    const target = (data && data.nodes && data.nodes[data.index]) || element;
+    queue.push({ text, target });
+    void processQueue();
+  };
+
+  return {
+    ...base,
+    add_text,
+    // Keep the underlying parser data intact
+    data: base.data
+  };
 }
 
 async function addBotMessage(text: string) {
@@ -498,8 +539,7 @@ export async function sendMessage() {
       throw new Error('Streaming is not supported in this browser.');
     }
 
-    hideTypingIndicator();
-
+    // Keep the typing indicator visible until the first streaming chunk arrives.
     const botMessageEl = document.createElement('div');
     botMessageEl.className = 'chat-message bot';
     botMessageEl.textContent = '';
@@ -508,25 +548,26 @@ export async function sendMessage() {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let done = false;
-    let buffer = '';
-    let displayedWords = 0;
-    let fullResponse = '';
 
-    const processBuffer = async () => {
-      const words = buffer.split(' ');
-      const completeWords = words.slice(0, -1);
-      buffer = words[words.length - 1] || '';
+    // Try to initialize streaming-markdown parser and renderer. Fall back to plain text if not available.
+    let renderer: any = null;
+    let parser: any = null;
+    try {
+      // Use a slow renderer so markdown text is appended gradually (smooth typing effect).
+      renderer = createSlowRenderer(botMessageEl, { delayMs: 20, chunkSize: 3 });
+      parser = smd.parser(renderer);
+    } catch (err) {
+      console.warn('streaming-markdown init failed, falling back to plain text streaming', err);
+      renderer = null;
+      parser = null;
+    }
 
-      for (const word of completeWords) {
-        if (displayedWords > 0) {
-          botMessageEl.textContent += ' ';
-          fullResponse += ' ';
-        }
-        botMessageEl.textContent += word;
-        fullResponse += word;
-        displayedWords += 1;
-        scrollChatToBottom();
-        await new Promise((resolve) => setTimeout(resolve, 25));
+    // Ensure we only hide the typing indicator once and only after we receive the first chunk.
+    let typingHidden = false;
+    const hideTypingOnce = () => {
+      if (!typingHidden) {
+        hideTypingIndicator();
+        typingHidden = true;
       }
     };
 
@@ -534,22 +575,38 @@ export async function sendMessage() {
       const result = await reader.read();
       done = result.done;
       if (result.value) {
-        buffer += decoder.decode(result.value, { stream: true });
-        await processBuffer();
+        // First streaming chunk has arrived — hide typing indicator now.
+        hideTypingOnce();
+        const chunkText = decoder.decode(result.value, { stream: true });
+        if (parser && typeof smd.parser_write === 'function') {
+          try {
+            smd.parser_write(parser, chunkText);
+          } catch (err) {
+            console.warn('parser_write error, appending raw text', err);
+            botMessageEl.textContent += chunkText;
+            scrollChatToBottom();
+          }
+        } else {
+          botMessageEl.textContent += chunkText;
+          scrollChatToBottom();
+        }
       }
     }
 
-    if (buffer) {
-      if (displayedWords > 0) {
-        botMessageEl.textContent += ' ';
-        fullResponse += ' ';
+    // Ensure typing indicator is hidden even if the final chunk arrived only at end-of-stream.
+    hideTypingOnce();
+
+    // Finalize parser if used.
+    if (parser && typeof smd.parser_end === 'function') {
+      try {
+        smd.parser_end(parser);
+      } catch (err) {
+        console.warn('parser_end error', err);
       }
-      botMessageEl.textContent += buffer;
-      fullResponse += buffer;
-      scrollChatToBottom();
     }
 
-    addToConversationHistory('assistant', fullResponse);
+    const assistantText = botMessageEl.textContent || botMessageEl.innerText || '';
+    addToConversationHistory('assistant', assistantText);
   } catch (error) {
     hideTypingIndicator();
 
