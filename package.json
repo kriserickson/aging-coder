@@ -11,7 +11,10 @@
     "publish": "node js/publish-draft.js",
     "screenshot:themes": "node scripts/screenshot-themes.js",
     "apply:palette": "node scripts/apply-palette.js",
-    "dev:cv-chat": "node scripts/start-cv-chat-local.js"
+    "dev:cv-chat": "node scripts/start-cv-chat-local.js",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +24,7 @@
     "@11ty/eleventy-img": "^6.0.4",
     "@11ty/eleventy-plugin-rss": "^2.0.4",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
+    "dotenv": "^16.4.5",
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
     "inquirer": "^13.0.1",
@@ -31,6 +35,6 @@
     "nunjucks-date": "^1.5.0",
     "puppeteer": "^24.22.3",
     "slugify": "^1.6.6",
-    "dotenv": "^16.4.5"
+    "vitest": "^4.0.17"
   }
 }
