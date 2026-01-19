@@ -1,9 +1,9 @@
 import {
-  initializeChatWithDefault,
   loadChatConfig,
   restoreConversationUI,
   sendMessage,
   setupChatHandlers,
+  setupChatScrollIndicator,
   setupChatToggleButton,
   setupMoreInfoButtons,
   setupScrollDetection
@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupProjectToggles();
   setupChatHandlers();
   setupMoreInfoButtons();
+  setupChatScrollIndicator();
   setupActionButtons();
   setupFitModal();
   setupChatToggleButton();

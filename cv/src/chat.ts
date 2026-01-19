@@ -21,6 +21,8 @@ const CONVERSATION_STORAGE_KEY = 'cv-chat-conversation';
 const CONVERSATION_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const openedTopics = new Set<string>();
+const SCROLL_INDICATOR_THRESHOLD = 40;
+let scrollIndicatorEl: HTMLButtonElement | null = null;
 
 function getConversationHistory(): ChatMessage[] {
   try {
@@ -489,6 +491,41 @@ function scrollChatToBottom() {
   if (messages) {
     messages.scrollTop = messages.scrollHeight;
   }
+  updateScrollIndicatorVisibility();
+}
+
+function updateScrollIndicatorVisibility() {
+  const messages = document.getElementById('chat-messages');
+  if (!messages || !scrollIndicatorEl) {
+    return;
+  }
+
+  const distanceFromBottom = messages.scrollHeight - messages.scrollTop - messages.clientHeight;
+  if (distanceFromBottom > SCROLL_INDICATOR_THRESHOLD) {
+    scrollIndicatorEl.classList.add('visible');
+  } else {
+    scrollIndicatorEl.classList.remove('visible');
+  }
+}
+
+export function setupChatScrollIndicator() {
+  const messages = document.getElementById('chat-messages');
+  if (!messages || scrollIndicatorEl) {
+    return;
+  }
+
+  scrollIndicatorEl = document.createElement('button');
+  scrollIndicatorEl.type = 'button';
+  scrollIndicatorEl.className = 'chat-scroll-indicator';
+  scrollIndicatorEl.textContent = 'More below';
+  scrollIndicatorEl.addEventListener('click', () => {
+    scrollChatToBottom();
+    scrollIndicatorEl?.blur();
+  });
+
+  messages.appendChild(scrollIndicatorEl);
+  messages.addEventListener('scroll', updateScrollIndicatorVisibility, { passive: true });
+  updateScrollIndicatorVisibility();
 }
 
 export async function sendMessage() {
@@ -521,6 +558,8 @@ export async function sendMessage() {
 
   showTypingIndicator();
 
+  let botMessageEl: HTMLDivElement | null = null;
+
   try {
     const conversationHistory = getConversationHistory();
     const dedupedHistory = dedupeConversationPairs(conversationHistory);
@@ -539,30 +578,38 @@ export async function sendMessage() {
       throw new Error('Streaming is not supported in this browser.');
     }
 
-    // Keep the typing indicator visible until the first streaming chunk arrives.
-    const botMessageEl = document.createElement('div');
-    botMessageEl.className = 'chat-message bot';
-    botMessageEl.textContent = '';
-    messagesContainer.appendChild(botMessageEl);
-
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let done = false;
 
-    // Try to initialize streaming-markdown parser and renderer. Fall back to plain text if not available.
     let renderer: any = null;
     let parser: any = null;
-    try {
-      // Use a slow renderer so markdown text is appended gradually (smooth typing effect).
-      renderer = createSlowRenderer(botMessageEl, { delayMs: 20, chunkSize: 3 });
-      parser = smd.parser(renderer);
-    } catch (err) {
-      console.warn('streaming-markdown init failed, falling back to plain text streaming', err);
-      renderer = null;
-      parser = null;
-    }
+    let markdownSetup = false;
 
-    // Ensure we only hide the typing indicator once and only after we receive the first chunk.
+    const ensureBotMessage = () => {
+      if (!botMessageEl) {
+        botMessageEl = document.createElement('div');
+        botMessageEl.className = 'chat-message bot streaming';
+        botMessageEl.textContent = '';
+        messagesContainer.appendChild(botMessageEl);
+        scrollChatToBottom();
+      }
+
+      if (!markdownSetup && botMessageEl) {
+        markdownSetup = true;
+        try {
+          renderer = createSlowRenderer(botMessageEl, { delayMs: 20, chunkSize: 3 });
+          parser = smd.parser(renderer);
+        } catch (err) {
+          console.warn('streaming-markdown init failed, falling back to plain text streaming', err);
+          renderer = null;
+          parser = null;
+        }
+      }
+
+      return botMessageEl;
+    };
+
     let typingHidden = false;
     const hideTypingOnce = () => {
       if (!typingHidden) {
@@ -575,28 +622,29 @@ export async function sendMessage() {
       const result = await reader.read();
       done = result.done;
       if (result.value) {
-        // First streaming chunk has arrived — hide typing indicator now.
         hideTypingOnce();
         const chunkText = decoder.decode(result.value, { stream: true });
+        const messageEl = ensureBotMessage();
+
         if (parser && typeof smd.parser_write === 'function') {
           try {
             smd.parser_write(parser, chunkText);
           } catch (err) {
             console.warn('parser_write error, appending raw text', err);
-            botMessageEl.textContent += chunkText;
-            scrollChatToBottom();
+            if (messageEl) {
+              messageEl.textContent += chunkText;
+              scrollChatToBottom();
+            }
           }
-        } else {
-          botMessageEl.textContent += chunkText;
+        } else if (messageEl) {
+          messageEl.textContent += chunkText;
           scrollChatToBottom();
         }
       }
     }
 
-    // Ensure typing indicator is hidden even if the final chunk arrived only at end-of-stream.
     hideTypingOnce();
 
-    // Finalize parser if used.
     if (parser && typeof smd.parser_end === 'function') {
       try {
         smd.parser_end(parser);
@@ -605,11 +653,16 @@ export async function sendMessage() {
       }
     }
 
-    const assistantText = botMessageEl.textContent || botMessageEl.innerText || '';
+    let assistantText = '';
+    if (botMessageEl) {
+      assistantText = (botMessageEl as any).textContent || (botMessageEl as any).innerText || '';
+      (botMessageEl as any).classList.remove('streaming');
+    }
     addToConversationHistory('assistant', assistantText);
   } catch (error) {
     hideTypingIndicator();
 
+    if (botMessageEl) (botMessageEl as any).classList.remove('streaming');
     const errorMessage = document.createElement('div');
     errorMessage.className = 'chat-message bot';
     errorMessage.textContent = 'Sorry, I encountered an error. Please try again.';
