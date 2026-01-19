@@ -1,0 +1,253 @@
+{
+  "default": {
+    "title": "Ask My Digital Proxy",
+    "message": "Hi! I'm here to answer questions about Kris's background, experience, and skills. Click on any question below or type your own.",
+    "questions": [
+      "What are Kris's key technical skills?",
+      "Tell me about Kris's management experience",
+      "What major projects has Kris led?",
+      "How has Kris worked with AI/ML technologies?"
+    ]
+  },
+  "topics": {
+    "summary": {
+      "title": "About Kris's Background",
+      "message": "Kris has 25+ years of experience building enterprise SaaS platforms and leading development teams. Here are some questions to explore further.",
+      "questions": [
+        "Can you expand on Kris's enterprise SaaS experience?",
+        "What measurable outcomes came from those projects?",
+        "How has Kris used AI/ML and modern tools to improve delivery?",
+        "Can you describe Kris's approach to modernizing legacy systems?"
+      ]
+    },
+    "experience": {
+      "0": {
+        "title": "Director of Software Development",
+        "message": "As Director at Storefront.com (2020-2025), Kris directed company-wide software strategy and managed teams of up to 10 developers.",
+        "questions": [
+          "What were the key responsibilities as Director?",
+          "What team size and scope did that role cover?",
+          "What consumer-facing mobile apps were delivered?",
+          "How were legacy systems modernized during this time?"
+        ]
+      },
+      "1": {
+        "title": "Team Lead / Senior Software Architect",
+        "message": "As Team Lead at Storefront.com (2010-2020), Kris led the launch of Android-based platforms and designed critical systems.",
+        "questions": [
+          "What was the Android-based platform project and its impact?",
+          "How did the kiosk file transfer and payment system work?",
+          "What was the Remote Management platform?",
+          "How many developers were on the team?"
+        ]
+      },
+      "2": {
+        "title": "Senior Software Developer",
+        "message": "As Senior Developer at Storefront.com (1998-2009), Kris architected the E-Commerce Platform and Windows Photo Kiosk.",
+        "questions": [
+          "What long-running projects were maintained?",
+          "Tell me about the E-Commerce Platform architecture",
+          "How did the Windows Photo Kiosk work?",
+          "What was the business impact of these systems?"
+        ]
+      },
+      "3": {
+        "title": "Programmer at Canfor",
+        "message": "At Canadian Forest Products (1998), Kris developed systems for digital document management.",
+        "questions": [
+          "What systems were modernized at Canfor?",
+          "How did the MSDS system improve compliance?",
+          "What technologies were used?"
+        ]
+      },
+      "4": {
+        "title": "Programmer at TRIUMF",
+        "message": "At TRIUMF (1997), Kris worked on legacy system migration and data acquisition applications.",
+        "questions": [
+          "What legacy migration work was done at TRIUMF?",
+          "What Oracle development was involved?",
+          "How were data workflows modernized?"
+        ]
+      },
+      "5": {
+        "title": "Technical Writer at Langara",
+        "message": "At Langara College (1996-1998), Kris authored technical manuals and provided mentorship for programming courses.",
+        "questions": [
+          "What teaching and documentation work did Kris do?",
+          "What kinds of manuals were authored?",
+          "How did this support students' learning?"
+        ]
+      }
+    },
+    "skills": {
+      "frontend": {
+        "title": "Frontend Development Skills",
+        "message": "Kris has expert-level frontend development experience with React, Vue, Angular, and TypeScript in production applications.",
+        "questions": [
+          "Which frontend frameworks are you most experienced with?",
+          "Do you have experience building PWAs?",
+          "What build tools have you worked with?",
+          "Any experience with real-time web applications?"
+        ]
+      },
+      "backend": {
+        "title": "Backend Development Skills",
+        "message": "Kris has strong backend experience with Node.js, PHP, C#, Python and various message bus integrations.",
+        "questions": [
+          "Which back-end languages have you used most?",
+          "What integration patterns have you worked with?",
+          "Experience with Kafka or RabbitMQ?",
+          "What about API design?"
+        ]
+      },
+      "ai_ml": {
+        "title": "AI/ML Experience",
+        "message": "Kris is passionate about AI/ML with hands-on experience in PyTorch, Hugging Face, and modern AI coding tools.",
+        "questions": [
+          "Which ML frameworks have you used?",
+          "What AI-assisted coding tools do you use?",
+          "Any experience fine-tuning models?",
+          "How have you applied ML practically?"
+        ]
+      },
+      "mobile": {
+        "title": "Mobile Development Skills",
+        "message": "Kris has full-stack mobile experience across native Android, iOS, and cross-platform technologies.",
+        "questions": [
+          "What native mobile experience do you have?",
+          "Which cross-platform tools have you used?",
+          "Android or iOS preference?",
+          "Experience with Jetpack Compose or SwiftUI?"
+        ]
+      },
+      "databases": {
+        "title": "Database Experience",
+        "message": "Kris has extensive database experience with both SQL (MySQL, PostgreSQL) and NoSQL (MongoDB, Redis) technologies.",
+        "questions": [
+          "Which databases are you most familiar with?",
+          "SQL or NoSQL preference?",
+          "Experience with Redis caching?",
+          "Any work with CouchDB?"
+        ]
+      },
+      "practices": {
+        "title": "Development Practices",
+        "message": "Kris has a strong foundation in Agile/Lean methodologies, TDD, and code review leadership.",
+        "questions": [
+          "What development methodologies do you prefer?",
+          "Experience with TDD?",
+          "How do you approach code reviews?",
+          "What about system modernization?"
+        ]
+      },
+      "devops": {
+        "title": "DevOps Experience",
+        "message": "Kris has comprehensive DevOps experience with Docker, Kubernetes, and CI/CD pipelines.",
+        "questions": [
+          "What CI/CD experience do you have?",
+          "Experience with Kubernetes?",
+          "Which CI/CD tools have you used?",
+          "Any Helm or Kustomize experience?"
+        ]
+      },
+      "languages": {
+        "title": "Programming Languages",
+        "message": "Kris is a polyglot developer who has released production code in 10+ languages and experimented with 20+ languages.",
+        "questions": [
+          "How many programming languages have you worked with?",
+          "Which are your strongest languages?",
+          "Any unusual or niche languages?",
+          "How do you approach learning new languages?"
+        ]
+      }
+    },
+    "projects": {
+      "0": {
+        "title": "Storefront E-Commerce Platform",
+        "message": "An enterprise e-commerce platform for photo products, architected by Kris and still operational after 25 years.",
+        "questions": [
+          "What is the Storefront E-Commerce Platform?",
+          "What was your role in it?",
+          "How has it evolved over 25 years?",
+          "Which retailers use it?"
+        ]
+      },
+      "1": {
+        "title": "Storefront Windows Photo Kiosk",
+        "message": "Kris was lead architect for this Windows kiosk system that processed millions of prints and drove over $1B in sales.",
+        "questions": [
+          "Tell me about the kiosk system and its impact",
+          "What technologies were used?",
+          "How did it handle high volume?",
+          "What was the business impact?"
+        ]
+      },
+      "2": {
+        "title": "Kiosk File Transfer & Payment System",
+        "message": "A Node.js and React system designed by Kris for mobile-to-kiosk photo transfer and phone-based payments.",
+        "questions": [
+          "What problem did this system solve?",
+          "How does the file transfer work?",
+          "What about the payment system?",
+          "How many kiosks use it?"
+        ]
+      },
+      "3": {
+        "title": "Remote Management Platform",
+        "message": "A centralized monitoring platform architected by Kris, scaled to 30,000+ devices with 12,000 requests/minute throughput.",
+        "questions": [
+          "What does the Remote Management Platform do?",
+          "How does it handle 30,000+ devices?",
+          "What monitoring capabilities does it have?",
+          "How was scalability achieved?"
+        ]
+      },
+      "4": {
+        "title": "Distributed SaaS Platform",
+        "message": "A microservices-based SaaS platform for customizable products and e-commerce integrations, co-architected by Kris.",
+        "questions": [
+          "How did the distributed SaaS platform help partners?",
+          "What microservices architecture was used?",
+          "How do partners integrate?",
+          "What customization is possible?"
+        ]
+      }
+    },
+    "education": {
+      "0": {
+        "title": "Langara College",
+        "message": "Kris completed the Advanced Computer Studies and Technology Program at Langara College (1995-1998).",
+        "questions": [
+          "What did Kris study at Langara College?",
+          "What was the ACST program like?",
+          "How did this prepare you for your career?"
+        ]
+      },
+      "1": {
+        "title": "University of Western Ontario",
+        "message": "Kris graduated with an Honours BA in English Literature from UWO in 1993.",
+        "questions": [
+          "What did Kris study at University of Western Ontario?",
+          "How does English Literature help in tech?",
+          "What skills did this provide?"
+        ]
+      }
+    },
+    "about": {
+      "title": "About This Interactive CV",
+      "message": "This interactive CV is an experiment in using AI to make resumes more engaging. It's built with Eleventy for static site generation, uses Cloudflare Workers with Hono to power the chat API, and connects to OpenAI models through OpenRouter. The site runs on a Digital Ocean server and is fronted by Cloudflare for performance and security. The source code is open source and available on GitHub.",
+      "questions": [
+        "What is the system prompt used by the chat?",
+        "How does the RAG (retrieval) system work?",
+        "What AI model powers this chat?",
+        "Where can I find the source code?"
+      ],
+      "info": {
+        "stack": ["Eleventy (11ty)", "Cloudflare Workers", "Hono", "OpenRouter", "OpenAI GPT models"],
+        "hosting": "Digital Ocean server fronted by Cloudflare",
+        "source": "https://github.com/kriserickson/aging-coder",
+        "features": ["RAG-based context retrieval", "Streaming responses", "Job fit assessment", "Interactive CV exploration"]
+      }
+    }
+  }
+}

@@ -9,7 +9,8 @@ extra_js:
 ---
 
 <script>
-  window.CV_CHAT_ENDPOINT = "{{ env.CV_CHAT_ENDPOINT | default('') }}"
+  window.CV_CHAT_ENDPOINT = "{{ env.CV_CHAT_ENDPOINT | default('') }}";
+  window.CV_FIT_ENDPOINT = "{{ env.CV_FIT_ENDPOINT | default('') }}";
 </script>
 
 <div class="cv-container">
@@ -22,6 +23,11 @@ extra_js:
     <div class="cv-links">
       <a href="{{ cv.personal.github }}" target="_blank">GitHub</a> |
       <a href="{{ cv.personal.linkedin }}" target="_blank">LinkedIn</a>
+    </div>
+    <div class="cv-actions">
+      <button type="button" class="cv-action-btn" id="btn-digital-assistant">Digital Assistant</button>
+      <button type="button" class="cv-action-btn" id="btn-fit-assessment">Fit Assessment</button>
+      <button type="button" class="cv-action-btn" id="btn-about-cv">About this Interactive CV</button>
     </div>
   </header>
 
@@ -205,25 +211,16 @@ extra_js:
   </section>
 
   <div class="cv-chat-container">
-    <div class="chat-toggle">Ask My Digital Proxy</div>
+    <div class="chat-toggle" id="chat-toggle-btn">Ask My Digital Proxy</div>
     <div class="chat-modal" id="chat-modal">
       <div class="chat-modal-overlay"></div>
       <div class="chat-modal-content">
         <div class="chat-header">
-          <h3>{{ cv.chat.welcome }}</h3>
+          <h3 id="chat-title">Ask My Digital Proxy</h3>
           <button class="chat-close" type="button">×</button>
         </div>
         <div class="chat-messages" id="chat-messages">
-          <div class="chat-intro" id="chat-intro">
-            Hi! I'm here to answer questions about Kris's background,
-            experience, and skills. Click on any question below or type your
-            own.
-          </div>
-          <div class="chat-sample-questions" id="sample-questions">
-            {%- for question in cv.chat.sample_questions %}
-            <div class="sample-question">{{ question }}</div>
-            {%- endfor %}
-          </div>
+          <!-- Messages and sample questions are rendered dynamically by cv.js -->
         </div>
         <div class="chat-input-container">
           <input
@@ -232,6 +229,55 @@ extra_js:
             placeholder="Ask me anything about Kris's CV..."
           />
           <button type="button" class="chat-send">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fit Assessment Modal -->
+  <div class="fit-modal" id="fit-modal">
+    <div class="fit-modal-overlay"></div>
+    <div class="fit-modal-content">
+      <div class="fit-header">
+        <h3>Job Fit Assessment</h3>
+        <button class="fit-close" type="button">×</button>
+      </div>
+      <div class="fit-body">
+        <div class="fit-input-section" id="fit-input-section">
+          <p class="fit-intro">Paste a job description or provide a URL to a public job posting, and I'll give you an honest assessment of how well Kris's experience matches your requirements.</p>
+
+          <div class="fit-tabs">
+            <button type="button" class="fit-tab active" data-tab="paste">Paste Job Description</button>
+            <button type="button" class="fit-tab" data-tab="url">Job Posting URL</button>
+          </div>
+
+          <div class="fit-tab-content active" id="tab-paste">
+            <textarea
+              id="fit-job-text"
+              placeholder="Paste the full job description here, or just a brief summary of requirements..."
+              rows="8"
+            ></textarea>
+          </div>
+
+          <div class="fit-tab-content" id="tab-url">
+            <input
+              type="url"
+              id="fit-job-url"
+              placeholder="https://example.com/jobs/senior-engineer"
+            />
+            <p class="fit-url-note">Enter a publicly accessible job posting URL</p>
+          </div>
+
+          <button type="button" class="fit-submit" id="fit-submit">Analyze Fit</button>
+        </div>
+
+        <div class="fit-loading" id="fit-loading" style="display: none;">
+          <div class="fit-spinner"></div>
+          <p>Analyzing job requirements against Kris's experience...</p>
+        </div>
+
+        <div class="fit-results" id="fit-results" style="display: none;">
+          <!-- Results rendered by JavaScript -->
         </div>
       </div>
     </div>

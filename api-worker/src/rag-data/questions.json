@@ -1,0 +1,240 @@
+{
+  "questions": [
+    {
+      "name": "What are Kris's key technical skills?",
+      "context": "Kris has deep expertise across the full stack: Frontend (TypeScript, JavaScript, Vue, React, Angular, PWAs), Backend (PHP, C#, Node.js, Python), Mobile (Android, iOS, Kotlin, Swift, Flutter), Databases (MySQL, PostgreSQL, MongoDB, Redis), DevOps (Docker, Kubernetes, CI/CD), and AI/ML (PyTorch, Hugging Face, fine-tuning LLMs). He's released production code in 10+ languages."
+    },
+    {
+      "name": "Tell me about Kris's management experience",
+      "context": "As Director of Software Development at Storefront.com (2020-2025), Kris directed company-wide software strategy and managed teams of up to 10 developers. He implemented structured career development paths, guiding early-career engineers into senior and leadership roles. As Team Lead (2010-2020), he directed agile teams of 10-15 developers through multiple full-cycle deliveries."
+    },
+    {
+      "name": "What major projects has Kris led?",
+      "context": "Major projects include: Storefront E-Commerce Platform (2000-present, still operational after 25 years serving 10+ major retailers), Windows Photo Kiosk (processed millions of prints, drove over $1B in sales), Kiosk File Transfer and Payment System (Node.js/React, adopted by thousands of kiosks), Remote Management Platform (scaled to 30,000+ devices, 12,000 requests/minute), and a distributed SaaS platform for customizable products."
+    },
+    {
+      "name": "How has Kris worked with AI/ML technologies?",
+      "context": "Kris is passionate about AI/ML with hands-on experience in PyTorch, OpenCV, Scikit-learn, and Hugging Face Transformers. He has experience fine-tuning LLMs using LoRA and SIT techniques, prompt engineering, and has been using AI-assisted coding tools since 2021 (GitHub Copilot, Cursor, Windsurf, agentic development environments)."
+    },
+    {
+      "name": "Can you expand on Kris's enterprise SaaS experience?",
+      "context": "Kris has 25+ years building and modernizing enterprise SaaS platforms. He architected systems that processed millions of prints per year across 10+ countries, with web and kiosk platforms handling approximately $1B in annual sales at peak. He co-architected a distributed SaaS platform using microservices for customizable products and e-commerce integrations."
+    },
+    {
+      "name": "What measurable outcomes came from those projects?",
+      "context": "Key measurable outcomes: E-Commerce Platform operational for 25+ years serving 10+ major retailers; Windows Photo Kiosk drove over $1B in photo product sales by 2010; Remote Management Platform scaled to 30,000+ devices with 12,000 requests/minute throughput; Android platform launch doubled engagement and revenue; File transfer system eliminated credit card hardware costs across thousands of kiosks."
+    },
+    {
+      "name": "How has Kris used AI/ML and modern tools to improve delivery?",
+      "context": "Kris championed adoption of AI coding tools since 2021, using GitHub Copilot, Cursor, Windsurf, and modern agentic tooling to accelerate delivery and code quality. He has practical experience with PyTorch, Hugging Face Transformers, fine-tuning LLMs (LoRA, SIT), and prompt engineering to improve workflows and customer experiences."
+    },
+    {
+      "name": "Can you describe Kris's approach to modernizing legacy systems?",
+      "context": "Kris is expert in modernizing and integrating legacy systems into scalable, maintainable platforms. At Storefront.com, he led modernization of critical legacy systems, integrating web and mobile platforms while improving maintainability, reducing operational costs, and increasing system performance and stability. He also designed the Kiosk File Transfer system that was adopted by both legacy Windows and modern Android kiosks."
+    },
+    {
+      "name": "What were the key responsibilities as Director?",
+      "context": "As Director of Software Development (2020-2025), Kris directed company-wide software strategy, architecture, and full-cycle delivery across web, mobile, and kiosk platforms. He created and delivered consumer-facing mobile applications, led modernization of critical legacy systems, co-architected a distributed SaaS platform, oversaw core library development, and managed/mentored teams of up to 10 developers."
+    },
+    {
+      "name": "What team size and scope did that role cover?",
+      "context": "As Director, Kris managed and mentored teams of up to 10 developers. He implemented structured career development paths, guiding early-career engineers into senior and leadership roles. The scope covered company-wide software strategy across web, mobile, and kiosk platforms, including consumer-facing mobile apps, legacy system modernization, and distributed SaaS development."
+    },
+    {
+      "name": "What consumer-facing mobile apps were delivered?",
+      "context": "As Director, Kris created and delivered consumer-facing mobile applications in accelerated timelines, achieving widespread adoption and measurable customer impact. These included apps that integrated with the company's photo processing and e-commerce platforms, leveraging his full-stack mobile experience with Android (Java, Kotlin, Jetpack Compose), iOS (Swift, SwiftUI), and cross-platform technologies (Flutter, Cordova)."
+    },
+    {
+      "name": "How were legacy systems modernized during this time?",
+      "context": "Kris led modernization of critical legacy systems by integrating web and mobile platforms, improving maintainability, reducing operational costs, and increasing system performance and stability. This included designing the Kiosk File Transfer and Payment system in Node.js and React that was adopted by both legacy Windows kiosks and modern Android kiosks across major retailers."
+    },
+    {
+      "name": "What is the system prompt used by the chat?",
+      "context": "The chat uses a system prompt that positions it as 'Kris Erickson's Candidate Assistant' - a factual Q&A chatbot that helps employers evaluate whether Kris is a good fit for a role. The prompt emphasizes using only provided context, not exaggerating or inventing information, providing concrete evidence with numbers and specifics, and being transparent about gaps or missing information."
+    },
+    {
+      "name": "How does the RAG (retrieval) system work?",
+      "context": "The RAG system uses Cloudflare Workers AI with the BGE-small embedding model to find relevant context. CV data is always included as base context (without embedding search). Additional documents can be added and are embedded for semantic search. When a question is asked, the system finds the most relevant context chunks and includes them with the question sent to the LLM."
+    },
+    {
+      "name": "What AI model powers this chat?",
+      "context": "The chat is powered through OpenRouter, which provides access to various AI models including OpenAI's GPT models. The specific model can be configured via environment variables. The system supports streaming responses for a better user experience."
+    },
+    {
+      "name": "Where can I find the source code?",
+      "context": "The source code for this interactive CV is open source and available at https://github.com/kriserickson/aging-coder. The project uses Eleventy (11ty) for static site generation, Cloudflare Workers with Hono for the API, and connects to OpenAI models through OpenRouter."
+    },
+    {
+      "name": "Which frontend frameworks are you most experienced with?",
+      "context": "Kris has expert-level experience with React, Vue, and Angular in production applications. He's proficient with TypeScript and JavaScript, and has extensive experience with build tools like Vite, Webpack, Rollup, and Gulp. He has built real-time web applications using WebSockets and Progressive Web Apps (PWAs)."
+    },
+    {
+      "name": "Do you have experience building PWAs?",
+      "context": "Yes, Kris has experience building Progressive Web Apps (PWAs). His frontend expertise includes PWAs along with real-time applications using WebSockets, and he's worked with modern build systems like Vite and Webpack that are commonly used in PWA development."
+    },
+    {
+      "name": "What build tools have you worked with?",
+      "context": "Kris has extensive experience with modern build tools including Vite, Webpack, Rollup, and Gulp. He's used these across various frontend projects with React, Vue, and Angular frameworks, building complex production applications."
+    },
+    {
+      "name": "Which back-end languages have you used most?",
+      "context": "Kris has strong backend experience with PHP, C#, Node.js, and Python. He's built enterprise systems with these languages, including the long-running Storefront E-Commerce Platform and various microservices and APIs."
+    },
+    {
+      "name": "What integration patterns have you worked with?",
+      "context": "Kris has experience with various integration technologies including Solace, Kafka, RabbitMQ, REST APIs, and GraphQL. He's designed and implemented scalable microservices architectures with message bus integrations for enterprise systems."
+    },
+    {
+      "name": "Experience with Kafka or RabbitMQ?",
+      "context": "Yes, Kris has integration experience with both Kafka and RabbitMQ, as well as Solace. These have been used in building scalable backend systems with message bus integrations for enterprise platforms."
+    },
+    {
+      "name": "What about API design?",
+      "context": "Kris has extensive API design experience with both REST APIs and GraphQL. He's architected and delivered distributed SaaS platforms leveraging microservices and APIs, including systems that handle thousands of requests per minute."
+    },
+    {
+      "name": "Which ML frameworks have you used?",
+      "context": "Kris has hands-on experience with PyTorch, OpenCV, Scikit-learn, and Hugging Face Transformers. He's worked on fine-tuning LLMs using LoRA and SIT techniques and has practical experience applying machine learning to improve workflows."
+    },
+    {
+      "name": "What AI-assisted coding tools do you use?",
+      "context": "Kris has been using AI-assisted coding tools since 2021, including GitHub Copilot, Cursor, Windsurf, and modern agentic development environments. He championed adoption of these tools to accelerate delivery and improve code quality."
+    },
+    {
+      "name": "Any experience fine-tuning models?",
+      "context": "Yes, Kris has experience fine-tuning LLMs using LoRA (Low-Rank Adaptation) and SIT (Supervised Instruction Tuning) techniques. He's worked with Hugging Face Transformers and PyTorch for these projects."
+    },
+    {
+      "name": "How have you applied ML practically?",
+      "context": "Kris has applied machine learning and automation to improve workflows and customer experiences. This includes using computer vision (OpenCV), training models with PyTorch and Scikit-learn, and leveraging AI tools to accelerate software delivery."
+    },
+    {
+      "name": "What native mobile experience do you have?",
+      "context": "Kris has full-stack mobile development experience with native Android (Java, Kotlin, Jetpack Compose) and iOS (Swift, SwiftUI). He led the launch of Android-based kiosk platforms that doubled engagement and revenue."
+    },
+    {
+      "name": "Which cross-platform tools have you used?",
+      "context": "Kris has experience with cross-platform mobile development using Flutter and Cordova. Combined with his native Android and iOS experience, he can choose the right approach for different project requirements."
+    },
+    {
+      "name": "Experience with Jetpack Compose or SwiftUI?",
+      "context": "Yes, Kris has experience with both Jetpack Compose (Android's modern declarative UI toolkit) and SwiftUI (Apple's declarative UI framework), in addition to traditional Android and iOS development."
+    },
+    {
+      "name": "Which databases are you most familiar with?",
+      "context": "Kris has extensive database experience with both SQL (MySQL, PostgreSQL, SQLite) and NoSQL (MongoDB, Redis, CouchDB) technologies. He's designed and implemented database systems for enterprise platforms handling high transaction volumes."
+    },
+    {
+      "name": "Experience with Redis caching?",
+      "context": "Yes, Kris has experience with Redis as part of his database and caching expertise. He's used Redis alongside MySQL, PostgreSQL, MongoDB, and CouchDB in building scalable enterprise systems."
+    },
+    {
+      "name": "What development methodologies do you prefer?",
+      "context": "Kris has a strong foundation in Agile/Lean methodologies. He's directed agile teams of 10-15 developers through multiple full-cycle deliveries, integrating product, QA, and operations teams to accelerate time-to-market."
+    },
+    {
+      "name": "Experience with TDD?",
+      "context": "Yes, Kris has experience with Test-Driven Development (TDD) as part of his development practices. He emphasizes code quality through TDD, code review leadership, and modern development methodologies."
+    },
+    {
+      "name": "How do you approach code reviews?",
+      "context": "Kris has code review leadership experience as part of his development practices. As Director and Team Lead, he's established review processes and mentored developers through structured career development paths."
+    },
+    {
+      "name": "What CI/CD experience do you have?",
+      "context": "Kris has comprehensive DevOps experience with CI/CD pipelines using GitHub Actions, GitLab CI, and Jenkins. He's built containerized build pipelines using Docker, Kubernetes, Helm Charts, Kustomize, and Kaniko."
+    },
+    {
+      "name": "Experience with Kubernetes?",
+      "context": "Yes, Kris has experience with Kubernetes along with related tools like Helm Charts and Kustomize. He's built containerized build pipelines and has experience with event-driven architecture."
+    },
+    {
+      "name": "Which CI/CD tools have you used?",
+      "context": "Kris has used GitHub Actions, GitLab CI, and Jenkins for CI/CD pipelines. He's built containerized build pipelines using Docker, Kaniko, and orchestrated with Kubernetes."
+    },
+    {
+      "name": "Any Helm or Kustomize experience?",
+      "context": "Yes, Kris has experience with both Helm Charts and Kustomize for Kubernetes deployments. These are part of his DevOps toolkit along with Docker, GitHub Actions, GitLab CI, and Jenkins."
+    },
+    {
+      "name": "How many programming languages have you worked with?",
+      "context": "Kris is a polyglot developer who has released production code in 10+ languages and has experience with 20+ programming languages across different paradigms."
+    },
+    {
+      "name": "Which are your strongest languages?",
+      "context": "Kris's strongest languages include TypeScript/JavaScript (frontend and Node.js backend), PHP, C#, Python, Kotlin, and Swift. He's released production code in 10+ languages and experimented with 20+ languages."
+    },
+    {
+      "name": "What is the Storefront E-Commerce Platform?",
+      "context": "The Storefront E-Commerce Platform is an enterprise e-commerce system that Kris architected and developed starting in 2000. It powers photo product ordering for 10+ major retailers including Rite Aid, Costco Mexico, Fred Meyer, Smiths, Duane Reade, King Soopers, London Drugs, Benavides, and Dodd's Photo. It's still operational after 25 years."
+    },
+    {
+      "name": "What was your role in it?",
+      "context": "Kris was the architect and lead developer of the Storefront E-Commerce Platform. He designed and built the system from the ground up in 2000, and continued enhancing it with dozens of new features over the years to streamline retailer workflows and improve customer experience."
+    },
+    {
+      "name": "How has it evolved over 25 years?",
+      "context": "The Storefront E-Commerce Platform has been continuously enhanced over 25 years, adding dozens of new features, streamlining retailer workflows, increasing adoption rates, and improving the end-customer experience. It's been integrated with modern mobile platforms and retailer-specific plugins for photo products."
+    },
+    {
+      "name": "Which retailers use it?",
+      "context": "The Storefront E-Commerce Platform serves 10+ major retailers including Rite Aid, Costco Mexico, Fred Meyer, Smiths, Duane Reade, King Soopers, London Drugs, Benavides, and Dodd's Photo."
+    },
+    {
+      "name": "Tell me about the kiosk system and its impact",
+      "context": "The Storefront Windows Photo Kiosk was launched in 2005 with Kris as lead architect. It processed millions of prints annually and drove over $1B in photo product sales by 2010. The system served major retailers across multiple countries."
+    },
+    {
+      "name": "What problem did this system solve?",
+      "context": "The Kiosk File Transfer and Payment System solved the problem of transferring photos from mobile devices to kiosks and enabling secure phone-based payments. It eliminated kiosk credit card hardware costs and security risks, and was adopted by thousands of legacy Windows and modern Android kiosks."
+    },
+    {
+      "name": "How does the file transfer work?",
+      "context": "The Kiosk File Transfer system was designed in Node.js and React to enable seamless photo transfer from mobile devices to kiosks. It works across both legacy Windows kiosks and modern Android kiosks across multiple major retailers."
+    },
+    {
+      "name": "What about the payment system?",
+      "context": "The phone-based payment system eliminates kiosk credit card hardware costs and security risks. Customers can pay via their phones instead of swiping cards at the kiosk, improving security and reducing hardware maintenance costs."
+    },
+    {
+      "name": "What does the Remote Management Platform do?",
+      "context": "The Storefront Remote Management Platform provides centralized monitoring, remote access, scheduling, and automated error reporting for kiosks, lab software, and printers. It gives operations teams visibility and control over the entire device fleet."
+    },
+    {
+      "name": "How does it handle 30,000+ devices?",
+      "context": "The Remote Management Platform was architected to scale to over 30,000 devices with backend throughput of 12,000 requests per minute. It handles centralized monitoring, remote access, scheduling, and automated error reporting at this scale."
+    },
+    {
+      "name": "What monitoring capabilities does it have?",
+      "context": "The Remote Management Platform provides centralized monitoring, remote access, scheduling, and automated error reporting for kiosks, lab software, and printers across the device fleet."
+    },
+    {
+      "name": "How did the distributed SaaS platform help partners?",
+      "context": "The distributed SaaS platform enables rapid partner integration and scalability for customizable products and e-commerce integrations. Partners can integrate their websites to offer photo products like photo books, calendars, and template-based prints."
+    },
+    {
+      "name": "What microservices architecture was used?",
+      "context": "The distributed SaaS platform uses a microservices-based architecture with APIs for customizable products and e-commerce integrations. It was co-architected by Kris to enable scalability and rapid partner onboarding."
+    },
+    {
+      "name": "What did Kris study at Langara College?",
+      "context": "Kris completed the Advanced Computer Studies and Technology Program (ACST) at Langara College in Vancouver, BC from 1995-1998. This technical program prepared him for his software development career."
+    },
+    {
+      "name": "What was the ACST program like?",
+      "context": "The Advanced Computer Studies and Technology (ACST) Program at Langara College was a comprehensive technical program covering computer science and software development fundamentals. Kris completed it from 1995-1998."
+    },
+    {
+      "name": "How did this prepare you for your career?",
+      "context": "The ACST program at Langara provided strong technical foundations in computer science and software development. Combined with practical experience at TRIUMF and Canfor during the same period, it launched Kris's 25+ year software development career."
+    },
+    {
+      "name": "What did Kris study at University of Western Ontario?",
+      "context": "Kris graduated with an Honours BA in English Literature from the University of Western Ontario in 1993. This background has contributed to his strong communication and documentation skills throughout his technical career."
+    },
+    {
+      "name": "How does English Literature help in tech?",
+      "context": "Kris's English Literature degree contributes to his strong written communication, documentation skills, and ability to explain complex technical concepts clearly. He authored technical manuals at Langara College and continues to value clear communication in his leadership roles."
+    }
+  ]
+}

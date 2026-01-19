@@ -226,6 +226,9 @@ module.exports = function (eleventyConfig) {
     // Expose cv.json in the built site at /cv/cv.json so client-side JS can fetch it
     eleventyConfig.addPassthroughCopy({ 'src/_data/cv.json': 'cv/cv.json' });
 
+    // Expose chat-config.json for the CV chat interface
+    eleventyConfig.addPassthroughCopy({ 'src/_data/chat-config.json': 'cv/chat-config.json' });
+
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
