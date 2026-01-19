@@ -762,6 +762,10 @@ body.modal-open {
     box-shadow: 0 2px 8px rgba(var(--cv-shadow-rgb), 0.06);
 }
 
+.chat-message.bot.streaming li:not([data-streaming-has-content]) {
+    display: none;
+}
+
 /* Typing indicator */
 .chat-message.typing-indicator {
     display: flex;

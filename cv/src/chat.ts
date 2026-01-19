@@ -107,7 +107,11 @@ export function restoreConversationUI() {
   for (const msg of history) {
     const messageEl = document.createElement('div');
     messageEl.className = `chat-message ${msg.role === 'user' ? 'user' : 'bot'}`;
-    messageEl.textContent = msg.content;
+    if (msg.role === 'assistant') {
+      renderMarkdownContent(messageEl, msg.content);
+    } else {
+      messageEl.textContent = msg.content;
+    }
     messagesContainer.appendChild(messageEl);
   }
 
@@ -310,6 +314,26 @@ function renderSampleQuestions(questions?: string[]) {
   scrollChatToBottom();
 }
 
+function renderMarkdownContent(element: HTMLElement, markdown: string) {
+  if (!markdown) {
+    element.textContent = '';
+    return;
+  }
+
+  element.innerHTML = '';
+  try {
+    const renderer = smd.default_renderer(element);
+    const parser = smd.parser(renderer);
+    smd.parser_write(parser, markdown);
+    if (typeof smd.parser_end === 'function') {
+      smd.parser_end(parser);
+    }
+  } catch (err) {
+    console.warn('renderMarkdownContent error:', err);
+    element.textContent = markdown;
+  }
+}
+
 async function streamTextWordByWord(element: HTMLElement, text: string, delayMs = 30) {
   const words = text.split(' ');
   element.textContent = '';
@@ -353,6 +377,30 @@ function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chu
   const chunkSize = opts?.chunkSize ?? 3;
   const queue: Array<{ text: string; target: Element }> = [];
   let processing = false;
+  const idleResolvers: Array<() => void> = [];
+
+  const resolveIdleResolvers = () => {
+    while (idleResolvers.length) {
+      const resolver = idleResolvers.shift();
+      resolver?.();
+    }
+  };
+
+  const markListItemHasStreamingContent = (node: Element | Node | null | undefined) => {
+    if (!node) {
+      return;
+    }
+
+    const referenceElement = node instanceof Element ? node : node.parentElement;
+    if (!referenceElement) {
+      return;
+    }
+
+    const listItem = referenceElement.closest('li');
+    if (listItem && !listItem.hasAttribute('data-streaming-has-content')) {
+      listItem.setAttribute('data-streaming-has-content', 'true');
+    }
+  };
 
   const processQueue = async () => {
     if (processing) return;
@@ -361,12 +409,30 @@ function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chu
       const { text, target } = queue.shift()!;
       for (let i = 0; i < text.length; i += chunkSize) {
         const chunk = text.slice(i, i + chunkSize);
-        target.appendChild(document.createTextNode(chunk));
+        const targetNode = target ?? element;
+        const resolvedTarget = targetNode instanceof Element ? targetNode : element;
+        if (chunk.trim().length > 0) {
+          markListItemHasStreamingContent(targetNode);
+        }
+        resolvedTarget.appendChild(document.createTextNode(chunk));
         scrollChatToBottom();
         await new Promise((r) => setTimeout(r, delayMs));
       }
     }
     processing = false;
+    if (queue.length === 0) {
+      resolveIdleResolvers();
+    }
+  };
+
+  const waitForIdle = () => {
+    if (!processing && queue.length === 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      idleResolvers.push(resolve);
+    });
   };
 
   const add_text = (data: any, text: string) => {
@@ -378,6 +444,7 @@ function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chu
   return {
     ...base,
     add_text,
+    waitForIdle,
     // Keep the underlying parser data intact
     data: base.data
   };
@@ -581,6 +648,7 @@ export async function sendMessage() {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let done = false;
+    const assistantChunks: string[] = [];
 
     let renderer: any = null;
     let parser: any = null;
@@ -624,6 +692,7 @@ export async function sendMessage() {
       if (result.value) {
         hideTypingOnce();
         const chunkText = decoder.decode(result.value, { stream: true });
+        assistantChunks.push(chunkText);
         const messageEl = ensureBotMessage();
 
         if (parser && typeof smd.parser_write === 'function') {
@@ -653,9 +722,19 @@ export async function sendMessage() {
       }
     }
 
-    let assistantText = '';
+    if (renderer && typeof renderer.waitForIdle === 'function') {
+      await renderer.waitForIdle();
+    }
+
+    const remaining = decoder.decode();
+    if (remaining) {
+      assistantChunks.push(remaining);
+    }
+
+    const fallbackText = botMessageEl ? (botMessageEl as any).textContent || (botMessageEl as any).innerText || '' : '';
+    const assistantTextCandidate = assistantChunks.join('');
+    const assistantText = assistantTextCandidate.length ? assistantTextCandidate : fallbackText;
     if (botMessageEl) {
-      assistantText = (botMessageEl as any).textContent || (botMessageEl as any).innerText || '';
       (botMessageEl as any).classList.remove('streaming');
     }
     addToConversationHistory('assistant', assistantText);

@@ -224,6 +224,9 @@ module.exports = function (eleventyConfig) {
 
     eleventyConfig.addPassthroughCopy('favicon.*');
 
+    // Watch source JS so changes to assets/js trigger Eleventy rebuilds in dev mode
+    eleventyConfig.addWatchTarget('assets/js/**');
+
     // Expose cv.json in the built site at /cv/cv.json so client-side JS can fetch it
     eleventyConfig.addPassthroughCopy({ 'src/_data/cv.json': 'cv/cv.json' });
 
