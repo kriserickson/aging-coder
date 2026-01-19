@@ -3,7 +3,7 @@
     {
       "id": "cv",
       "title": "CV",
-      "path": "./rag-data/cv.json"
+      "path": "./cv.json"
     }
   ]
 }

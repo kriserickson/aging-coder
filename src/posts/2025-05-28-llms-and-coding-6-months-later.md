@@ -170,12 +170,15 @@ coverage. I asked Junie for a plan and to start the process, and it did create a
 {% assign snippet = collections.static-snippets | findSnippetByName: "convert-strategy" %}
 {% if snippet and snippet.url and snippet.data.rawMarkdown %}
   <div class="snippet-preview">
+    <code>
     {{ snippet.data.rawMarkdown | truncate: 200, "..." }}
+    </code>
     <div>
       <a class="external-link" href="{{ snippet.url }}">Read full document</a> | 
       {% snippetRawLink snippet %}
     </div>
   </div>
+  
 {% endif %}
 
 and then ran the initial steps updating the required files.  It required a ton of prompting Junie, referring to various

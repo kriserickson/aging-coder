@@ -686,6 +686,21 @@ function resetFitModal() {
     document.getElementById('fit-results').style.display = 'none';
     document.getElementById('fit-job-text').value = '';
     document.getElementById('fit-job-url').value = '';
+    clearFitError();
+}
+
+function showFitError(msg) {
+    const el = document.getElementById('fit-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function clearFitError() {
+    const el = document.getElementById('fit-error');
+    if (!el) return;
+    el.textContent = '';
+    el.style.display = 'none';
 }
 
 function setupFitModal() {
@@ -736,13 +751,13 @@ async function submitFitAssessment() {
     }
 
     if (!jobInput) {
-        alert('Please enter a job description or URL.');
+        showFitError('Please enter a job description or URL.');
         return;
     }
 
     const endpoint = window.CV_FIT_ENDPOINT;
     if (!endpoint) {
-        alert('Fit assessment endpoint not configured.');
+        showFitError('Fit assessment endpoint not configured.');
         return;
     }
 
@@ -751,7 +766,8 @@ async function submitFitAssessment() {
         ? { type: 'paste', content: jobInput }
         : { type: 'url', url: jobInput };
 
-    // Show loading
+    // Clear any prior errors and show loading
+    clearFitError();
     document.getElementById('fit-input-section').style.display = 'none';
     document.getElementById('fit-loading').style.display = 'block';
 
@@ -781,7 +797,7 @@ async function submitFitAssessment() {
         console.error('Fit assessment error:', error);
         document.getElementById('fit-loading').style.display = 'none';
         document.getElementById('fit-input-section').style.display = 'block';
-        alert(error && error.message ? `Error: ${error.message}` : 'Failed to analyze job fit. Please try again.');
+        showFitError(error && error.message ? `Error: ${error.message}` : 'Failed to analyze job fit. Please try again.');
     }
 }
 

@@ -1063,6 +1063,17 @@ body.modal-open {
     transform: none;
 }
 
+.fit-error {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    background: color-mix(in srgb, var(--danger-bg) 92%, transparent);
+    color: var(--danger);
+    border: 1px solid color-mix(in srgb, var(--danger) 12%, transparent);
+    border-radius: 8px;
+    font-size: 0.86rem;
+}
+
 /* Loading state */
 .fit-loading {
     text-align: center;

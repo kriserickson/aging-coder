@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch api-worker (wrangler dev)",
+      "cwd": "${workspaceFolder}/api-worker",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9229"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to api-worker (9229)",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "localRoot": "${workspaceFolder}/api-worker"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run & Attach api-worker",
+      "configurations": [
+        "Launch api-worker (wrangler dev)",
+        "Attach to api-worker (9229)"
+      ]
+    }
+  ]
+}

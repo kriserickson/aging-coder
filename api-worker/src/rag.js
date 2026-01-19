@@ -1,11 +1,11 @@
-import ragConfig from './rag-config.json';
+import ragConfig from './rag-data/rag-config.json';
 import cvData from './rag-data/cv.json';
 import questionsData from './rag-data/questions.json';
 
 const CV_SOURCE_ID = 'cv';
 
 const sourceData = {
-  './rag-data/cv.json': cvData
+  './cv.json': cvData
 };
 
 const allSources = ragConfig.sources

@@ -1,6 +1,7 @@
-name = "cv-chat-api"
+name = "aging-coder-chat"
 main = "src/index.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-01-18"
+preview_urls = false
 
 [vars]
 # Add your environment variables here
@@ -11,17 +12,17 @@ CHAT_APP_URL = "https://agingcoder.com"
 DAILY_LIMIT = "30"
 STREAM_DELAY_MS = "16"
 CORS_ORIGINS = "http://localhost:8888,https://agingcoder.com"
-LOG_ANALYTICS = "false"
+LOG_ANALYTICS = "true"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
-id = "agingcoder-kv-namespace-id"
+id = "ca085819ab2441748fbf10d330939200"
 preview_id = "agingcoder-kv-preview-id"
 
 # You need a KV namespace for embedding cache; replace the IDs below after creating it.
 [[kv_namespaces]]
 binding = "RAG_EMBEDDINGS"
-id = "replace-with-rag-embeddings-kv-id"
+id = "6ba8f47abfcc47d4b380a7c78930864c"
 preview_id = "replace-with-rag-embeddings-kv-preview-id"
 
 [ai]
