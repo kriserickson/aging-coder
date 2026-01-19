@@ -104,7 +104,8 @@ const buildQuestionHashMap = async () => {
       const hash = await hashString(normalized);
       map.set(hash, {
         name: q.name,
-        context: q.context
+        context: q.context,
+        verbatim: !!q.verbatim
       });
     }
 
@@ -126,7 +127,8 @@ export const findExactQuestionMatch = async (question) => {
   if (match) {
     return {
       question: match.name,
-      context: match.context
+      context: match.context,
+      verbatim: !!match.verbatim
     };
   }
 

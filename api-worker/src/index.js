@@ -282,7 +282,23 @@ app.post('/api/chat', async (c) => {
     }
 
     if (exactMatch) {
-      // Use the predefined context for exact matches (+ CV context)
+      // If verbatim flag is true, return the stored context directly to the user
+      // (do NOT send it to the LLM). This ensures exact-match answers are delivered
+      // verbatim and avoid leaking them in fallback text.
+      if (exactMatch.verbatim) {
+        // Track analytics and return the exact context text immediately
+        await trackAnalytics(c, clientId, lastUserMessage, exactMatch.context);
+        return new Response(exactMatch.context, {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-store',
+            'X-RAG-Results': '0',
+            'X-Exact-Match': 'true'
+          }
+        });
+      }
+
+      // Non-verbatim: safe to include directly in ragContext
       ragContext = `${ragContext}\n\nAdditional context for this question:\n${exactMatch.context}`;
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
