@@ -8,7 +8,7 @@ import {
   prepareQuestionEmbeddings,
   getQuestionEmbeddingStatus
 } from './rag';
-import { buildFitAssessmentSystemPrompt, buildSystemPrompt, buildUserPrompt, buildConversationMessages } from './prompt';
+import { buildFitAssessmentUserPrompt, buildFitAssessmentSystemPrompt, buildSystemPrompt, buildUserPrompt, buildConversationMessages } from './prompt';
 import { fetchUrlContent } from './fetch-url-content';
 
 const app = new Hono();
@@ -406,7 +406,12 @@ app.post('/api/fit-assessment', async (c) => {
           return c.json({ error: 'Could not extract enough content from the URL.' }, 400);
         }
       } catch (error) {
-        return c.json({ error: `Failed to fetch job posting: ${error.message}` }, 400);
+        const msg = error?.message || String(error);
+        // If the failure indicates the page is not publicly accessible, return the friendly message directly
+        if (msg.includes('not publicly accessible')) {
+          return c.json({ error: msg }, 400);
+        }
+        return c.json({ error: `Failed to fetch job posting: ${msg}` }, 400);
       }
     }
 
@@ -439,7 +444,9 @@ app.post('/api/fit-assessment', async (c) => {
     }
   } catch (error) {
     console.error('Fit assessment request error:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    // Provide a friendly user-facing error message instead of an opaque internal error reference
+    const userMessage = 'Web page is not currently accessible. Please verify the URL or paste the job description into the input and try again.';
+    return c.json({ error: userMessage }, 500);
   }
 });
 

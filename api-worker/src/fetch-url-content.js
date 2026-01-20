@@ -8,6 +8,22 @@ export async function fetchUrlContent(url) {
     });
 
     if (!response.ok) {
+      // Provide clearer messages for common status codes
+      if (response.status === 400) {
+        throw new Error('Invalid URL or request. Please verify the address and try again, or paste the job details directly.');
+      }
+      if (response.status === 403 || response.status === 401) {
+        throw new Error('That webpage is not publicly accessible. Please paste the job contents into the Job Description field and try again.');
+      }
+      if (response.status === 404) {
+        throw new Error('That webpage could not be found (404). Please verify the URL or paste the job contents into the Job Description field.');
+      }
+      if (response.status === 429) {
+        throw new Error('The site appears to be rate-limiting requests (429). Try again later or paste the job description directly.');
+      }
+      if (response.status >= 500) {
+        throw new Error(`The remote site returned a server error (${response.status}). Please try again later or paste the job contents.`);
+      }
       throw new Error(`Failed to fetch URL: ${response.status}`);
     }
 
@@ -43,6 +59,10 @@ export async function fetchUrlContent(url) {
 
     return text;
   } catch (error) {
-    throw new Error(`URL fetch failed: ${error.message}`);
+    // Re-throw the original, user-friendly error message when possible
+    if (error && error.message) {
+      throw error;
+    }
+    throw new Error(`URL fetch failed: ${String(error)}`);
   }
 }

@@ -1101,12 +1101,28 @@ body.modal-open {
 .fit-error {
     display: block;
     margin-top: 0.75rem;
-    padding: 0.65rem 0.9rem;
-    background: color-mix(in srgb, var(--danger-bg) 92%, transparent);
-    color: var(--danger);
-    border: 1px solid color-mix(in srgb, var(--danger) 12%, transparent);
+    padding: 0.75rem 1rem;
+    background: #fff1f2;
+    /* very light red */
+    color: #b91c1c;
+    /* red-700 */
+    border: 1px solid #fecaca;
+    /* soft red border */
+    border-left: 6px solid #ef4444;
+    /* stronger left indicator */
     border-radius: 8px;
-    font-size: 0.86rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.fit-error::before {
+    content: '\26A0';
+    /* warning sign */
+    display: inline-block;
+    margin-right: 0.6rem;
+    font-size: 1rem;
+    vertical-align: baseline;
 }
 
 /* Loading state */
@@ -1366,6 +1382,21 @@ body.modal-open {
     margin: 0;
     font-size: 0.95rem;
     line-height: 1.6;
+}
+
+.fit-disclaimer {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--muted-color);
+    border: 1px dashed color-mix(in srgb, var(--muted-color) 30%, transparent);
+}
+
+.fit-disclaimer p {
+    margin: 0;
 }
 
 /* New assessment button */
