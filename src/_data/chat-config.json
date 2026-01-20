@@ -233,11 +233,11 @@
     },
     "about": {
       "title": "About This Interactive CV",
-      "message": "This interactive CV is an experiment in using AI to make resumes more engaging. It's built with Eleventy for static site generation, uses Cloudflare Workers with Hono to power the chat API, and connects to OpenAI models through OpenRouter. The site runs on a Digital Ocean server and is fronted by Cloudflare for performance and security. The source code is open source and available on GitHub.",
+      "message": "This interactive CV is an experiment in using AI to make resumes more engaging. It uses simple RAG (retrieval-augmented generation) for context retrieval, and an LLM to answer questions.  It was a weekend project to try to turn the classic two-page resume into something more useful without forcing the reviewer to read a giant document, and make the experience a little more engaging. The source code is open source and available on GitHub.",
       "questions": [
         "What is the system prompt used by the chat?",
         "How does the RAG (retrieval) system work?",
-        "What AI model powers this chat?",
+        "Where did you get the idea for this?",
         "Where can I find the source code?"
       ],
       "info": {

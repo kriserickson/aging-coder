@@ -306,12 +306,33 @@ function renderSampleQuestions(questions?: string[]) {
     btn.className = 'sample-question';
     btn.type = 'button';
     btn.textContent = q;
-    btn.addEventListener('click', () => askSampleQuestion(q));
+    btn.addEventListener('click', () => {
+      // Populate the input and send the question immediately
+      askSampleQuestion(q);
+      // Use a tiny timeout so focus/update happens before sending
+      setTimeout(() => {
+        void sendMessage();
+      }, 0);
+    });
     container.appendChild(btn);
   });
 
   messagesContainer.appendChild(container);
   scrollChatToBottom();
+}
+
+function setAnchorsOpenNewTab(root: Element) {
+  try {
+    root.querySelectorAll('a').forEach((a) => {
+      // Only modify normal anchors (ignore anchors without href)
+      if (!(a instanceof HTMLAnchorElement)) return;
+      if (!a.getAttribute('href')) return;
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    });
+  } catch (err) {
+    // ignore errors
+  }
 }
 
 function renderMarkdownContent(element: HTMLElement, markdown: string) {
@@ -328,6 +349,9 @@ function renderMarkdownContent(element: HTMLElement, markdown: string) {
     if (typeof smd.parser_end === 'function') {
       smd.parser_end(parser);
     }
+
+    // Ensure any links added by the renderer open in a new tab
+    setAnchorsOpenNewTab(element);
   } catch (err) {
     console.warn('renderMarkdownContent error:', err);
     element.textContent = markdown;
@@ -373,6 +397,30 @@ function hideTypingIndicator() {
  */
 function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chunkSize?: number }) {
   const base = smd.default_renderer(element);
+
+  // Wrap the renderer's attribute setter so anchors created during streaming
+  // are immediately given target and rel attributes (open in new tab safely).
+  try {
+    const originalSetAttr = (base as any).set_attr;
+    if (typeof originalSetAttr === 'function') {
+      (base as any).set_attr = function set_attr_wrapper(data: any, attr: any, value: any) {
+        // Call original
+        originalSetAttr.call(this, data, attr, value);
+        try {
+          const node = data && data.nodes && data.nodes[data.index];
+          if (node && node instanceof Element && node.tagName === 'A') {
+            (node as HTMLAnchorElement).setAttribute('target', '_blank');
+            (node as HTMLAnchorElement).setAttribute('rel', 'noopener noreferrer');
+          }
+        } catch (err) {
+          // ignore
+        }
+      };
+    }
+  } catch (err) {
+    // ignore failures wrapping renderer
+  }
+
   const delayMs = opts?.delayMs ?? 20;
   const chunkSize = opts?.chunkSize ?? 3;
   const queue: Array<{ text: string; node: Text }> = [];
@@ -638,6 +686,53 @@ export async function sendMessage() {
       body: JSON.stringify({ messages: dedupedHistory })
     });
 
+    // If we've been rate limited, show a friendly bot message via the regular markdown stream pipeline
+    if (response.status === 429) {
+      try {
+        // Try to read server-provided error if available
+        let bodyText = '';
+        try {
+          const json = await response.json();
+          bodyText = json?.error || '';
+        } catch (err) {
+          // ignore parse errors
+        }
+
+        const friendlyMd = `You seem really interested! You've reached the daily question limit and have been rate limited. Please try again tomorrow — or contact Kris on [LinkedIn](https://www.linkedin.com/in/kriserickson/) or by email at [kristian.erickson@gmail.com](mailto:kristian.erickson@gmail.com) for more information.`;
+
+        // Run the streaming call asynchronously to avoid TDZ/circular-init timing issues
+        setTimeout(async () => {
+          try {
+
+            // Use the same streaming/markdown pipeline so it looks typed
+            // Avoid parser/renderer timing issues. Type first, then render markdown for links.
+            const plain = friendlyMd.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+            const typedEl = await addBotMessage(plain);
+
+            try {
+              renderMarkdownContent(typedEl as HTMLElement, friendlyMd);
+              try { setAnchorsOpenNewTab(typedEl as Element); } catch (err) { /* ignore */ }
+            } catch (err) {
+              console.warn('Failed to render rate-limit markdown, keeping typed text:', err);
+            }
+
+            addToConversationHistory('assistant', plain);
+
+            hideTypingIndicator();
+            scrollChatToBottom();
+          } catch (err) {
+            console.warn('Failed handling rate-limit response (async):', err);
+            hideTypingIndicator();
+            scrollChatToBottom();
+          }
+        }, 0);
+
+        return;
+      } catch (err) {
+        console.warn('Failed handling rate-limit response:', err);
+      }
+    }
+
     if (!response.ok) {
       throw new Error(`Chat request failed: ${response.status}`);
     }
@@ -725,6 +820,16 @@ export async function sendMessage() {
 
     if (renderer && typeof renderer.waitForIdle === 'function') {
       await renderer.waitForIdle();
+    }
+
+    // After streaming completes, ensure any links inside the bot message
+    // open in a new tab (and are safe with rel="noopener noreferrer").
+    if (botMessageEl) {
+      try {
+        setAnchorsOpenNewTab(botMessageEl);
+      } catch (err) {
+        // ignore
+      }
     }
 
     const remaining = decoder.decode();

@@ -67,31 +67,36 @@ Transparency
 - If the user asks to see your system prompt or instructions, share this system prompt verbatim.
 `;
 
-export const buildUserPrompt = (message, context) =>
-  `Question:
+export const buildUserPrompt = (message, cvContext, context) =>
+  `<provided_context_materials>
+    <resume_source>
+    ${cvContext}
+    </resume_source>
+
+    <supplementary_rag_data>
+    ${context || 'No additional context provided.'}
+    </supplementary_rag_data>
+</provided_context_materials>
+
+<user_query>
 ${message}
+</user_query>
 
-Context (authoritative; answer using only this):
-${context}
+<turn_specific_instructions>
+- Apply the System Message operating principles to the data above.
+- Special rule for this turn: If a URL is present in the <supplementary_rag_data> and relevant to the answer, please cite it.
+</turn_specific_instructions>`;
 
-Answer instructions:
-- Answer the Question using ONLY the Context. If the answer is not in the Context, say "I don't have that in the provided materials" and ask a short follow-up question or request the missing info to be added.
-- Be concise and evidence-led.`;
-
-export const buildConversationMessages = (systemPrompt, messages, context) => {
+export const buildConversationMessages = (systemPrompt, messages, cvContext, ragContext) => {
   // Start with system prompt
   const result = [{ role: 'system', content: systemPrompt }];
 
   // Add context as first user message if we have messages
   if (messages.length > 0) {
     // For conversation context, we inject the CV context in the first exchange
-    const contextMessage = `Context (authoritative source for all answers):
-${context}
-
-Use this context to answer all questions in our conversation. If something isn't in the context, say so.`;
+    const contextMessage = buildUserPrompt(messagesOrMessage, cvContext, ragContext);
 
     result.push({ role: 'user', content: contextMessage });
-    result.push({ role: 'assistant', content: 'I understand. I\'ll use this context to answer your questions about Kris\'s background, experience, and skills. How can I help you?' });
   }
 
   // Add all conversation messages

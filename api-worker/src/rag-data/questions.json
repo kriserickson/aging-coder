@@ -58,12 +58,13 @@
       "context": "The RAG system uses Cloudflare Workers AI with the BGE-small embedding model to find relevant context. CV data is always included as base context (without embedding search). Additional documents can be added and are embedded for semantic search. When a question is asked, the system finds the most relevant context chunks and includes them with the question sent to the LLM."
     },
     {
-      "name": "What AI model powers this chat?",
-      "context": "The chat is powered through OpenRouter, which provides access to various AI models including OpenAI's GPT models. The specific model can be configured via environment variables. The system supports streaming responses for a better user experience."
+      "name": "Where did you get the idea for this?",
+      "context": "I got the idea of this interactive CV by writing my blog, I frequently create documents, research and pages of writing (and sometimes code) that is never included in the blog post.  Last spring I was thinking about augmenting my blog with a chat interface that could answer questions about my experience and skills, and I realized that a RAG (retrieval-augmented generation) approach would be a great fit.  After loosing my job and sending dozens of resumes into the AI ATS (Applicant Tracking System) machine, I thought I could try to get AI to work with me rather than be the adversary that I was trying to beat to get my resume noticed.  While I had been planning this for a while, Nate Jones YouTube video 'Linked in is Dead'  https://www.youtube.com/watch?v=0teZqotpqT8 inspired me to get this done, as well as gaving me the idea for the Fit Assesment."
     },
     {
       "name": "Where can I find the source code?",
-      "context": "The source code for this interactive CV is open source and available at https://github.com/kriserickson/aging-coder. The project uses Eleventy (11ty) for static site generation, Cloudflare Workers with Hono for the API, and connects to OpenAI models through OpenRouter."
+      "context": "The source code for this interactive CV is open source at https://github.com/kriserickson/aging-coder . The blog uses Eleventy (11ty) for static site generation, but you can find the front-end code the `cv` directory and the API code in the `api-worker` directory,  It is using Cloudflare Workers + Hono for the API, and routes LLM model calls through OpenRouter (including OpenAI models). Feel free to fork it or adapt it for your own interactive CV or other RAG apps. Much of the implementation was produced with LLM help but the source code may inspire or provide you a good starting point, but the real work is the content: gathering accurate data about yourself, organizing it into retrievable chunks/Q&A, and iterating on what the system can reliably answer.",
+      "verbatim": true
     },
     {
       "name": "Which frontend frameworks are you most experienced with?",

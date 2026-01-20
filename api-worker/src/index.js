@@ -61,7 +61,7 @@ const getOpenRouterConfig = (env) => ({
   appUrl: env?.CHAT_APP_URL || 'https://agingcoder.com'
 });
 
-const fetchChatCompletion = async (env, messagesOrMessage, context) => {
+const fetchChatCompletion = async (env, messagesOrMessage, cvContext, ragContext) => {
   const { apiKey, model, baseUrl, appName, appUrl } = getOpenRouterConfig(env);
   if (!apiKey) {
     throw new Error('CHAT_API_KEY is not configured.');
@@ -70,12 +70,12 @@ const fetchChatCompletion = async (env, messagesOrMessage, context) => {
   let messages;
   if (Array.isArray(messagesOrMessage)) {
     // New format: array of conversation messages
-    messages = buildConversationMessages(buildSystemPrompt(), messagesOrMessage, context);
+    messages = buildConversationMessages(buildSystemPrompt(), messagesOrMessage, cvContext, ragContext);
   } else {
     // Legacy format: single message string
     messages = [
       { role: 'system', content: buildSystemPrompt() },
-      { role: 'user', content: buildUserPrompt(messagesOrMessage, context) }
+      { role: 'user', content: buildUserPrompt(messagesOrMessage, cvContext, ragContext) }
     ];
   }
 
@@ -286,7 +286,8 @@ app.post('/api/chat', async (c) => {
 
     let ragResults = [];
     // Always include CV data as the base context
-    let ragContext = formatAllContext();
+    const cvContext = formatAllContext();
+    let ragContext = '';
 
     // Check for exact question match first (skip RAG if we have a match)
     let exactMatch = null;
@@ -314,7 +315,7 @@ app.post('/api/chat', async (c) => {
       }
 
       // Non-verbatim: safe to include directly in ragContext
-      ragContext = `${ragContext}\n\nAdditional context for this question:\n${exactMatch.context}`;
+      ragContext = exactMatch.context;
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
       try {
@@ -325,7 +326,7 @@ app.post('/api/chat', async (c) => {
         });
         if (results && results.length) {
           ragResults = results;
-          ragContext = `${ragContext}\n\n${formatRagContext(results)}`;
+          ragContext = formatRagContext(results);
         }
       } catch (err) {
         console.warn('RAG search failed, continuing with CV-only context:', err);
@@ -335,7 +336,12 @@ app.post('/api/chat', async (c) => {
     let responseText = '';
 
     try {
-      const chatResponse = await fetchChatCompletion(c.env, exactMatch ? messages.slice(-1) : messages, ragContext);
+      const chatResponse = await fetchChatCompletion(
+        c.env,
+        exactMatch ? messages.slice(-1) : messages,
+        cvContext,
+        ragContext
+      );
       const stream = streamCompletionResponse(chatResponse, {
         delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 0
       });
@@ -380,7 +386,8 @@ app.post('/api/chat', async (c) => {
 app.post('/api/fit-assessment', async (c) => {
   try {
     const body = await c.req.json();
-    const { type, content, url } = body;
+    const { type, content } = body;
+    let { url } = body;
 
     if (!type || (type !== 'paste' && type !== 'url')) {
       return c.json({ error: 'Invalid type. Must be "paste" or "url".' }, 400);
@@ -397,8 +404,12 @@ app.post('/api/fit-assessment', async (c) => {
       }
       jobDescription = content.trim();
     } else if (type === 'url') {
-      if (!url || !url.startsWith('http')) {
-        return c.json({ error: 'Invalid URL provided.' }, 400);
+      url = url?.trim();
+      if (!url) {
+        return c.json({ error: 'No URL provided.' }, 400);
+      }
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
       }
       try {
         jobDescription = await fetchUrlContent(url);
@@ -406,10 +417,13 @@ app.post('/api/fit-assessment', async (c) => {
           return c.json({ error: 'Could not extract enough content from the URL.' }, 400);
         }
       } catch (error) {
-        const msg = error?.message || String(error);
+        let msg = error?.message || String(error);
         // If the failure indicates the page is not publicly accessible, return the friendly message directly
         if (msg.includes('not publicly accessible')) {
           return c.json({ error: msg }, 400);
+        }
+        if (msg.includes('internal error')) { 
+          msg = 'Web page is not currently accessible, did you get the URL correct?';
         }
         return c.json({ error: `Failed to fetch job posting: ${msg}` }, 400);
       }
