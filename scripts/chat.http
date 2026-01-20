@@ -40,3 +40,10 @@ Accept: */*
 Content-Type: application/json
 Origin: http://localhost:8888
 Referer: http://localhost:8888/
+
+####
+POST https://aging-coder-chat.kristian-erickson.workers.dev/api/rag/embeddings
+Accept: */*
+Content-Type: application/json
+Origin: http://localhost:8888
+Referer: http://localhost:8888/
