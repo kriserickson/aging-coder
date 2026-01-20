@@ -644,6 +644,140 @@ export function setupChatScrollIndicator() {
   updateScrollIndicatorVisibility();
 }
 
+// ---- Chat helpers (split from sendMessage to reduce complexity) ----
+function createUserMessageEl(message: string, messagesContainer: Element) {
+  const el = document.createElement('div');
+  el.className = 'chat-message user';
+  el.textContent = message;
+  messagesContainer.appendChild(el);
+  return el;
+}
+
+async function handleRateLimit(messagesContainer: Element) {
+  const friendlyMd = `You seem really interested! You've reached the daily question limit and have been rate limited. Please try again tomorrow — or contact Kris on [LinkedIn](https://www.linkedin.com/in/kriserickson/) or by email at [kristian.erickson@gmail.com](mailto:kristian.erickson@gmail.com) for more information.`;
+
+  try {
+    const plain = friendlyMd.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+    const typedEl = await addBotMessage(plain);
+
+    try {
+      renderMarkdownContent(typedEl as HTMLElement, friendlyMd);
+      try { setAnchorsOpenNewTab(typedEl as Element); } catch (err) { /* ignore */ }
+    } catch (err) {
+      console.warn('Failed to render rate-limit markdown, keeping typed text:', err);
+    }
+
+    addToConversationHistory('assistant', plain);
+    hideTypingIndicator();
+    scrollChatToBottom();
+  } catch (err) {
+    console.warn('Failed handling rate-limit response (typed fallback):', err);
+    hideTypingIndicator();
+    scrollChatToBottom();
+  }
+}
+
+async function streamResponseToMessage(response: Response, messagesContainer: Element) {
+  // Similar logic to previous inline implementation but self-contained
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let done = false;
+  const assistantChunks: string[] = [];
+
+  let botMessageEl: HTMLDivElement | null = null;
+  let renderer: any = null;
+  let parser: any = null;
+  let markdownSetup = false;
+
+  const ensureBotMessage = () => {
+    if (!botMessageEl) {
+      botMessageEl = document.createElement('div');
+      botMessageEl.className = 'chat-message bot streaming';
+      botMessageEl.textContent = '';
+      messagesContainer.appendChild(botMessageEl);
+      scrollChatToBottom();
+    }
+
+    if (!markdownSetup && botMessageEl) {
+      markdownSetup = true;
+      try {
+        renderer = createSlowRenderer(botMessageEl, { delayMs: 20, chunkSize: 3 });
+        parser = smd.parser(renderer);
+      } catch (err) {
+        console.warn('streaming-markdown init failed, falling back to plain text streaming', err);
+        renderer = null;
+        parser = null;
+      }
+    }
+
+    return botMessageEl;
+  };
+
+  let typingHidden = false;
+  const hideTypingOnce = () => {
+    if (!typingHidden) {
+      hideTypingIndicator();
+      typingHidden = true;
+    }
+  };
+
+  while (!done) {
+    const result = await reader.read();
+    done = result.done;
+    if (result.value) {
+      hideTypingOnce();
+      const chunkText = decoder.decode(result.value, { stream: true });
+      assistantChunks.push(chunkText);
+      const messageEl = ensureBotMessage();
+
+      if (parser && typeof smd.parser_write === 'function') {
+        try {
+          smd.parser_write(parser, chunkText);
+        } catch (err) {
+          console.warn('parser_write error, appending raw text', err);
+          if (messageEl) {
+            messageEl.textContent += chunkText;
+            scrollChatToBottom();
+          }
+        }
+      } else if (messageEl) {
+        messageEl.textContent += chunkText;
+        scrollChatToBottom();
+      }
+    }
+  }
+
+  hideTypingOnce();
+
+  if (parser && typeof smd.parser_end === 'function') {
+    try {
+      smd.parser_end(parser);
+    } catch (err) {
+      console.warn('parser_end error', err);
+    }
+  }
+
+  if (renderer && typeof renderer.waitForIdle === 'function') {
+    await renderer.waitForIdle();
+  }
+
+  // After streaming completes, ensure any links inside the bot message
+  // open in a new tab (and are safe with rel="noopener noreferrer").
+  if (botMessageEl) {
+    try { setAnchorsOpenNewTab(botMessageEl); } catch (err) { /* ignore */ }
+  }
+
+  const remaining = decoder.decode();
+  if (remaining) assistantChunks.push(remaining);
+
+  const fallbackText = botMessageEl ? (botMessageEl as any).textContent || (botMessageEl as any).innerText || '' : '';
+  const assistantTextCandidate = assistantChunks.join('');
+  const assistantText = assistantTextCandidate.length ? assistantTextCandidate : fallbackText;
+  if (botMessageEl) (botMessageEl as any).classList.remove('streaming');
+
+  return assistantText;
+}
+
 export async function sendMessage() {
   const input = document.getElementById('chat-input') as HTMLInputElement | null;
   const messagesContainer = document.getElementById('chat-messages');
@@ -658,23 +792,13 @@ export async function sendMessage() {
   }
 
   const existingQuestions = messagesContainer.querySelector('.chat-sample-questions');
-  if (existingQuestions) {
-    existingQuestions.remove();
-  }
+  if (existingQuestions) existingQuestions.remove();
 
-  const userMessageEl = document.createElement('div');
-  userMessageEl.className = 'chat-message user';
-  userMessageEl.textContent = message;
-  messagesContainer.appendChild(userMessageEl);
-
+  createUserMessageEl(message, messagesContainer);
   addToConversationHistory('user', message);
-
   scrollChatToBottom();
   input.value = '';
-
   showTypingIndicator();
-
-  let botMessageEl: HTMLDivElement | null = null;
 
   try {
     const conversationHistory = getConversationHistory();
@@ -686,173 +810,22 @@ export async function sendMessage() {
       body: JSON.stringify({ messages: dedupedHistory })
     });
 
-    // If we've been rate limited, show a friendly bot message via the regular markdown stream pipeline
     if (response.status === 429) {
-      try {
-        // Try to read server-provided error if available
-        let bodyText = '';
-        try {
-          const json = await response.json();
-          bodyText = json?.error || '';
-        } catch (err) {
-          // ignore parse errors
-        }
-
-        const friendlyMd = `You seem really interested! You've reached the daily question limit and have been rate limited. Please try again tomorrow — or contact Kris on [LinkedIn](https://www.linkedin.com/in/kriserickson/) or by email at [kristian.erickson@gmail.com](mailto:kristian.erickson@gmail.com) for more information.`;
-
-        // Run the streaming call asynchronously to avoid TDZ/circular-init timing issues
-        setTimeout(async () => {
-          try {
-
-            // Use the same streaming/markdown pipeline so it looks typed
-            // Avoid parser/renderer timing issues. Type first, then render markdown for links.
-            const plain = friendlyMd.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-            const typedEl = await addBotMessage(plain);
-
-            try {
-              renderMarkdownContent(typedEl as HTMLElement, friendlyMd);
-              try { setAnchorsOpenNewTab(typedEl as Element); } catch (err) { /* ignore */ }
-            } catch (err) {
-              console.warn('Failed to render rate-limit markdown, keeping typed text:', err);
-            }
-
-            addToConversationHistory('assistant', plain);
-
-            hideTypingIndicator();
-            scrollChatToBottom();
-          } catch (err) {
-            console.warn('Failed handling rate-limit response (async):', err);
-            hideTypingIndicator();
-            scrollChatToBottom();
-          }
-        }, 0);
-
-        return;
-      } catch (err) {
-        console.warn('Failed handling rate-limit response:', err);
-      }
+      await handleRateLimit(messagesContainer);
+      return;
     }
 
-    if (!response.ok) {
-      throw new Error(`Chat request failed: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
+    if (!response.body) throw new Error('Streaming is not supported in this browser.');
 
-    if (!response.body) {
-      throw new Error('Streaming is not supported in this browser.');
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
-    const assistantChunks: string[] = [];
-
-    let renderer: any = null;
-    let parser: any = null;
-    let markdownSetup = false;
-
-    const ensureBotMessage = () => {
-      if (!botMessageEl) {
-        botMessageEl = document.createElement('div');
-        botMessageEl.className = 'chat-message bot streaming';
-        botMessageEl.textContent = '';
-        messagesContainer.appendChild(botMessageEl);
-        scrollChatToBottom();
-      }
-
-      if (!markdownSetup && botMessageEl) {
-        markdownSetup = true;
-        try {
-          renderer = createSlowRenderer(botMessageEl, { delayMs: 20, chunkSize: 3 });
-          parser = smd.parser(renderer);
-        } catch (err) {
-          console.warn('streaming-markdown init failed, falling back to plain text streaming', err);
-          renderer = null;
-          parser = null;
-        }
-      }
-
-      return botMessageEl;
-    };
-
-    let typingHidden = false;
-    const hideTypingOnce = () => {
-      if (!typingHidden) {
-        hideTypingIndicator();
-        typingHidden = true;
-      }
-    };
-
-    while (!done) {
-      const result = await reader.read();
-      done = result.done;
-      if (result.value) {
-        hideTypingOnce();
-        const chunkText = decoder.decode(result.value, { stream: true });
-        assistantChunks.push(chunkText);
-        const messageEl = ensureBotMessage();
-
-        if (parser && typeof smd.parser_write === 'function') {
-          try {
-            smd.parser_write(parser, chunkText);
-          } catch (err) {
-            console.warn('parser_write error, appending raw text', err);
-            if (messageEl) {
-              messageEl.textContent += chunkText;
-              scrollChatToBottom();
-            }
-          }
-        } else if (messageEl) {
-          messageEl.textContent += chunkText;
-          scrollChatToBottom();
-        }
-      }
-    }
-
-    hideTypingOnce();
-
-    if (parser && typeof smd.parser_end === 'function') {
-      try {
-        smd.parser_end(parser);
-      } catch (err) {
-        console.warn('parser_end error', err);
-      }
-    }
-
-    if (renderer && typeof renderer.waitForIdle === 'function') {
-      await renderer.waitForIdle();
-    }
-
-    // After streaming completes, ensure any links inside the bot message
-    // open in a new tab (and are safe with rel="noopener noreferrer").
-    if (botMessageEl) {
-      try {
-        setAnchorsOpenNewTab(botMessageEl);
-      } catch (err) {
-        // ignore
-      }
-    }
-
-    const remaining = decoder.decode();
-    if (remaining) {
-      assistantChunks.push(remaining);
-    }
-
-    const fallbackText = botMessageEl ? (botMessageEl as any).textContent || (botMessageEl as any).innerText || '' : '';
-    const assistantTextCandidate = assistantChunks.join('');
-    const assistantText = assistantTextCandidate.length ? assistantTextCandidate : fallbackText;
-    if (botMessageEl) {
-      (botMessageEl as any).classList.remove('streaming');
-    }
+    const assistantText = await streamResponseToMessage(response, messagesContainer);
     addToConversationHistory('assistant', assistantText);
   } catch (error) {
     hideTypingIndicator();
-
-    if (botMessageEl) (botMessageEl as any).classList.remove('streaming');
     const errorMessage = document.createElement('div');
     errorMessage.className = 'chat-message bot';
     errorMessage.textContent = 'Sorry, I encountered an error. Please try again.';
     messagesContainer.appendChild(errorMessage);
-
     scrollChatToBottom();
     console.error('Chat error:', error);
   }
