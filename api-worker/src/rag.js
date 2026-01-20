@@ -1,25 +1,8 @@
-import ragConfig from './rag-data/rag-config.json';
 import cvData from './rag-data/cv.json';
 import questionsData from './rag-data/questions.json';
 
-const CV_SOURCE_ID = 'cv';
-
-const sourceData = {
-  './cv.json': cvData
-};
-
-const allSources = ragConfig.sources
-  .map((source) => ({
-    ...source,
-    data: sourceData[source.path]
-  }))
-  .filter((source) => source.data);
-
-// CV source is always included as base context (no embedding needed)
-const cvSource = allSources.find((source) => source.id === CV_SOURCE_ID);
-
-// Only non-CV sources need RAG embedding search
-const ragSources = allSources.filter((source) => source.id !== CV_SOURCE_ID);
+const cvSource = cvData;
+const questionEntries = questionsData?.questions || [];
 
 const EMBEDDING_MODEL = '@cf/baai/bge-small-en-v1.5';
 const EMBEDDING_BATCH_SIZE = 20;
@@ -86,20 +69,39 @@ let questionHashMap = null;
 let questionHashMapPromise = null;
 
 const normalizeQuestionText = (text) => {
-  if (!text) return '';
+  if (!text) {
+    return '';
+  }
   return text.trim().toLowerCase();
 };
 
+const slugifyQuestionText = (text) => {
+  const normalized = normalizeQuestionText(text);
+  const slug = normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return slug || 'question';
+};
+
+const buildQuestionId = (question, index) => {
+  const base = slugifyQuestionText(question?.name) || `question-${index}`;
+  return `question:${base}`;
+};
+
 const buildQuestionHashMap = async () => {
-  if (questionHashMap) return questionHashMap;
-  if (questionHashMapPromise) return questionHashMapPromise;
+  if (questionHashMap) {
+    return questionHashMap;
+  }
+  if (questionHashMapPromise) {
+    return questionHashMapPromise;
+  }
 
   questionHashMapPromise = (async () => {
     const map = new Map();
     const questions = questionsData?.questions || [];
 
     for (const q of questions) {
-      if (!q.name) continue;
+      if (!q.name) {
+        continue;
+      }
       const normalized = normalizeQuestionText(q.name);
       const hash = await hashString(normalized);
       map.set(hash, {
@@ -117,7 +119,9 @@ const buildQuestionHashMap = async () => {
 };
 
 export const findExactQuestionMatch = async (question) => {
-  if (!question) return null;
+  if (!question) {
+    return null;
+  }
 
   const map = await buildQuestionHashMap();
   const normalized = normalizeQuestionText(question);
@@ -146,19 +150,29 @@ const ensureDocumentHash = async (doc) => {
 };
 
 const hydrateDocumentFromCache = async (cache, doc) => {
-  if (!cache) return;
+  if (!cache) {
+    return;
+  }
 
   try {
     const raw = await cache.get(buildCacheKey(doc.id));
-    if (!raw) return;
+    if (!raw) {
+      return;
+    }
     const cached = decodeUtf8(raw);
-    if (!cached) return;
+    if (!cached) {
+      return;
+    }
 
     const parsed = JSON.parse(cached);
-    if (!parsed?.hash || !Array.isArray(parsed.embedding)) return;
+    if (!parsed?.hash || !Array.isArray(parsed.embedding)) {
+      return;
+    }
 
     const hash = await ensureDocumentHash(doc);
-    if (hash !== parsed.hash) return;
+    if (hash !== parsed.hash) {
+      return;
+    }
 
     doc.embedding = parsed.embedding;
   } catch (err) {
@@ -167,7 +181,9 @@ const hydrateDocumentFromCache = async (cache, doc) => {
 };
 
 const cacheDocumentEmbedding = async (cache, doc) => {
-  if (!cache || !doc.embedding) return;
+  if (!cache || !doc.embedding) {
+    return;
+  }
 
   try {
     const payload = JSON.stringify({
@@ -181,7 +197,9 @@ const cacheDocumentEmbedding = async (cache, doc) => {
 };
 
 const cosineSimilarity = (vecA, vecB) => {
-  if (!vecA?.length || !vecB?.length) return 0;
+  if (!vecA?.length || !vecB?.length) {
+    return 0;
+  }
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -194,7 +212,9 @@ const cosineSimilarity = (vecA, vecB) => {
     normB += b * b;
   }
 
-  if (!normA || !normB) return 0;
+  if (!normA || !normB) {
+    return 0;
+  }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
@@ -217,7 +237,9 @@ const fallbackEmbedding = (text) => {
   // Deterministic lightweight fallback embedding from text
   const dims = EMBEDDING_FALLBACK_DIM;
   const vec = new Array(dims).fill(0);
-  if (!text) return vec;
+  if (!text) {
+    return vec;
+  }
   for (let i = 0; i < text.length; i += 1) {
     const code = text.charCodeAt(i);
     const idx = i % dims;
@@ -275,7 +297,9 @@ const embedTexts = async (ai, texts) => {
 };
 
 const flattenData = (value, path = []) => {
-  if (value === null || value === undefined) return [];
+  if (value === null || value === undefined) {
+    return [];
+  }
 
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return [{
@@ -295,31 +319,53 @@ const flattenData = (value, path = []) => {
   return [];
 };
 
-const buildDocuments = () => {
+const buildQuestionDocuments = () => {
   const documents = [];
 
-  // Only build documents from non-CV sources (for RAG embedding search)
-  for (const source of ragSources) {
-    const flattened = flattenData(source.data);
-    for (const entry of flattened) {
-      const section = entry.path.slice(0, 2).join('.');
+  questionEntries.forEach((question, index) => {
+    const questionId = buildQuestionId(question, index);
+    const nameText = question?.name ?? '';
+    const contextText = question?.context ?? '';
+    if (!nameText && !contextText) {
+      return;
+    }
+
+    const displayContext = contextText || nameText;
+    const questionName = question?.name || 'Question';
+
+    if (nameText) {
       documents.push({
-        id: `${source.id}:${entry.path.join('.')}`,
-        source: source.id,
-        title: source.title,
-        section,
-        text: entry.text,
+        id: `${questionId}:name`,
+        questionId,
+        type: 'name',
+        text: nameText,
+        context: displayContext,
+        questionName,
         embedding: null
       });
     }
-  }
+
+    if (contextText) {
+      documents.push({
+        id: `${questionId}:context`,
+        questionId,
+        type: 'context',
+        text: contextText,
+        context: contextText,
+        questionName,
+        embedding: null
+      });
+    }
+  });
 
   return documents;
 };
 
 // Build CV documents separately (for context formatting, no embeddings)
 const buildCvDocuments = () => {
-  if (!cvSource) return [];
+  if (!cvSource) {
+    return [];
+  }
 
   const documents = [];
   const flattened = flattenData(cvSource.data);
@@ -336,14 +382,16 @@ const buildCvDocuments = () => {
   return documents;
 };
 
-const documents = buildDocuments();
+const documents = buildQuestionDocuments();
 const cvDocuments = buildCvDocuments();
 
 const embedDocuments = async (ai, cache) => {
   ensureAiBinding(ai);
   if (cache) {
     for (const doc of documents) {
-      if (doc.embedding) continue;
+      if (doc.embedding) {
+        continue;
+      }
       await hydrateDocumentFromCache(cache, doc);
     }
   }
@@ -361,17 +409,25 @@ const embedDocuments = async (ai, cache) => {
 };
 
 const summarizeContext = (docs) => {
-  if (!docs.length) return '';
+  if (!docs.length) {
+    return '';
+  }
 
   return docs
     .map((doc) => `- (${doc.title}/${doc.section || 'general'}) ${doc.text}`)
     .join('\n');
 };
 
-export const searchRag = async (ai, query, { maxResults = 8, minScore = 0.18, cache } = {}) => {
-  if (!query) return [];
+const buildRagContextString = (results) =>
+  results
+    .map((result) => `- ${result.questionName}\n${result.context}`)
+    .join('\n\n');
 
-  // If there are no non-CV documents to search, skip embedding entirely
+export const searchRag = async (ai, query, { maxResults = 5, minScore = 0.6, cache } = {}) => {
+  if (!query) {
+    return [];
+  }
+
   if (!documents.length) {
     return [];
   }
@@ -379,6 +435,9 @@ export const searchRag = async (ai, query, { maxResults = 8, minScore = 0.18, ca
   await embedDocuments(ai, cache);
 
   const [queryEmbedding] = await embedTexts(ai, [query]);
+  if (!queryEmbedding?.length) {
+    return [];
+  }
 
   const scored = documents
     .map((doc) => ({
@@ -386,10 +445,25 @@ export const searchRag = async (ai, query, { maxResults = 8, minScore = 0.18, ca
       score: cosineSimilarity(queryEmbedding, doc.embedding)
     }))
     .filter((doc) => doc.score >= minScore)
+    .sort((a, b) => b.score - a.score);
+
+  const bestByQuestion = new Map();
+  for (const doc of scored) {
+    const existing = bestByQuestion.get(doc.questionId);
+    if (!existing || doc.score > existing.score) {
+      bestByQuestion.set(doc.questionId, {
+        questionId: doc.questionId,
+        questionName: doc.questionName,
+        context: doc.context || '',
+        score: doc.score,
+        matchedOn: doc.type
+      });
+    }
+  }
+
+  return Array.from(bestByQuestion.values())
     .sort((a, b) => b.score - a.score)
     .slice(0, maxResults);
-
-  return scored;
 };
 
 export const formatRagContext = (results) => {
@@ -397,7 +471,38 @@ export const formatRagContext = (results) => {
     return 'No relevant context found.';
   }
 
-  return summarizeContext(results);
+  return buildRagContextString(results);
 };
 
 export const formatAllContext = () => summarizeContext(cvDocuments);
+
+const describeDocumentStatus = (doc) => ({
+  id: doc.id,
+  questionId: doc.questionId,
+  type: doc.type,
+  hasEmbedding: Array.isArray(doc.embedding) && doc.embedding.length > 0
+});
+
+const buildEmbeddingStatus = async (cache) => {
+  const statuses = [];
+  for (const doc of documents) {
+    if (cache && !doc.embedding) {
+      await hydrateDocumentFromCache(cache, doc);
+    }
+    statuses.push(describeDocumentStatus(doc));
+  }
+  const cachedCount = statuses.filter((status) => status.hasEmbedding).length;
+  return {
+    total: statuses.length,
+    cached: cachedCount,
+    missing: statuses.length - cachedCount,
+    documents: statuses
+  };
+};
+
+export const getQuestionEmbeddingStatus = async (cache) => buildEmbeddingStatus(cache);
+
+export const prepareQuestionEmbeddings = async (ai, cache) => {
+  await embedDocuments(ai, cache);
+  return buildEmbeddingStatus(cache);
+};

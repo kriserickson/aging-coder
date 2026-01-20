@@ -1,6 +1,13 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { searchRag, formatRagContext, formatAllContext, findExactQuestionMatch } from './rag';
+import {
+  searchRag,
+  formatRagContext,
+  formatAllContext,
+  findExactQuestionMatch,
+  prepareQuestionEmbeddings,
+  getQuestionEmbeddingStatus
+} from './rag';
 import { buildFitAssessmentSystemPrompt, buildSystemPrompt, buildUserPrompt, buildConversationMessages } from './prompt';
 import { fetchUrlContent } from './fetch-url-content';
 
@@ -150,9 +157,15 @@ const streamCompletionResponse = (response, { delayMs = 0 } = {}) => {
 const normalizeQuestion = (message) => message?.trim();
 
 const validateMessage = (message) => {
-  if (!message) return 'Message is required.';
-  if (message.length < 3) return 'Message is too short.';
-  if (message.length > 1200) return 'Message is too long.';
+  if (!message) {
+    return 'Message is required.';
+  }
+  if (message.length < 3) {
+    return 'Message is too short.';
+  }
+  if (message.length > 1200) {
+    return 'Message is too long.';
+  }
   return null;
 };
 
@@ -161,7 +174,9 @@ const getClientId = (c) =>
 
 async function checkRateLimit(c, clientId) {
   const kv = c.env.RATE_LIMIT;
-  if (!kv) return true;
+  if (!kv) {
+    return true;
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const key = `rate_limit:${clientId}:${today}`;
@@ -304,7 +319,9 @@ app.post('/api/chat', async (c) => {
       // No exact match - do RAG search if AI binding is available
       try {
         const results = await searchRag(c.env.AI, lastUserMessage, {
-          cache: c.env.RAG_EMBEDDINGS
+          cache: c.env.RAG_EMBEDDINGS,
+          minScore: 0.6,
+          maxResults: 5
         });
         if (results && results.length) {
           ragResults = results;
@@ -423,6 +440,40 @@ app.post('/api/fit-assessment', async (c) => {
   } catch (error) {
     console.error('Fit assessment request error:', error);
     return c.json({ error: 'Internal server error' }, 500);
+  }
+});
+
+app.get('/api/rag/embeddings', async (c) => {
+  try {
+    const cache = c.env.RAG_EMBEDDINGS;
+    if (!cache) {
+      return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
+    }
+
+    const status = await getQuestionEmbeddingStatus(cache);
+    return c.json(status);
+  } catch (error) {
+    console.error('Failed to retrieve RAG embedding status:', error);
+    return c.json({ error: 'Failed to retrieve RAG embedding status.' }, 500);
+  }
+});
+
+app.post('/api/rag/embeddings', async (c) => {
+  try {
+    if (!c.env.AI) {
+      return c.json({ error: 'AI binding is not configured.' }, 400);
+    }
+
+    const cache = c.env.RAG_EMBEDDINGS;
+    if (!cache) {
+      return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
+    }
+
+    const status = await prepareQuestionEmbeddings(c.env.AI, cache);
+    return c.json(status);
+  } catch (error) {
+    console.error('Failed to prepare RAG embeddings:', error);
+    return c.json({ error: 'Failed to prepare RAG embeddings.' }, 500);
   }
 });
 

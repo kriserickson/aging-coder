@@ -1,9 +1,0 @@
-{
-  "sources": [
-    {
-      "id": "cv",
-      "title": "CV",
-      "path": "./cv.json"
-    }
-  ]
-}
