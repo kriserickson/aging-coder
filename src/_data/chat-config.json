@@ -83,7 +83,7 @@
         "message": "Kris has expert-level frontend development experience with React, Vue, Angular, and TypeScript in production applications.",
         "questions": [
           "Which frontend frameworks are you most experienced with?",
-          "Do you have experience building PWAs?",
+          "What is your philosophy on whether something should be done on the frontend vs backend?",
           "What build tools have you worked with?",
           "Any experience with real-time web applications?"
         ]
@@ -93,8 +93,9 @@
         "message": "Kris has strong backend experience with Node.js, PHP, C#, Python and various message bus integrations.",
         "questions": [
           "Which back-end languages have you used most?",
-          "What integration patterns have you worked with?",
-          "Experience with Kafka or RabbitMQ?",
+          "REST, GraphQL, or both?",
+          "Messaging/event-driven experience (Solace/Kafka/RabbitMQ)?",
+          "How do you debug production issues?",  
           "What about API design?"
         ]
       },
@@ -104,8 +105,7 @@
         "questions": [
           "Which ML frameworks have you used?",
           "What AI-assisted coding tools do you use?",
-          "Any experience fine-tuning models?",
-          "How have you applied ML practically?"
+          "How do you feel about AI, and its impact on software development?"
         ]
       },
       "mobile": {
@@ -114,8 +114,7 @@
         "questions": [
           "What native mobile experience do you have?",
           "Which cross-platform tools have you used?",
-          "Android or iOS preference?",
-          "Experience with Jetpack Compose or SwiftUI?"
+          "Android or iOS preference?"         
         ]
       },
       "databases": {

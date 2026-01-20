@@ -94,16 +94,18 @@ export const buildConversationMessages = (systemPrompt, messages, cvContext, rag
   // Add context as first user message if we have messages
   if (messages.length > 0) {
     // For conversation context, we inject the CV context in the first exchange
-    const contextMessage = buildUserPrompt(messagesOrMessage, cvContext, ragContext);
+    const message = messages.pop();
+    
+    // Add all conversation messages
+    for (const msg of messages) {
+      if (msg.role === 'user' || msg.role === 'assistant') {
+        result.push({ role: msg.role, content: msg.content });
+      }
+    }
+    
+    const contextMessage = buildUserPrompt(message.content, cvContext, ragContext);
 
     result.push({ role: 'user', content: contextMessage });
-  }
-
-  // Add all conversation messages
-  for (const msg of messages) {
-    if (msg.role === 'user' || msg.role === 'assistant') {
-      result.push({ role: msg.role, content: msg.content });
-    }
   }
 
   return result;
