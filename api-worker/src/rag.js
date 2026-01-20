@@ -1,7 +1,6 @@
 import cvData from './rag-data/cv.json';
 import questionsData from './rag-data/questions.json';
 
-const cvSource = cvData;
 const questionEntries = questionsData?.questions || [];
 
 const EMBEDDING_MODEL = '@cf/baai/bge-small-en-v1.5';
@@ -219,12 +218,42 @@ const cosineSimilarity = (vecA, vecB) => {
 };
 
 const extractEmbeddings = (result, expectedLength) => {
-  const embeddings = result?.data?.map((item) => item?.embedding).filter(Boolean);
-  if (embeddings?.length === expectedLength) {
-    return embeddings;
+  const isEmbeddingArray = (arr) => Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'number';
+
+  // Case A: result is an array of embedding arrays directly (e.g., [[..],[..],...])
+  if (Array.isArray(result) && result.length === expectedLength && result.every(isEmbeddingArray)) {
+    return result;
   }
-  const fallback = Array.isArray(result?.embedding) ? [result.embedding] : [];
-  return fallback.length ? fallback : [];
+
+  // Case A2: result is a single embedding vector (e.g., [0.1, 0.2, ...])
+  if (Array.isArray(result) && isEmbeddingArray(result)) {
+    // Single embedding returned directly; wrap for consistency
+    return [result];
+  }
+
+  // Case B: result.data is an array; items may be embedding arrays or objects with .embedding
+  const data = result?.data;
+  if (Array.isArray(data)) {
+    const embeddings = data
+      .map((item) => {
+        if (isEmbeddingArray(item)) return item;
+        if (item && isEmbeddingArray(item.embedding)) return item.embedding;
+        return null;
+      })
+      .filter(Boolean);
+
+    if (embeddings.length === expectedLength) {
+      return embeddings;
+    }
+  }
+
+  // Case C: single-call response: result.embedding may be an embedding array
+  if (isEmbeddingArray(result?.embedding)) {
+    return expectedLength === 1 ? [result.embedding] : [result.embedding].slice(0, expectedLength);
+  }
+
+  // Nothing matched
+  return [];
 };
 
 const ensureAiBinding = (ai) => {
@@ -361,42 +390,38 @@ const buildQuestionDocuments = () => {
   return documents;
 };
 
-// Build CV documents separately (for context formatting, no embeddings)
-const buildCvDocuments = () => {
-  if (!cvSource) {
-    return [];
-  }
 
-  const documents = [];
-  const flattened = flattenData(cvSource.data);
-  for (const entry of flattened) {
-    const section = entry.path.slice(0, 2).join('.');
-    documents.push({
-      id: `${cvSource.id}:${entry.path.join('.')}`,
-      source: cvSource.id,
-      title: cvSource.title,
-      section,
-      text: entry.text
-    });
-  }
-  return documents;
-};
+const questionDocuments = buildQuestionDocuments();
 
-const documents = buildQuestionDocuments();
-const cvDocuments = buildCvDocuments();
-
-const embedDocuments = async (ai, cache) => {
+const embedDocuments = async (ai, cache, { force = false } = {}) => {
   ensureAiBinding(ai);
-  if (cache) {
-    for (const doc of documents) {
-      if (doc.embedding) {
+
+  if (force) {
+    // When forcing, clear any in-memory and cached embeddings so we re-create them.
+    if (cache) {
+      for (const questionDocument of questionDocuments) {
+        try {
+          await cache.delete(buildCacheKey(questionDocument.id));
+        } catch (err) {
+          console.warn('Failed to delete cache for', questionDocument.id, err);
+        }
+        questionDocument.embedding = null;
+      }
+    } else {
+      for (const questionDocument of questionDocuments) {
+        questionDocument.embedding = null;
+      }
+    }
+  } else if (cache) {
+    for (const questionDocument of questionDocuments) {
+      if (questionDocument.embedding) {
         continue;
       }
-      await hydrateDocumentFromCache(cache, doc);
+      await hydrateDocumentFromCache(cache, questionDocument);
     }
   }
 
-  const pending = documents.filter((doc) => !doc.embedding);
+  const pending = questionDocuments.filter((doc) => !doc.embedding);
   for (let i = 0; i < pending.length; i += EMBEDDING_BATCH_SIZE) {
     const batch = pending.slice(i, i + EMBEDDING_BATCH_SIZE);
     const texts = batch.map((doc) => doc.text);
@@ -408,15 +433,6 @@ const embedDocuments = async (ai, cache) => {
   }
 };
 
-const summarizeContext = (docs) => {
-  if (!docs.length) {
-    return '';
-  }
-
-  return docs
-    .map((doc) => `- (${doc.title}/${doc.section || 'general'}) ${doc.text}`)
-    .join('\n');
-};
 
 const buildRagContextString = (results) =>
   results
@@ -428,7 +444,7 @@ export const searchRag = async (ai, query, { maxResults = 5, minScore = 0.6, cac
     return [];
   }
 
-  if (!documents.length) {
+  if (!questionDocuments.length) {
     return [];
   }
 
@@ -439,7 +455,7 @@ export const searchRag = async (ai, query, { maxResults = 5, minScore = 0.6, cac
     return [];
   }
 
-  const scored = documents
+  const scored = questionDocuments
     .map((doc) => ({
       ...doc,
       score: cosineSimilarity(queryEmbedding, doc.embedding)
@@ -474,18 +490,21 @@ export const formatRagContext = (results) => {
   return buildRagContextString(results);
 };
 
-export const formatAllContext = () => summarizeContext(cvDocuments);
+export const formatAllContext = () => {
+  return JSON.stringify(cvData, null, 2);
+};
 
 const describeDocumentStatus = (doc) => ({
   id: doc.id,
   questionId: doc.questionId,
   type: doc.type,
-  hasEmbedding: Array.isArray(doc.embedding) && doc.embedding.length > 0
+  hasEmbedding: Array.isArray(doc.embedding) && doc.embedding.length > 0,
+  embdeddingLength: Array.isArray(doc.embedding) ? doc.embedding.length : 0
 });
 
 const buildEmbeddingStatus = async (cache) => {
   const statuses = [];
-  for (const doc of documents) {
+  for (const doc of questionDocuments) {
     if (cache && !doc.embedding) {
       await hydrateDocumentFromCache(cache, doc);
     }
@@ -502,7 +521,7 @@ const buildEmbeddingStatus = async (cache) => {
 
 export const getQuestionEmbeddingStatus = async (cache) => buildEmbeddingStatus(cache);
 
-export const prepareQuestionEmbeddings = async (ai, cache) => {
-  await embedDocuments(ai, cache);
+export const prepareQuestionEmbeddings = async (ai, cache, options = {}) => {
+  await embedDocuments(ai, cache, options);
   return buildEmbeddingStatus(cache);
 };

@@ -34,3 +34,9 @@ Referer: http://localhost:8888/
     {"role":"user","content":"What are Kris's key technical skills?"}
   ]
 }
+###
+POST http://127.0.0.1:8787/api/rag/embeddings?force=true
+Accept: */*
+Content-Type: application/json
+Origin: http://localhost:8888
+Referer: http://localhost:8888/

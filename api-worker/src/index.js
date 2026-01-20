@@ -469,8 +469,29 @@ app.post('/api/rag/embeddings', async (c) => {
       return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
     }
 
-    const status = await prepareQuestionEmbeddings(c.env.AI, cache);
-    return c.json(status);
+    // Determine whether to force regeneration (ignore cache). Accepts JSON body { force: true } or ?force=true
+    let force = false;
+    try {
+      const body = await c.req.json();
+      if (body?.force === true || body?.force === 'true') {
+        force = true;
+      }
+    } catch (err) {
+      // ignore JSON parse errors or empty bodies
+    }
+
+    const url = new URL(c.req.url);
+    if (url.searchParams.get('force') === 'true') {
+      force = true;
+    }
+
+    if (force) {
+      console.log('Preparing RAG embeddings with force=true; clearing cache and re-embedding all documents.');
+    }
+
+    const status = await prepareQuestionEmbeddings(c.env.AI, cache, { force });
+    // Include forced flag in response for clarity
+    return c.json({ ...status, forced: force });
   } catch (error) {
     console.error('Failed to prepare RAG embeddings:', error);
     return c.json({ error: 'Failed to prepare RAG embeddings.' }, 500);

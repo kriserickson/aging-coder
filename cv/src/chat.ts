@@ -375,7 +375,7 @@ function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chu
   const base = smd.default_renderer(element);
   const delayMs = opts?.delayMs ?? 20;
   const chunkSize = opts?.chunkSize ?? 3;
-  const queue: Array<{ text: string; target: Element }> = [];
+  const queue: Array<{ text: string; node: Text }> = [];
   let processing = false;
   const idleResolvers: Array<() => void> = [];
 
@@ -406,15 +406,13 @@ function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chu
     if (processing) return;
     processing = true;
     while (queue.length) {
-      const { text, target } = queue.shift()!;
+      const { text, node } = queue.shift()!;
       for (let i = 0; i < text.length; i += chunkSize) {
         const chunk = text.slice(i, i + chunkSize);
-        const targetNode = target ?? element;
-        const resolvedTarget = targetNode instanceof Element ? targetNode : element;
         if (chunk.trim().length > 0) {
-          markListItemHasStreamingContent(targetNode);
+          markListItemHasStreamingContent(node);
         }
-        resolvedTarget.appendChild(document.createTextNode(chunk));
+        node.textContent += chunk;
         scrollChatToBottom();
         await new Promise((r) => setTimeout(r, delayMs));
       }
@@ -437,7 +435,10 @@ function createSlowRenderer(element: HTMLElement, opts?: { delayMs?: number; chu
 
   const add_text = (data: any, text: string) => {
     const target = (data && data.nodes && data.nodes[data.index]) || element;
-    queue.push({ text, target });
+    const resolvedTarget = target instanceof Element ? target : element;
+    const textNode = document.createTextNode('');
+    resolvedTarget.appendChild(textNode);
+    queue.push({ text, node: textNode });
     void processQueue();
   };
 
