@@ -123,8 +123,7 @@
         "questions": [
           "Which databases are you most familiar with?",
           "SQL or NoSQL preference?",
-          "Experience with Redis caching?",
-          "Any work with CouchDB?"
+          "Experience with Redis?"
         ]
       },
       "practices": {
@@ -144,7 +143,7 @@
           "What CI/CD experience do you have?",
           "Experience with Kubernetes?",
           "Which CI/CD tools have you used?",
-          "Any Helm or Kustomize experience?"
+          "What are your feelings about DevOps practices?"
         ]
       },
       "languages": {
@@ -164,9 +163,8 @@
         "message": "An enterprise e-commerce platform for photo products, architected by Kris and still operational after 25 years.",
         "questions": [
           "What is the Storefront E-Commerce Platform?",
-          "What was your role in it?",
-          "How has it evolved over 25 years?",
-          "Which retailers use it?"
+          "What was your role in the development of the Storefront E-Commerce Platform?",
+          "How has it evolved over 25 years?"
         ]
       },
       "1": {
