@@ -299,34 +299,80 @@ module.exports = function (eleventyConfig) {
         return posts.reverse();
     });
 
+    // Dev-friendly collection for legacy pagination: skip generating legacy redirect pages in dev to avoid massive re-renders
+    eleventyConfig.addCollection('legacyPaginatePosts', function (collectionApi) {
+        // In dev mode, return an empty array so `legacy-posts.njk` pagination produces no pages.
+        if (!isBuild) return [];
+
+        // In build mode, return the full posts collection so legacy pages are generated.
+        return getPosts(collectionApi);
+    });
+
     // New: pre-rendered content for feed entries (avoids templateContent cycles)
     eleventyConfig.addCollection('feedPosts', function (collectionApi) {
         const md = markdownIt({html: true}).use(markdownItKatex).use(markdownItAnchor);
-        return getPosts(collectionApi)
-            .map((item) => {
-                // Some files may have been renamed or removed by other scripts (e.g., publish-draft).
-                // If the source file is missing, log a warning and skip this entry instead of failing the build.
-                let raw;
-                try {
-                    raw = fs.readFileSync(item.inputPath, 'utf8');
-                } catch (e) {
-                    console.warn(`feedPosts: skipping missing file ${item.inputPath}: ${e && e.message}`);
-                    return null;
-                }
 
-                // Strip top YAML front matter
-                const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
-                const markdown = fm.test(raw) ? raw.replace(fm, '') : raw;
-                const html = md.render(markdown);
-                return {
-                    url: item.url,
-                    date: item.date,
-                    data: item.data,
-                    content: html
-                };
-            })
-            .filter(Boolean)
-            .reverse();
+        // Cache rendered feed content on disk to avoid re-rendering unchanged posts on each dev rebuild.
+        const CACHE_DIR = path.join(process.cwd(), '.cache');
+        const FEED_CACHE_FILE = path.join(CACHE_DIR, 'feedPosts.json');
+        try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch (e) { /* ignore */ }
+
+        let cache = {};
+        try {
+            cache = JSON.parse(fs.readFileSync(FEED_CACHE_FILE, 'utf8')) || {};
+        } catch (e) {
+            cache = {};
+        }
+
+        // In dev mode, limit the number of posts processed for the feed and use caching.
+        const postsToProcess = isBuild ? getPosts(collectionApi) : getPosts(collectionApi).slice(0, 20);
+
+        const out = [];
+        for (const item of postsToProcess) {
+            const inputPath = item.inputPath;
+            if (!inputPath) continue;
+
+            let stat;
+            try {
+                stat = fs.statSync(inputPath);
+            } catch (e) {
+                console.warn(`feedPosts: skipping missing file ${inputPath}: ${e && e.message}`);
+                continue;
+            }
+
+            const mtime = stat.mtimeMs;
+            const cached = cache[inputPath];
+            if (cached && cached.mtime === mtime && typeof cached.content === 'string') {
+                out.push({ url: item.url, date: item.date, data: item.data, content: cached.content });
+                continue;
+            }
+
+            // Render and update cache
+            let raw;
+            try {
+                raw = fs.readFileSync(inputPath, 'utf8');
+            } catch (e) {
+                console.warn(`feedPosts: failed to read ${inputPath}: ${e && e.message}`);
+                continue;
+            }
+
+            const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
+            const markdown = fm.test(raw) ? raw.replace(fm, '') : raw;
+            const html = md.render(markdown);
+
+            out.push({ url: item.url, date: item.date, data: item.data, content: html });
+            cache[inputPath] = { mtime, content: html };
+        }
+
+        // Remove cache entries for files that no longer exist or weren't processed
+        const validKeys = new Set(postsToProcess.map(p => p.inputPath).filter(Boolean));
+        for (const k of Object.keys(cache)) {
+            if (!validKeys.has(k)) delete cache[k];
+        }
+
+        try { fs.writeFileSync(FEED_CACHE_FILE, JSON.stringify(cache), 'utf8'); } catch (e) { console.warn('feedPosts: failed to write cache', e && e.message); }
+
+        return out.filter(Boolean).reverse();
     });
 
     eleventyConfig.addCollection('categories', function (collectionApi) {
@@ -452,6 +498,14 @@ module.exports = function (eleventyConfig) {
         if (!src) {
             return '';
         }
+
+        // In dev (non-build) mode, avoid expensive image processing to reduce memory and CPU usage.
+        // Return a simple lazy img that points at the likely static path instead.
+        if (!isBuild) {
+            const normalizedPath = src.startsWith('/') ? src : `/img/${src}`;
+            return `<figure class="cover-thumb"><img src="${normalizedPath}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
+        }
+
         // If remote URL, return a simple lazy img
         if (/^https?:\/\//i.test(src)) {
             return `<figure class="cover-thumb"><img src="${src}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;

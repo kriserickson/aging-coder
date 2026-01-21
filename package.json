@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "npm --prefix cv run build:prod && eleventy",
-    "serve": "eleventy --serve --port=8888",
+    "serve": "eleventy --serve --port=8888 --incremental",
     "clean": "rm -Rf ./_site/*",
     "draft": "node js/create-post.js",
-    "publish": "node js/publish-draft.js",    
+    "publish": "node js/publish-draft.js",
     "rag-embeddings-reset": "node scripts/reset-rag-embeddings.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -30,7 +30,7 @@
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-katex": "^2.0.3",
-    "nunjucks-date": "^1.5.0",    
+    "nunjucks-date": "^1.5.0",
     "slugify": "^1.6.6"
   }
 }
