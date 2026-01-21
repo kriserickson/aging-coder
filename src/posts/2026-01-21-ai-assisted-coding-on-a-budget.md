@@ -4,8 +4,8 @@ category: Programming
 title: "AI-Assisted Coding on a Budget"
 imagefeature: blog/ai-assisted-coding-on-a-budget.webp
 description: "Six more months, we have better tools. Agentic workflows are here: but code review, tests, and budgets still matter."
-draft: true
 tags: ["Programming", "LLM", "AI"]
+date: 2026-01-21
 ---
 
 
