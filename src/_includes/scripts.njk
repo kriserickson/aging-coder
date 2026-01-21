@@ -242,6 +242,7 @@
     margin: 0;
     flex: 1 1 auto;
     font-size: 0.95rem;
+    color: #111;
   }
   #cookie-banner .cb-actions {
     display: flex;
@@ -266,9 +267,12 @@
   }
   @media (prefers-color-scheme: dark) {
     #cookie-banner {
-      background: #0b0b0b;
+      background: #545454;
       color: #ddd;
       border-color: rgba(255, 255, 255, 0.06);
+    }
+    #cookie-banner p {
+      color: #ddd;
     }
     #cookie-decline {
       border-color: rgba(255, 255, 255, 0.06);
