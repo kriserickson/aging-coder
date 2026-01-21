@@ -1,6 +1,6 @@
 name = "aging-coder-chat"
 main = "src/index.js"
-compatibility_date = "2026-01-18"
+compatibility_date = "2026-01-14"
 preview_urls = false
 
 [vars]

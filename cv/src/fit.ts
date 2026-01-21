@@ -106,11 +106,11 @@ async function submitFitAssessment() {
     return;
   }
 
-  const endpoint = window.CV_FIT_ENDPOINT;
-  if (!endpoint) {
-    showFitError('Fit assessment endpoint not configured.');
+  if (!window.CV_CHAT_API) {
+    showFitError('CV_CHAT_API not configured.');
     return;
   }
+  const endpoint = window.CV_CHAT_API + '/api/fit-assessment';
 
   const payload = activeTab === 'paste'
     ? { type: 'paste', content: jobInput }

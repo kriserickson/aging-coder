@@ -7,7 +7,7 @@
     "linkedin": "https://linkedin.com/in/kristian-l-erickson"
   },
   "summary": [
-    "25+ years of building and modernizing enterprise SaaS and software platforms, with expertise in scalable, reliable, and maintainable systems.",
+    "Extensive experience building and modernizing enterprise SaaS and software platforms, with expertise in scalable, reliable, and maintainable systems.",
     "Helped architect and develop systems which processed millions of prints per year across 10+ countries; web + kiosk platforms handled ~$1B in annual sales at peak.",
     "Successfully managed, mentored, and grew high-performing development teams of up to 15 programmers. Championed adoption of modern development practices, including AI coding tools (Copilot since 2021; Cursor, Windsurf; modern agentic tooling) to accelerate delivery and code quality.",
     "Expert in modernizing and integrating legacy systems into scalable, maintainable platforms used by major retailers and high-volume consumer channels.",
@@ -53,36 +53,6 @@
         "Architected and developed the Storefront E-Commerce Platform (launched 2000; still operational after 25 years), powering photo product ordering for 10+ major retailers including Rite Aid, Costco Mexico, Fred Meyer, Smiths, Duane Reade, King Soopers, London Drugs, Benavides, and Dodd's Photo.",
         "Served as lead architect for the Storefront Windows Photo Kiosk (launched 2005), which processed millions of prints annually and drove over $1B in photo product sales by 2010.",
         "Designed and implemented scalable templating and rendering engines that powered dynamic content generation for enterprise platforms."
-      ]
-    },
-    {
-      "title": "Programmer",
-      "company": "Canadian Forest Products (Canfor)",
-      "location": "Vancouver, BC",
-      "period": "Mar 1998 – Dec 1998",
-      "achievements": [
-        "Developed a Visual Basic system for importing, cataloging, and displaying Material Safety Data Sheets (MSDS), replacing a multi-binder paper process with a searchable digital platform accessible from terminals across all Canfor operations, improving compliance and retrieval times.",
-        "Built and maintained internal and external websites using HTML and ASP, supporting corporate communications and operational needs."
-      ]
-    },
-    {
-      "title": "Programmer",
-      "company": "TRIUMF",
-      "location": "Vancouver, BC",
-      "period": "May 1997 – Dec 1997",
-      "achievements": [
-        "Migrated legacy Oracle Forms from mainframe terminals to TRIUMF's intranet using the Borland IntraBuilder web platform, enabling easier access and modernizing data workflows for researchers and administrative staff.",
-        "Developed applications in Oracle Developer 2000 (Forms 4.5), Pro*C, and CAMAC under OpenVMS to support experimental data acquisition and internal operations."
-      ]
-    },
-    {
-      "title": "Technical Writer & Course Marker",
-      "company": "Langara College",
-      "location": "Vancouver, BC",
-      "period": "Sept 1996 – July 1998",
-      "achievements": [
-        "Authored comprehensive technical manuals for computer labs, producing both instructor and student editions that improved course delivery and lab usability.",
-        "Provided grading, detailed feedback, and mentorship for programming coursework, helping students progress from foundational coding skills to more advanced software development practices."
       ]
     }
   ],

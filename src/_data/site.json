@@ -27,23 +27,32 @@
       "title": "Home",
       "url": "/",
       "external": false,
-      "icon": "home"
+      "icon": "home",
+      "id": "home"
     },
     {
       "title": "CV",
-      "url": "/cv/"
+      "url": "/cv/",
+      "external": false,
+      "id": "cv"
     },
     {
       "title": "Featured Posts",
-      "url": "/featured"
+      "url": "/featured",
+      "external": false,
+      "id": "featured"
     },
     {
       "title": "Categories",
-      "url": "/categories"
+      "url": "/categories",
+      "external": false,
+      "id": "categories"
     },
     {
       "title": "Search",
-      "url": "/search"
+      "url": "/search",
+      "external": false,
+      "id": "search"
     }
   ]
 }

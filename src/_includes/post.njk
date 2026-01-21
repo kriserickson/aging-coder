@@ -16,7 +16,7 @@ extra_css:
             </div>
             <ul>
                 {% for link in site.links %}
-                    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                      <li id="{{link.id}}"><a href="{{ link.url }}">{{ link.title }}</a></li
                 {% endfor %}
                 <li>
                     <button id="theme-toggle" aria-label="Toggle dark mode">

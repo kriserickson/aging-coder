@@ -141,7 +141,7 @@ Tips and next steps
 
 CV chat (local + Cloudflare)
 
-- Copy `.env.example` to `.env` and set `CV_CHAT_ENDPOINT`.
+- Copy `.env.example` to `.env` and set `CV_CHAT_API`.
 - Run `npm install` and then `npm run dev:cv-chat` to start the worker and site together.
 - Visit `http://localhost:8888/cv/` for the chat UI.
 
@@ -160,7 +160,7 @@ Cloudflare deploy
   - `npx wrangler secret put LOG_ANALYTICS`
 - Ensure the Worker has the AI binding enabled (see `api-worker/wrangler.toml`). Without it, the service will skip RAG search and send all data as context.
 - Deploy with `npx wrangler deploy`.
-- Update `.env` `CV_CHAT_ENDPOINT` with the deployed worker URL.
+- Update `.env` `CV_CHAT_API` with the deployed worker URL.
 
 RAG data
 

@@ -800,11 +800,12 @@ export async function sendMessage() {
     return;
   }
 
-  const endpoint = window.CV_CHAT_ENDPOINT;
-  if (!endpoint) {
-    console.error('Missing CV_CHAT_ENDPOINT.');
+  if (!window.CV_CHAT_API) {
+    console.error('Missing CV_CHAT_API.');
     return;
   }
+  const endpoint = window.CV_CHAT_API + '/api/chat';
+  
 
   const existingQuestions = messagesContainer.querySelector('.chat-sample-questions');
   if (existingQuestions) existingQuestions.remove();

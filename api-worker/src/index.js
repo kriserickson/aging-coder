@@ -6,10 +6,12 @@ import {
   formatAllContext,
   findExactQuestionMatch,
   prepareQuestionEmbeddings,
-  getQuestionEmbeddingStatus
+  getQuestionEmbeddingStatus,
+  clearQuestionEmbeddings
 } from './rag';
 import { buildFitAssessmentUserPrompt, buildFitAssessmentSystemPrompt, buildSystemPrompt, buildUserPrompt, buildConversationMessages } from './prompt';
 import { fetchUrlContent } from './fetch-url-content';
+import {  parseResetAuthRequest } from './api-auth';
 
 const app = new Hono();
 
@@ -112,44 +114,71 @@ const streamCompletionResponse = (response, { delayMs = 0 } = {}) => {
     async start(controller) {
       const reader = response.body.getReader();
       let buffer = '';
-      let done = false;
 
-      while (!done) {
-        const result = await reader.read();
-        done = result.done;
-        if (result.value) {
-          buffer += decoder.decode(result.value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+      try {
+        while (true) {
+          let result;
+          try {
+            result = await reader.read();
+          } catch (readErr) {
+            // Reader may have been released/cancelled by the consumer — stop reading.
+            console.warn('ReadableStream reader.read() failed:', readErr && readErr.message ? readErr.message : readErr);
+            break;
+          }
 
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith('data:')) {
-              continue;
-            }
-            const data = trimmed.replace('data:', '').trim();
-            if (data === '[DONE]') {
-              controller.close();
-              return;
-            }
+          if (result.done) {
+            break;
+          }
 
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed?.choices?.[0]?.delta?.content;
-              if (delta) {
-                controller.enqueue(encoder.encode(delta));
-                if (delayMs > 0) {
-                  await new Promise((resolve) => setTimeout(resolve, delayMs));
-                }
+          if (result.value) {
+            buffer += decoder.decode(result.value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || !trimmed.startsWith('data:')) {
+                continue;
               }
-            } catch (error) {
-              console.warn('Failed to parse stream chunk', error);
+              const data = trimmed.replace('data:', '').trim();
+              if (data === '[DONE]') {
+                // end of stream marker from upstream
+                try {
+                  controller.close();
+                } catch (e) {
+                  /* ignore if already closed */
+                }
+                return;
+              }
+
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed?.choices?.[0]?.delta?.content;
+                if (delta) {
+                  controller.enqueue(encoder.encode(delta));
+                  if (delayMs > 0) {
+                    await new Promise((resolve) => setTimeout(resolve, delayMs));
+                  }
+                }
+              } catch (error) {
+                console.warn('Failed to parse stream chunk', error);
+              }
             }
           }
         }
-      }
+      } finally {
+        try {
+          reader.releaseLock();
+        } catch (e) {
+          // ignore
+        }
 
-      controller.close();
+        try {
+          controller.close();
+        } catch (e) {
+          // ignore
+        }
+      }
     }
   });
 };
@@ -207,6 +236,8 @@ async function trackAnalytics(c, clientId, message, response) {
     console.log('Analytics:', JSON.stringify(analytics));
   }
 }
+
+// Reset auth helpers moved to './api-auth.js'
 
 const fetchFitAssessmentCompletion = async (env, jobDescription, cvContext) => {
   const { apiKey, model, baseUrl, appName, appUrl } = getOpenRouterConfig(env);
@@ -319,11 +350,7 @@ app.post('/api/chat', async (c) => {
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
       try {
-        const results = await searchRag(c.env.AI, lastUserMessage, {
-          cache: c.env.RAG_EMBEDDINGS,
-          minScore: 0.6,
-          maxResults: 5
-        });
+        const results = await searchRag(c.env.AI, lastUserMessage, c.env.RAG_EMBEDDINGS);
         if (results && results.length) {
           ragResults = results;
           ragContext = formatRagContext(results);
@@ -490,19 +517,20 @@ app.post('/api/rag/embeddings', async (c) => {
       return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
     }
 
-    // Determine whether to force regeneration (ignore cache). Accepts JSON body { force: true } or ?force=true
-    let force = false;
-    try {
-      const body = await c.req.json();
-      if (body?.force === true || body?.force === 'true') {
-        force = true;
-      }
-    } catch (err) {
-      // ignore JSON parse errors or empty bodies
+    const { requestBody, requestUrl, authResult } = await parseResetAuthRequest(c);
+
+    if (!authResult.valid) {
+      console.warn('Unauthorized RAG embeddings reset attempt:', authResult.message);
+      return c.json({ error: authResult.message }, authResult.status || 401);
     }
 
-    const url = new URL(c.req.url);
-    if (url.searchParams.get('force') === 'true') {
+    // Determine whether to force regeneration (ignore cache). Accepts JSON body { force: true } or ?force=true
+    let force = false;
+    if (requestBody?.force === true || requestBody?.force === 'true') {
+      force = true;
+    }
+
+    if (requestUrl.searchParams.get('force') === 'true') {
       force = true;
     }
 
@@ -516,6 +544,28 @@ app.post('/api/rag/embeddings', async (c) => {
   } catch (error) {
     console.error('Failed to prepare RAG embeddings:', error);
     return c.json({ error: 'Failed to prepare RAG embeddings.' }, 500);
+  }
+});
+
+app.delete('/api/rag/embeddings', async (c) => {
+  try {
+    const cache = c.env.RAG_EMBEDDINGS;
+    if (!cache) {
+      return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
+    }
+
+    const { authResult } = await parseResetAuthRequest(c);
+    if (!authResult.valid) {
+      console.warn('Unauthorized RAG embeddings clear attempt:', authResult.message);
+      return c.json({ error: authResult.message }, authResult.status || 401);
+    }
+
+    await clearQuestionEmbeddings(cache);
+    console.log('Cleared RAG embeddings cache via admin request.');
+    return c.json({ status: 'cleared' });
+  } catch (error) {
+    console.error('Failed to clear RAG embeddings:', error);
+    return c.json({ error: 'Failed to clear RAG embeddings.' }, 500);
   }
 });
 

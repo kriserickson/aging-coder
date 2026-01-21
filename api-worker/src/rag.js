@@ -7,6 +7,10 @@ const EMBEDDING_MODEL = '@cf/baai/bge-small-en-v1.5';
 const EMBEDDING_BATCH_SIZE = 20;
 const EMBEDDING_FALLBACK_DIM = 128;
 const EMBEDDING_CACHE_PREFIX = 'rag-embedding:';
+const MAX_CONTEXT_CHUNK_TOKENS = 500;
+const DEFAULT_CHUNK_OVERLAP_TOKENS = 50;
+const MIN_SCORE_FOR_RAG = 0.6;
+const MAX_RESULTS = 5;
 
 const textEncoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
 const textDecoder = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8') : null;
@@ -325,6 +329,50 @@ const embedTexts = async (ai, texts) => {
   return finalEmbeds;
 };
 
+const chunkText = (text, { chunkTokens = MAX_CONTEXT_CHUNK_TOKENS, overlapTokens = DEFAULT_CHUNK_OVERLAP_TOKENS } = {}) => {
+  if (!text) {
+    return [];
+  }
+
+  const normalizedChunkTokens = Math.max(1, Math.floor(chunkTokens));
+  const normalizedOverlap = Math.max(0, Math.min(Math.floor(overlapTokens), normalizedChunkTokens - 1));
+  const tokens = [];
+  const regex = /\S+/g;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    tokens.push({
+      start: match.index,
+      end: match.index + match[0].length
+    });
+  }
+
+  if (!tokens.length) {
+    const trimmed = text.trim();
+    return trimmed ? [trimmed] : [];
+  }
+
+  const chunks = [];
+  let startTokenIndex = 0;
+
+  while (startTokenIndex < tokens.length) {
+    const endTokenIndex = Math.min(tokens.length, startTokenIndex + normalizedChunkTokens);
+    const chunkStart = tokens[startTokenIndex].start;
+    const chunkEnd = endTokenIndex < tokens.length ? tokens[endTokenIndex].start : text.length;
+    const chunk = text.slice(chunkStart, chunkEnd).trim();
+    if (chunk) {
+      chunks.push(chunk);
+    }
+    if (endTokenIndex === tokens.length) {
+      break;
+    }
+    const nextStart = endTokenIndex - normalizedOverlap;
+    startTokenIndex = nextStart <= startTokenIndex ? endTokenIndex : nextStart;
+  }
+
+  return chunks;
+};
+
 const flattenData = (value, path = []) => {
   if (value === null || value === undefined) {
     return [];
@@ -353,14 +401,13 @@ const buildQuestionDocuments = () => {
 
   questionEntries.forEach((question, index) => {
     const questionId = buildQuestionId(question, index);
-    const nameText = question?.name ?? '';
-    const contextText = question?.context ?? '';
+    const nameText = (question?.name ?? '').trim();
+    const contextText = (question?.context ?? '').trim();
     if (!nameText && !contextText) {
       return;
     }
 
-    const displayContext = contextText || nameText;
-    const questionName = question?.name || 'Question';
+    const questionName = nameText || 'Question';
 
     if (nameText) {
       documents.push({
@@ -368,21 +415,25 @@ const buildQuestionDocuments = () => {
         questionId,
         type: 'name',
         text: nameText,
-        context: displayContext,
+        context: nameText,
         questionName,
         embedding: null
       });
     }
 
     if (contextText) {
-      documents.push({
-        id: `${questionId}:context`,
-        questionId,
-        type: 'context',
-        text: contextText,
-        context: contextText,
-        questionName,
-        embedding: null
+      const contextChunks = chunkText(contextText);
+      contextChunks.forEach((chunk, chunkIndex) => {
+        documents.push({
+          id: `${questionId}:context:${chunkIndex}`,
+          questionId,
+          type: 'context',
+          text: chunk,
+          context: chunk,
+          questionName,
+          chunkIndex,
+          embedding: null
+        });
       });
     }
   });
@@ -393,25 +444,32 @@ const buildQuestionDocuments = () => {
 
 const questionDocuments = buildQuestionDocuments();
 
+const deleteDocumentEmbeddingFromCache = async (cache, doc) => {
+  if (!cache) {
+    return;
+  }
+
+  try {
+    await cache.delete(buildCacheKey(doc.id));
+  } catch (err) {
+    console.warn('Failed to delete cache for', doc.id, err);
+  }
+};
+
+const resetAllQuestionEmbeddings = async (cache) => {
+  if (cache) {
+    await Promise.all(questionDocuments.map((doc) => deleteDocumentEmbeddingFromCache(cache, doc)));
+  }
+  questionDocuments.forEach((doc) => {
+    doc.embedding = null;
+  });
+};
+
 const embedDocuments = async (ai, cache, { force = false } = {}) => {
   ensureAiBinding(ai);
 
   if (force) {
-    // When forcing, clear any in-memory and cached embeddings so we re-create them.
-    if (cache) {
-      for (const questionDocument of questionDocuments) {
-        try {
-          await cache.delete(buildCacheKey(questionDocument.id));
-        } catch (err) {
-          console.warn('Failed to delete cache for', questionDocument.id, err);
-        }
-        questionDocument.embedding = null;
-      }
-    } else {
-      for (const questionDocument of questionDocuments) {
-        questionDocument.embedding = null;
-      }
-    }
+    await resetAllQuestionEmbeddings(cache);
   } else if (cache) {
     for (const questionDocument of questionDocuments) {
       if (questionDocument.embedding) {
@@ -434,12 +492,17 @@ const embedDocuments = async (ai, cache, { force = false } = {}) => {
 };
 
 
-const buildRagContextString = (results) =>
-  results
-    .map((result) => `- ${result.questionName}\n${result.context}`)
-    .join('\n\n');
+const buildRagContextString = (results) => {
+  const contexts = results.map(result => {
+    return questionDocuments.find(question => question.questionId == result.questionId && question.type === 'context')
+  });
 
-export const searchRag = async (ai, query, { maxResults = 5, minScore = 0.6, cache } = {}) => {
+  return contexts
+    .map(context => `- ${context.questionName}\n${context.context}`)
+    .join('\n\n');
+};
+
+export const searchRag = async (ai, query, cache) => {
   if (!query) {
     return [];
   }
@@ -455,12 +518,14 @@ export const searchRag = async (ai, query, { maxResults = 5, minScore = 0.6, cac
     return [];
   }
 
-  const scored = questionDocuments
+  let scored = questionDocuments
     .map((doc) => ({
       ...doc,
       score: cosineSimilarity(queryEmbedding, doc.embedding)
-    }))
-    .filter((doc) => doc.score >= minScore)
+    }));
+
+  scored = scored
+    .filter((doc) => doc.score >= MIN_SCORE_FOR_RAG)
     .sort((a, b) => b.score - a.score);
 
   const bestByQuestion = new Map();
@@ -479,7 +544,7 @@ export const searchRag = async (ai, query, { maxResults = 5, minScore = 0.6, cac
 
   return Array.from(bestByQuestion.values())
     .sort((a, b) => b.score - a.score)
-    .slice(0, maxResults);
+    .slice(0, MAX_RESULTS);
 };
 
 export const formatRagContext = (results) => {
@@ -520,6 +585,10 @@ const buildEmbeddingStatus = async (cache) => {
 };
 
 export const getQuestionEmbeddingStatus = async (cache) => buildEmbeddingStatus(cache);
+
+export const clearQuestionEmbeddings = async (cache) => {
+  await resetAllQuestionEmbeddings(cache);
+};
 
 export const prepareQuestionEmbeddings = async (ai, cache, options = {}) => {
   await embedDocuments(ai, cache, options);

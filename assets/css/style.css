@@ -8,29 +8,46 @@
     --bg: #ffffff;
     --link: #c40000;
     --link-hover: #940000;
-    --header-bg: #B60000; /* subtle teal tint */
-    --header-fg: #ffffff; /* deep teal text */
+    --header-bg: #B60000;
+    /* subtle teal tint */
+    --header-fg: #ffffff;
+    /* deep teal text */
     --header-border: rgba(255, 255, 255, 0.20);
-    --footer-bg: #B60000; /* dark teal */
-    --footer-fg: #ffffff; /* light text on footer */
-    --footer-link: #ffd1d1; /* links on footer */
-    --tag-bg: #ffe0e0; /* pill background */
-    --code-bg: #fdf6e3; /* code/pre background */
-    --diagram-bg: #85837e; /* diagram background, same for dark mode */
-    --code-fg: #586e75; /* code/pre text */
-    --code-border: #eee8d5; /* thin inner border for code blocks */
+    --footer-bg: #B60000;
+    /* dark teal */
+    --footer-fg: #ffffff;
+    /* light text on footer */
+    --footer-link: #ffd1d1;
+    /* links on footer */
+    --tag-bg: #ffe0e0;
+    /* pill background */
+    --code-bg: #fdf6e3;
+    /* code/pre background */
+    --diagram-bg: #85837e;
+    /* diagram background, same for dark mode */
+    --code-fg: #586e75;
+    /* code/pre text */
+    --code-border: #eee8d5;
+    /* thin inner border for code blocks */
 
     /* Code token colors (light) */
     --code-token-comment: #93a1a1;
     --code-token-punctuation: #657b83;
-    --code-token-property: #6c71c4; /* tag/constant/symbol/deleted share this */
-    --code-token-boolean: #2aa198; /* and number */
-    --code-token-selector: #859900; /* attr-name/char/builtin/inserted */
+    --code-token-property: #6c71c4;
+    /* tag/constant/symbol/deleted share this */
+    --code-token-boolean: #2aa198;
+    /* and number */
+    --code-token-selector: #859900;
+    /* attr-name/char/builtin/inserted */
     --code-token-string: #b58900;
-    --code-token-operator: #cb4b16; /* and entity/url */
-    --code-token-atrule: #268bd2; /* and attr-value/keyword */
-    --code-token-function: #2aa198; /* and class-name */
-    --code-token-regex: #dc322f; /* and important/variable */
+    --code-token-operator: #cb4b16;
+    /* and entity/url */
+    --code-token-atrule: #268bd2;
+    /* and attr-value/keyword */
+    --code-token-function: #2aa198;
+    /* and class-name */
+    --code-token-regex: #dc322f;
+    /* and important/variable */
 
     /* CV theme accents */
     --cv-shadow-rgb: 30, 11, 11;
@@ -130,7 +147,8 @@ body {
     /* Remove white tile box behind the logo */
     background: transparent;
     padding: 0;
-    border-radius: 10px; /* keep rounded shape if needed */
+    border-radius: 10px;
+    /* keep rounded shape if needed */
     box-shadow: none;
 }
 
@@ -187,11 +205,12 @@ body {
 .site-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 1.25rem 1rem; /* give breathing room on mobile */
+    padding: 1.25rem 1rem;
+    /* give breathing room on mobile */
 }
 
 
-.page-content > div:not(.page-title) p.with-image {
+.page-content>div:not(.page-title) p.with-image {
     text-align: center;
     padding-top: 1.125rem;
     padding-bottom: 1.125rem;
@@ -297,18 +316,22 @@ article {
 
 /* Use flex-basis to keep thumbnails consistent inside flex card layouts */
 .cover-thumb {
-    flex: 0 0 120px; /* reserved width in card layout */
+    flex: 0 0 120px;
+    /* reserved width in card layout */
     width: 120px;
-    height: 90px; /* visual crop area */
+    height: 90px;
+    /* visual crop area */
     display: block;
     border-radius: 0.5rem;
     overflow: hidden;
-    background: transparent; /* remove grey tile under image */
-    align-self: center; /* ensure the thumbnail aligns to center in flex parents */
+    background: transparent;
+    /* remove grey tile under image */
+    align-self: center;
+    /* ensure the thumbnail aligns to center in flex parents */
 }
 
 /* The actual image should fill the container and preserve crop via object-fit */
-.cover-thumb > img,
+.cover-thumb>img,
 .cover-thumb picture img,
 .cover-thumb .img-thumb {
     width: 100%;
@@ -326,15 +349,17 @@ article {
     overflow: hidden;
 }
 
-.cover-thumb--square > img,
+.cover-thumb--square>img,
 .cover-thumb--square picture img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* square source will not crop in a square box */
+    object-fit: cover;
+    /* square source will not crop in a square box */
     display: block;
 }
 
 @media (max-width: 699px) {
+
     /* Keep the default icon square on mobile instead of stretching */
     .cover-thumb--square {
         width: 120px;
@@ -414,7 +439,8 @@ article {
 .card {
     display: flex;
     gap: 1rem;
-    align-items: center; /* vertically center thumbnail and content */
+    align-items: center;
+    /* vertically center thumbnail and content */
     background: var(--surface);
     border-radius: 0.5rem;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -489,10 +515,11 @@ article {
 
 /* Ensure grid layout for wider screens (keeps thumbnail column width) */
 @media (min-width: 700px) {
-    main > article.card {
+    main>article.card {
         display: grid;
         grid-template-columns: 120px 1fr;
-        align-items: center; /* center thumbnail cell vertically with content */
+        align-items: center;
+        /* center thumbnail cell vertically with content */
     }
 
     .card .cover-thumb {
@@ -502,6 +529,7 @@ article {
 
 /* Improve spacing for smaller screens */
 @media (max-width: 699px) {
+
     /* Header spacing stays compact on mobile as well */
     .site-nav {
         padding: 0.5rem 0;
@@ -534,12 +562,20 @@ article {
 }
 
 /* Link color */
-:where(a:not([role=button])), [role=link] {
+:where(a:not([role=button])),
+[role=link] {
     --pico-color: var(--link);
     --pico-underline: var(--link);
 }
 
-:where(a:not([role=button])):is([aria-current]:not([aria-current=false]),:hover,:active,:focus), [role=link]:is([aria-current]:not([aria-current=false]),:hover,:active,:focus) {
+:where(a:not([role=button])):is([aria-current]:not([aria-current=false]), :hover, :active, :focus),
+[role=link]:is([aria-current]:not([aria-current=false]), :hover, :active, :focus) {
     --pico-color: var(--link-hover);
     --pico-underline: var(--link-hover);
+}
+
+@media (max-width: 767px) {
+    ul li#featured {
+        display: none !important;
+    }
 }

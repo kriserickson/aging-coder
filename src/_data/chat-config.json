@@ -37,8 +37,7 @@
         "questions": [
           "What was the Android-based platform project and its impact?",
           "How did the kiosk file transfer and payment system work?",
-          "What was the Remote Management platform?",
-          "How many developers were on the team?"
+          "What was the Remote Management platform?"          
         ]
       },
       "2": {
@@ -50,31 +49,6 @@
           "How did the Windows Photo Kiosk work?",
           "What was the business impact of these systems?"
         ]
-      },
-      "3": {
-        "title": "Programmer at Canfor",
-        "message": "At Canadian Forest Products (1998), Kris developed systems for digital document management.",
-        "questions": [
-          "How did the MSDS system improve compliance?",
-          "What technologies were used?"
-        ]
-      },
-      "4": {
-        "title": "Programmer at TRIUMF",
-        "message": "At TRIUMF (1997), Kris worked on legacy system migration and data acquisition applications.",
-        "questions": [
-          "What legacy migration work was done at TRIUMF?",
-          "What Oracle development was involved?",
-          "How were data workflows modernized?"
-        ]
-      },
-      "5": {
-        "title": "Technical Writer at Langara",
-        "message": "At Langara College (1996-1998), Kris helped edit technical manuals and provided mentorship for programming courses.",
-        "questions": [
-          "What teaching-assistant work and documentation work did Kris do?",
-          "What kinds of manuals were edited?"
-        ]
       }
     },
     "skills": {
@@ -84,8 +58,7 @@
         "questions": [
           "Which frontend frameworks are you most experienced with?",
           "What is your philosophy on whether something should be done on the frontend vs backend?",
-          "What build tools have you worked with?",
-          "Any experience with real-time web applications?"
+          "What build tools have you worked with?"          
         ]
       },
       "backend": {
@@ -132,8 +105,7 @@
         "questions": [
           "What development methodologies do you prefer?",
           "Experience with TDD?",
-          "How do you approach code reviews?",
-          "What about system modernization?"
+          "How do you approach code reviews?"
         ]
       },
       "devops": {
@@ -150,7 +122,6 @@
         "title": "Programming Languages",
         "message": "Kris is a polyglot developer who has released production code in 10+ languages and experimented with 20+ languages.",
         "questions": [
-          "How many programming languages have you worked with?",
           "Which are your strongest languages?",
           "Any unusual or niche languages?",
           "How do you approach learning new languages?"
@@ -164,7 +135,7 @@
         "questions": [
           "What is the Storefront E-Commerce Platform?",
           "What was your role in the development of the Storefront E-Commerce Platform?",
-          "How has it evolved over 25 years?"
+          "How has the Storefront E-Commerce Platform evolved over 25 years?"
         ]
       },
       "1": {
@@ -173,18 +144,16 @@
         "questions": [
           "Tell me about the kiosk system and its impact",
           "What technologies were used?",
-          "How did it handle high volume?",
-          "What was the business impact?"
+          "How did it handle high volume?"
         ]
       },
       "2": {
         "title": "Kiosk File Transfer & Payment System",
         "message": "A Node.js and React system designed by Kris for mobile-to-kiosk photo transfer and phone-based payments.",
         "questions": [
-          "What problem did this system solve?",
+          "What problem did The Kiosk File Transfer and Payment system solve?",
           "How does the file transfer work?",
-          "What about the payment system?",
-          "How many kiosks use it?"
+          "What about the payment system?"
         ]
       },
       "3": {
@@ -203,8 +172,7 @@
         "questions": [
           "How did the distributed SaaS platform help partners?",
           "What microservices architecture was used?",
-          "How do partners integrate?",
-          "What customization is possible?"
+          "How do partners integrate?"          
         ]
       }
     },
