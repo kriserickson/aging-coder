@@ -36,50 +36,30 @@ Over time, that algorithm has gone through four separate incarnations. I manuall
 
 In my mind AI assisted coding was great, especially for small GreenField projects that could be almost one-shot (generating a fully functional application or complex feature using a single natural language prompt).  If you had a project that you wanted for yourself, and didn't need to worry about the complexities of security, authentication, edge-cases, and the like, 6 months ago agents in a VS Code/Cursor/Windsurf could easily create most of what you needed.  
 
----
+## What is Different
 
-So what has changed.  The models are better, a lot better.  I don't know how much they have improved for non-coding, 
+So what has changed.  The models are better, a lot better.  I don't know how much they have improved for non-coding, as I felt that they have been pretty good for non-coding things since 4o.  I used the ChatGPT app a ton on my last vacation to France for everything from planning a 2 hour blitz of the Louvre, to reading Latin inscriptions on random buildings, to seeing if it could read Egyptian hieroglyphs (interestingly it admitted that it can't translate hieroglyphs but it could tell me the text of the particular stella I had been looking at since it was clearly in its corpus), to the history of the Cathars.   For low stakes information (if it gets the name of a Cathar King wrong, I will have forgotten the name within the day anyway) ChatGPT, mostly because of having a pretty good mobile app, has been super useful for over a year.  I still keep a document of some of the surprisingly delicious recipes it has come up with when I give it the contents of my fridge/freezer/pantry and tell it I am in the mood from something with a Spanish/Middle-Eastern/Mexican/Indian/French feel - and that document stretches back a couple of years and dozens of dishes.  
 
----
+But something has changed with both the CLI tooling and the models in the past few months, and it's not just Claude Opus 4.5 like the rest of the world would have you believe.  All of the tools are feeling more competent.  For example, because I am so token starved (I can get one or two features done in a session before Claude Caude runs out of tokens and gives me some random period to wait) I pass off the task of finalzing a task to Copilot in Agent mode.  Things like getting the type-checks to work in TypeScript (`tsc --noEmit`), fixing lint issues (I have switched to biome for speed and a sane config file), or getting the test to work properly with the Free Models in Copilot (currently I am using Raptor Mini because I have found myself at 90% usage of premium models by the middle of the month) and 90% of the time it can correctly fix the problem.  It seemed like even a month ago or so, with this same workflow I would get to the "Copilot has been working on this problem for a while, do you want to continue" almost half the time and had to do the dance of switching betwen free models (I had been switching between [Raptor Mini](https://dev.to/vevarunsharma/so-what-is-github-copilots-raptor-miniand-why-should-devs-care-3n30), Grok Code Fast 1 and GPT 4o) and sometimes just had to manually fix the problems.  I also found that a month or so ago CoPilot agent would regularly neuter the tests rather than fix them, create horrible types rather than fix the typescript properly and use lint ignores rather than fixing the problem, now those occurances are much less frequent - and I am not sure that models have changed that much -- their names certainly haven't.
 
-The persistent problem is UX, not UI. LLMs are still very good at producing interfaces that look finished and very bad at understanding how people actually struggle with software. Flows feel awkward. Defaults are subtly wrong. Important actions are buried or emphasized incorrectly. Nothing is obviously broken, but very little is truly right.
+I don't have any metrics to quantify this, things just feel better (I guess that is very appropriate for Vibe coding).  I kind of wish I had kept better track of how often I felt the previous tools where failing or working against me and how often it is happening now.  I mean I still have to do multiple prompts frequently to get it do what I want, and it still misunderstands what I ask it to do a few times a day but, like I said, it really just "feels" better.
 
-This is where the idea of Vibe Coding breaks down most clearly. UX requires an understanding of intent, friction, and human behavior that goes beyond pattern matching. LLMs optimize for plausibility. They generate what looks like an app, not what feels good to use.
+## A Quick Example
 
-The result is software that passes a visual sniff test while quietly accumulating usability problems.
+I took a short break from the larger project I am working on (like I said, to be revealed later), spent the weekend knocking out an idea I had a few months ago about creating a ChatBot for this blog.  Whenever I write a blog post, it initially starts at about 5-10x the length of my ramblings and thoughts, just trying to get out every thought I had about the topic and it gets winowed down to something (hopefully) readable over time and through editing.  For the past couple of years I have kept these and thought it might be interesting to make them available (not to the readers, good lord I wouldn't want to punish you with that) as data to send as Rag and let people "Chat" with the post so that they can have a more interactive experience with the blog (especially now that I have turned off comments because I didn't have time to clean the 90% spam they produced).  Anyways, this had been percolating in my brain, and then I thought that it might be a much better way to expose people to my more complete resume (when I first started applying for Jobs this time I had a 4 page resume and was quickly told by everyone that you had to get it down to 1 page or at most 2), if they were interested by adding a Chatbot to the resume.  I could provide it with a lot of supplimental information which people could get from Chatting with it.  Then a few days ago [Nate Jones](https://natesnewsletter.substack.com) video on [LinkedIn is Dead](https://www.youtube.com/watch?v=0teZqotpqT8&t=9s) came accross my YouTube feed, and I realized that my wierd idea may not be so wierd after all.  And so I went to work building an [Interactive CV](https://agingcoder.com/cv/), borrowing his idea of a Fit Assesment, but building it with AI Coding assistants.   The initial build coming from [OpenCode](https://opencode.ai) using the free [Big Pickle model](https://www.crackedaiengineering.com/ai-models/opencode-big-pickle)(which is apparently just [glm 4.6](https://github.com/anomalyco/opencode/issues/4276)).  
 
----
+I spent about 5 hours building the code (it would have been a lot faster if I had tokens left for ClaudeCode but also I really wanted to try doing something a little more real in OpenCode), most of which was the iterative process of making the page look and feel right.   
 
-This is the point where I want to be explicit: what I’m doing now is not Vibe Coding.
+    - Getting the Chat to feel like a proper Chat with typing
+    - Streaming the results from the AI model so that it started "typeing" as quick as possible
+    - Converting the python [Rag Engine][https://agingcoder.com/posts/rag-time-cooking-up-smart-recipe-suggestions/] I had written earlier, into JavaScript.
+    - Research into the various [Cloudflare AI Embeddings](https://developers.cloudflare.com/workers-ai/models/bge-small-en-v1.5/) and whether or not I could precalculate them locally with Hugging Face (it turns out you can't, the embeddings end up with different values which I discovered from another quick experiment that I had OpenCode write).  
+    - Also as the chat interface started in JavaScript it quickly became way to large for my liking to have it non-typed so I got OpenCode to move it to typescript, which kind of failed so I had to use Codex to get that working.  
+    - I also got it to clean up the code a lot -- AI's still love to generate 1000 line functions which just will not stand.  
+    - Going back and forth with various ChatBots on the System and User prompts, trying to get them to be as accurate as possible without hallucinating.
+  
+  At the time of writing this still consider the project to be alpha code quality (there is currently only a couple of tests, the Cloudflare worker is still JavaScript, and there isn't enough logging or error handling).  I still haven't written any e2e tests yet, which is the next thing to do.  I need to write some model evaluation code, as I just played with a few models (gpt-5-mini is better but it is pretty slow, gpt-4.1-mini is pretty good but I found that 4o-mini was almost as good 4.1 mini and less than half the cost) and should probably do the work to properly evaluate the models other than in the feels.  In a real project I would also add a lot more logging and analytics, not only to keep an eye on AI usage but to see how the AI is actually performing.  I also didn't do this with pull requests like I usually do, and so none of the code has been reviewed by a AI Code Review tool (like [CoPilot](https://docs.github.com/en/copilot/concepts/agents/code-review), [CodeRabbit](https://www.coderabbit.ai), [Greptile](https://www.greptile.com), or Cursors [BugBot](https://cursor.com/bugbot))
 
-Vibe Coding implies intuition over rigor, flow over structure, speed over judgment. What’s actually happening in practice is something much closer to traditional engineering, just with a different set of tools. Code is written faster, but it still needs to be reviewed, tested, and understood. Decisions still matter. Tradeoffs still exist. Responsibility does not disappear.
+  But I consider knocking out a project like this in 5 hours to be a huge success in showing what AI Assisted coding can do.  I spent more than double the time working on the [backing material](https://github.com/kriserickson/aging-coder/blob/main/api-worker/src/rag-data/questions.json)(which is almost 20,000 words of background text) to feed the RAG engine.  
+  
 
-The work hasn’t been eliminated. It has been displaced.
-
-In fact, one of the more dangerous side effects of modern LLMs is how easy they make it to believe you’re done. The output is confident. The structure looks reasonable. The code compiles. That confidence is contagious, and it creates what I’ve come to think of as confidence debt. Problems aren’t eliminated; they’re deferred. When they surface, they do so under pressure, with users, in production.
-
-False confidence is becoming a new form of technical debt.
-
----
-
-The most accurate mental model I’ve found is that LLMs are junior engineers with infinite stamina and no accountability. They produce a lot of code. They miss edge cases. They struggle with long-term consequences. They get better when you guide them carefully and worse when you trust them blindly.
-
-Used well, they are transformative. Used poorly, they are deceptively dangerous.
-
-The role of the developer hasn’t vanished. It has shifted toward judgment, review, and system-level thinking. There is less typing and more deciding. Less syntax and more responsibility.
-
-That isn’t Vibe Coding. That’s still engineering.
-
----
-
-I’m also working on a new project right now, one that’s benefiting heavily from these tools but also exposing their limits in familiar ways. It’s too early to talk about specifics, and I’ll save that for when it’s ready, but the pattern is already clear. The LLMs accelerate the obvious parts and stumble over the important ones. They help me move faster, not think less.
-
-Which brings me to the bottom line.
-
-Even at twenty dollars a month, modern LLMs are now indispensable. I would not willingly give them up. But the fantasy that software engineering has become effortless, intuitive, or purely vibe-driven hasn’t survived sustained contact with reality.
-
-The ceiling has moved. The floor has not disappeared. Hard problems remain hard. UX still matters. Algorithms still fight back.
-
-The tools are better. The illusions are fewer. The work is still the work.
-
-And that’s probably how it should be.
