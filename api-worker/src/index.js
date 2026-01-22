@@ -441,7 +441,7 @@ app.post('/api/fit-assessment', async (c) => {
       try {
         jobDescription = await fetchUrlContent(url);
         if (jobDescription.length < 50) {
-          return c.json({ error: 'Could not extract enough content from the URL.' }, 400);
+          return c.json({ error: 'Could not extract enough content from the URL.  Currently I cannot execute JavaScript to fully render dynamic pages.  Can you paste the text instead?' }, 400);
         }
       } catch (error) {
         let msg = error?.message || String(error);
@@ -467,6 +467,15 @@ app.post('/api/fit-assessment', async (c) => {
 
     try {
       const assessment = await fetchFitAssessmentCompletion(c.env, jobDescription, cvContext);
+      const jobPostingJudgment = assessment?.jobPostingJudgment;
+
+      if (jobPostingJudgment && jobPostingJudgment.isJobPosting === false) {
+        const message = 'This content does not appear to be a job posting. Please provide a job description or a link to one.';
+        return c.json({
+          jobPostingJudgment,
+          jobPostingMessage: jobPostingJudgment.reason || message
+        });
+      }
 
       if (c.env.LOG_ANALYTICS === 'true') {
         console.log('Fit Assessment:', JSON.stringify({

@@ -158,6 +158,29 @@ function renderFitResults(result: any, jobInput: string) {
   if (!resultsContainer) return;
 
   resultsContainer.style.display = 'block';
+  const checkIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>';
+  const moderateIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4"/></svg>';
+  const warningIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>';
+  const jobPostingJudgment = result?.jobPostingJudgment;
+  if (jobPostingJudgment && jobPostingJudgment.isJobPosting === false) {
+    const messageText = result.jobPostingMessage || "This content doesn't appear to be a job posting.";
+    const reasonText = jobPostingJudgment.reason ? `<p class="fit-job-missing-reason">${escapeHtml(jobPostingJudgment.reason)}</p>` : '';
+    const confidenceText = jobPostingJudgment.confidence ? `<p class="fit-job-missing-confidence">Confidence: ${escapeHtml(jobPostingJudgment.confidence)}</p>` : '';
+    const html = `
+      <div class="fit-job-missing">
+        <div class="fit-job-missing-icon">${warningIcon}</div>
+        <div class="fit-job-missing-message">
+          <h4>This does not look like a job posting</h4>
+          <p>${escapeHtml(messageText)}</p>
+          ${reasonText}
+          ${confidenceText}
+        </div>
+      </div>
+      <button type="button" class="fit-new-assessment" onclick="resetFitModal()">Try another job description</button>
+    `;
+    resultsContainer.innerHTML = html;
+    return;
+  }
 
   const verdict = String(result.verdict || '').toLowerCase();
   const isStrong = verdict === 'strong';
@@ -178,9 +201,6 @@ function renderFitResults(result: any, jobInput: string) {
     verdictSubtext = 'I want to be direct with you. Here\'s why this might not be the right fit:';
   }
 
-  const checkIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>';
-  const moderateIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4"/></svg>';
-  const warningIcon = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>';
 
   const jobSnippet = jobInput.length > 200 ? `${jobInput.substring(0, 200)}...` : jobInput;
   const jobTitle = result.jobTitle || 'Job Position';

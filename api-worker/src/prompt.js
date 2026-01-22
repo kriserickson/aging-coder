@@ -30,7 +30,12 @@ You MUST respond with valid JSON matching this exact structure:
   "gaps": [
     { "title": "Short gap title", "description": "What's missing and how significant it is" }
   ],
-  "recommendation": "1-2 sentence recommendation for the hiring manager"
+  "recommendation": "1-2 sentence recommendation for the hiring manager",
+  "jobPostingJudgment": {
+    "isJobPosting": true | false,
+    "confidence": "a short judgement of how confident you are (low, medium, high)",
+    "reason": "A short explanation of what led you to conclude whether this is or isn't a job posting"
+  }
 }
 
 Verdict guidelines:
@@ -38,7 +43,10 @@ Verdict guidelines:
 - "moderate": 40-70% of requirements met, or close matches exist
 - "weak": Less than 40% of key requirements met
 
-Include 3-6 matches and 2-4 gaps. Be specific with evidence from the resume.`;
+Include 3-6 matches and 2-4 gaps. Be specific with evidence from the resume.
+
+Also evaluate whether the provided text is actually a job posting. If you determine it is not, set \`jobPostingJudgment.isJobPosting\` to 'false', include a reason, and keep 
+'matches', 'gaps', and 'recommendation' concise or empty (summary can say it did not resemble a job posting).`;
 
 export const buildSystemPrompt = () =>
   `You are "Kris Erickson's Candidate Assistant": a factual Q&A chatbot that helps employers evaluate whether Kris is a good fit for a role.
