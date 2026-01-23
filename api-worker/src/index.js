@@ -223,19 +223,36 @@ async function checkRateLimit(c, clientId) {
   return true;
 }
 
-async function trackAnalytics(c, clientId, message, response) {
+async function trackAnalytics(c, clientId, data) {
   const analytics = {
     timestamp: new Date().toISOString(),
     clientId,
-    message,
-    responseLength: response.length,
-    userAgent: c.req.header('User-Agent')
+    userAgent: c.req.header('User-Agent'),
+    ...data
   };
 
   if (c.env.LOG_ANALYTICS === 'true') {
     console.log('Analytics:', JSON.stringify(analytics));
   }
 }
+
+const createCapturingStream = (sourceStream, onComplete) => {
+  let captured = '';
+  const transform = new TransformStream({
+    transform(chunk, controller) {
+      const text = typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
+      captured += text;
+      controller.enqueue(chunk);
+    },
+    flush() {
+      if (onComplete) {
+        onComplete(captured);
+      }
+    }
+  });
+
+  return sourceStream.pipeThrough(transform);
+};
 
 // Reset auth helpers moved to './api-auth.js'
 
@@ -334,7 +351,13 @@ app.post('/api/chat', async (c) => {
       // verbatim and avoid leaking them in fallback text.
       if (exactMatch.verbatim) {
         // Track analytics and return the exact context text immediately
-        await trackAnalytics(c, clientId, lastUserMessage, exactMatch.context);
+        await trackAnalytics(c, clientId, {
+          type: 'chat',
+          question: lastUserMessage,
+          response: exactMatch.context,
+          ragNames: [],
+          exactMatch: true
+        });
         return new Response(exactMatch.context, {
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
@@ -360,6 +383,7 @@ app.post('/api/chat', async (c) => {
       }
     }
 
+    const ragNames = ragResults.map((r) => r.questionName);
     let responseText = '';
 
     try {
@@ -369,15 +393,23 @@ app.post('/api/chat', async (c) => {
         cvContext,
         ragContext
       );
-      const stream = streamCompletionResponse(chatResponse, {
+      const rawStream = streamCompletionResponse(chatResponse, {
         delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 0
       });
 
-      trackAnalytics(c, clientId, lastUserMessage, '[streamed response]').catch((error) => {
-        console.warn('Analytics failed:', error);
+      const capturingStream = createCapturingStream(rawStream, (fullResponse) => {
+        trackAnalytics(c, clientId, {
+          type: 'chat',
+          question: lastUserMessage,
+          response: fullResponse,
+          ragNames,
+          exactMatch: !!exactMatch
+        }).catch((error) => {
+          console.warn('Analytics failed:', error);
+        });
       });
 
-      return new Response(stream, {
+      return new Response(capturingStream, {
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Cache-Control': 'no-store',
@@ -390,7 +422,13 @@ app.post('/api/chat', async (c) => {
       responseText = `I'm having trouble reaching the chat service right now. ${ragContext}`;
     }
 
-    await trackAnalytics(c, clientId, lastUserMessage, responseText);
+    await trackAnalytics(c, clientId, {
+      type: 'chat',
+      question: lastUserMessage,
+      response: responseText,
+      ragNames,
+      exactMatch: !!exactMatch
+    });
 
     const fallbackStream = streamText(responseText, {
       delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 16
@@ -477,15 +515,13 @@ app.post('/api/fit-assessment', async (c) => {
         });
       }
 
-      if (c.env.LOG_ANALYTICS === 'true') {
-        console.log('Fit Assessment:', JSON.stringify({
-          timestamp: new Date().toISOString(),
-          clientId,
-          type,
-          verdict: assessment.verdict,
-          jobTitle: assessment.jobTitle
-        }));
-      }
+      await trackAnalytics(c, clientId, {
+        type: 'fit-assessment',
+        jobTitle: assessment.jobTitle,
+        company: assessment.company || null,
+        url: type === 'url' ? url : null,
+        verdict: assessment.verdict
+      });
 
       return c.json(assessment);
     } catch (error) {

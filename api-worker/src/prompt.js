@@ -23,6 +23,7 @@ You MUST respond with valid JSON matching this exact structure:
 {
   "verdict": "strong" | "moderate" | "weak",
   "jobTitle": "extracted or inferred job title from the posting",
+  "company": "extracted company name from the posting, or null if not identifiable",
   "summary": "2-3 sentence overall assessment",
   "matches": [
     { "title": "Short match title", "description": "Why this is a match with specific evidence" }
