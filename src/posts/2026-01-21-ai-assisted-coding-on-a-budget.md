@@ -37,7 +37,13 @@ I’ve assigned issues to Copilot through GitHub Issues. I’ve had the cloud ve
 
 What surprised me most over the last few months is how capable AI coding agents have become—not in a demo-friendly way, and not in a “look what it can do on a greenfield example” sense, but in the unglamorous daily grind of real development. It holds context better, makes fewer wild assumptions, and produces code that usually compiles, runs, and fits into an existing system without too much coercion (though lint and a lot of tests are definitely necessary).
 
-A lot of my current workflow is flipping between tools because I’m constantly running out of tokens—whether it’s for a few hours (Claude Code burning through current-session tokens on a relatively complex task) or days/weeks (it’s only the 17th of the month today and I’ve used 92% of my premium tokens with GitHub Copilot).
+A lot of my current workflow is flipping between tools because I’m constantly running out of tokens, whether it’s for a few hours (Claude Code burning through current-session tokens on a relatively complex task) or days/weeks (it’s only the 17th of the month today, and I’ve used 92% of my premium tokens with GitHub Copilot). With Claude Code, I’m constantly hitting the token limit with just one or two prompts and then—boom—I’m waiting four hours.
+
+Once, because I was in the middle of something and curious what it cost when you pay by the token, I added $5 of extra usage to see how far it would take me. It barely completed the task it had run out of tokens on in the first place (it edited six files, with 71 insertions and 59 deletions).
+
+It’s easy to see how, if you aren’t on the Pro or Max plan, enterprises can burn through serious money using Claude. That said, the [$4,400 a month](https://steve-yegge.medium.com/steveys-birthday-blog-34f437139cb5#1b80) example is a bit misleading, since [Jeffrey Emanuel](https://jeffreyemanuel.com) apparently hits that number by running multiple Claude Max accounts (24 accounts—just managing that would be insane). But the point is: Claude Code is expensive, and it absolutely chews through tokens.
+
+I don’t have the same issue with OpenAI's Codex. I don’t know if it uses fewer tokens or if the token budget (I’m using gpt-5.2-codex with reasoning set to high) is simply much higher, but I can run it for hours without running out of tokens. It’s slower than Claude, but not **that** much slower.
 
 ## Working on the Previous Project
 

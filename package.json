@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm --prefix cv run build:prod && eleventy",
+    "build:blog": "eleventy",
     "serve": "eleventy --serve --port=8888 --incremental",
     "clean": "rm -Rf ./_site/*",
     "draft": "node js/create-post.js",
