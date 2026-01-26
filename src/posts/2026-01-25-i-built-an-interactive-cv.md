@@ -4,7 +4,6 @@ category: Programming
 title: "I Built an Interactive CV"
 imagefeature: blog/interactive-cv.webp
 description: "A weekend build: a data-driven resume with a digital assistant, streaming Q&A, and a job-fit analyzer."
-draft: true
 tags: ["Programming", "LLM", "AI", "Career"]
 date: 2026-01-25
 ---
