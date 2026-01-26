@@ -6,16 +6,14 @@ import {
   formatAllContext,
   findExactQuestionMatch,
   prepareQuestionEmbeddings,
-  getQuestionEmbeddingStatus,
-  clearQuestionEmbeddings
+  getQuestionEmbeddingStatus
 } from './rag';
 import { buildFitAssessmentUserPrompt, buildFitAssessmentSystemPrompt, buildSystemPrompt, buildUserPrompt, buildConversationMessages } from './prompt';
 import { fetchUrlContent } from './fetch-url-content';
-import {  parseResetAuthRequest } from './api-auth';
 
 const app = new Hono();
 
-const defaultCorsOrigins = ['http://localhost:8888', 'https://your-domain.com'];
+const defaultCorsOrigins = ['http://localhost:8888'];
 
 const resolveCorsOrigins = (env) => {
   if (!env?.CORS_ORIGINS) {
@@ -114,71 +112,44 @@ const streamCompletionResponse = (response, { delayMs = 0 } = {}) => {
     async start(controller) {
       const reader = response.body.getReader();
       let buffer = '';
+      let done = false;
 
-      try {
-        while (true) {
-          let result;
-          try {
-            result = await reader.read();
-          } catch (readErr) {
-            // Reader may have been released/cancelled by the consumer — stop reading.
-            console.warn('ReadableStream reader.read() failed:', readErr && readErr.message ? readErr.message : readErr);
-            break;
-          }
+      while (!done) {
+        const result = await reader.read();
+        done = result.done;
+        if (result.value) {
+          buffer += decoder.decode(result.value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
 
-          if (result.done) {
-            break;
-          }
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) {
+              continue;
+            }
+            const data = trimmed.replace('data:', '').trim();
+            if (data === '[DONE]') {
+              controller.close();
+              return;
+            }
 
-          if (result.value) {
-            buffer += decoder.decode(result.value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-              const trimmed = line.trim();
-              if (!trimmed || !trimmed.startsWith('data:')) {
-                continue;
-              }
-              const data = trimmed.replace('data:', '').trim();
-              if (data === '[DONE]') {
-                // end of stream marker from upstream
-                try {
-                  controller.close();
-                } catch (e) {
-                  /* ignore if already closed */
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed?.choices?.[0]?.delta?.content;
+              if (delta) {
+                controller.enqueue(encoder.encode(delta));
+                if (delayMs > 0) {
+                  await new Promise((resolve) => setTimeout(resolve, delayMs));
                 }
-                return;
               }
-
-              try {
-                const parsed = JSON.parse(data);
-                const delta = parsed?.choices?.[0]?.delta?.content;
-                if (delta) {
-                  controller.enqueue(encoder.encode(delta));
-                  if (delayMs > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, delayMs));
-                  }
-                }
-              } catch (error) {
-                console.warn('Failed to parse stream chunk', error);
-              }
+            } catch (error) {
+              console.warn('Failed to parse stream chunk', error);
             }
           }
         }
-      } finally {
-        try {
-          reader.releaseLock();
-        } catch (e) {
-          // ignore
-        }
-
-        try {
-          controller.close();
-        } catch (e) {
-          // ignore
-        }
       }
+
+      controller.close();
     }
   });
 };
@@ -223,38 +194,19 @@ async function checkRateLimit(c, clientId) {
   return true;
 }
 
-async function trackAnalytics(c, clientId, data) {
+async function trackAnalytics(c, clientId, message, response) {
   const analytics = {
     timestamp: new Date().toISOString(),
     clientId,
-    userAgent: c.req.header('User-Agent'),
-    ...data
+    message,
+    responseLength: response.length,
+    userAgent: c.req.header('User-Agent')
   };
 
   if (c.env.LOG_ANALYTICS === 'true') {
     console.log('Analytics:', JSON.stringify(analytics));
   }
 }
-
-const createCapturingStream = (sourceStream, onComplete) => {
-  let captured = '';
-  const transform = new TransformStream({
-    transform(chunk, controller) {
-      const text = typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
-      captured += text;
-      controller.enqueue(chunk);
-    },
-    flush() {
-      if (onComplete) {
-        onComplete(captured);
-      }
-    }
-  });
-
-  return sourceStream.pipeThrough(transform);
-};
-
-// Reset auth helpers moved to './api-auth.js'
 
 const fetchFitAssessmentCompletion = async (env, jobDescription, cvContext) => {
   const { apiKey, model, baseUrl, appName, appUrl } = getOpenRouterConfig(env);
@@ -351,13 +303,7 @@ app.post('/api/chat', async (c) => {
       // verbatim and avoid leaking them in fallback text.
       if (exactMatch.verbatim) {
         // Track analytics and return the exact context text immediately
-        await trackAnalytics(c, clientId, {
-          type: 'chat',
-          question: lastUserMessage,
-          response: exactMatch.context,
-          ragNames: [],
-          exactMatch: true
-        });
+        await trackAnalytics(c, clientId, lastUserMessage, exactMatch.context);
         return new Response(exactMatch.context, {
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
@@ -373,7 +319,11 @@ app.post('/api/chat', async (c) => {
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
       try {
-        const results = await searchRag(c.env.AI, lastUserMessage, c.env.RAG_EMBEDDINGS);
+        const results = await searchRag(c.env.AI, lastUserMessage, {
+          cache: c.env.RAG_EMBEDDINGS,
+          minScore: 0.6,
+          maxResults: 5
+        });
         if (results && results.length) {
           ragResults = results;
           ragContext = formatRagContext(results);
@@ -383,7 +333,6 @@ app.post('/api/chat', async (c) => {
       }
     }
 
-    const ragNames = ragResults.map((r) => r.questionName);
     let responseText = '';
 
     try {
@@ -393,23 +342,15 @@ app.post('/api/chat', async (c) => {
         cvContext,
         ragContext
       );
-      const rawStream = streamCompletionResponse(chatResponse, {
+      const stream = streamCompletionResponse(chatResponse, {
         delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 0
       });
 
-      const capturingStream = createCapturingStream(rawStream, (fullResponse) => {
-        trackAnalytics(c, clientId, {
-          type: 'chat',
-          question: lastUserMessage,
-          response: fullResponse,
-          ragNames,
-          exactMatch: !!exactMatch
-        }).catch((error) => {
-          console.warn('Analytics failed:', error);
-        });
+      trackAnalytics(c, clientId, lastUserMessage, '[streamed response]').catch((error) => {
+        console.warn('Analytics failed:', error);
       });
 
-      return new Response(capturingStream, {
+      return new Response(stream, {
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Cache-Control': 'no-store',
@@ -422,13 +363,7 @@ app.post('/api/chat', async (c) => {
       responseText = `I'm having trouble reaching the chat service right now. ${ragContext}`;
     }
 
-    await trackAnalytics(c, clientId, {
-      type: 'chat',
-      question: lastUserMessage,
-      response: responseText,
-      ragNames,
-      exactMatch: !!exactMatch
-    });
+    await trackAnalytics(c, clientId, lastUserMessage, responseText);
 
     const fallbackStream = streamText(responseText, {
       delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 16
@@ -479,7 +414,7 @@ app.post('/api/fit-assessment', async (c) => {
       try {
         jobDescription = await fetchUrlContent(url);
         if (jobDescription.length < 50) {
-          return c.json({ error: 'Could not extract enough content from the URL.  Currently I cannot execute JavaScript to fully render dynamic pages.  Can you paste the text instead?' }, 400);
+          return c.json({ error: 'Could not extract enough content from the URL.' }, 400);
         }
       } catch (error) {
         let msg = error?.message || String(error);
@@ -505,23 +440,16 @@ app.post('/api/fit-assessment', async (c) => {
 
     try {
       const assessment = await fetchFitAssessmentCompletion(c.env, jobDescription, cvContext);
-      const jobPostingJudgment = assessment?.jobPostingJudgment;
 
-      if (jobPostingJudgment && jobPostingJudgment.isJobPosting === false) {
-        const message = 'This content does not appear to be a job posting. Please provide a job description or a link to one.';
-        return c.json({
-          jobPostingJudgment,
-          jobPostingMessage: jobPostingJudgment.reason || message
-        });
+      if (c.env.LOG_ANALYTICS === 'true') {
+        console.log('Fit Assessment:', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          clientId,
+          type,
+          verdict: assessment.verdict,
+          jobTitle: assessment.jobTitle
+        }));
       }
-
-      await trackAnalytics(c, clientId, {
-        type: 'fit-assessment',
-        jobTitle: assessment.jobTitle,
-        company: assessment.company || null,
-        url: type === 'url' ? url : null,
-        verdict: assessment.verdict
-      });
 
       return c.json(assessment);
     } catch (error) {
@@ -562,20 +490,19 @@ app.post('/api/rag/embeddings', async (c) => {
       return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
     }
 
-    const { requestBody, requestUrl, authResult } = await parseResetAuthRequest(c);
-
-    if (!authResult.valid) {
-      console.warn('Unauthorized RAG embeddings reset attempt:', authResult.message);
-      return c.json({ error: authResult.message }, authResult.status || 401);
-    }
-
     // Determine whether to force regeneration (ignore cache). Accepts JSON body { force: true } or ?force=true
     let force = false;
-    if (requestBody?.force === true || requestBody?.force === 'true') {
-      force = true;
+    try {
+      const body = await c.req.json();
+      if (body?.force === true || body?.force === 'true') {
+        force = true;
+      }
+    } catch (err) {
+      // ignore JSON parse errors or empty bodies
     }
 
-    if (requestUrl.searchParams.get('force') === 'true') {
+    const url = new URL(c.req.url);
+    if (url.searchParams.get('force') === 'true') {
       force = true;
     }
 
@@ -589,28 +516,6 @@ app.post('/api/rag/embeddings', async (c) => {
   } catch (error) {
     console.error('Failed to prepare RAG embeddings:', error);
     return c.json({ error: 'Failed to prepare RAG embeddings.' }, 500);
-  }
-});
-
-app.delete('/api/rag/embeddings', async (c) => {
-  try {
-    const cache = c.env.RAG_EMBEDDINGS;
-    if (!cache) {
-      return c.json({ error: 'RAG_EMBEDDINGS KV is not configured.' }, 400);
-    }
-
-    const { authResult } = await parseResetAuthRequest(c);
-    if (!authResult.valid) {
-      console.warn('Unauthorized RAG embeddings clear attempt:', authResult.message);
-      return c.json({ error: authResult.message }, authResult.status || 401);
-    }
-
-    await clearQuestionEmbeddings(cache);
-    console.log('Cleared RAG embeddings cache via admin request.');
-    return c.json({ status: 'cleared' });
-  } catch (error) {
-    console.error('Failed to clear RAG embeddings:', error);
-    return c.json({ error: 'Failed to clear RAG embeddings.' }, 500);
   }
 });
 
