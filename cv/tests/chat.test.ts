@@ -9,9 +9,9 @@ vi.mock("streaming-markdown", () => ({
 	parser_write: (parser: { renderer?: unknown }, chunk: string) => {
 		const renderer = parser.renderer as
 			| {
-				add_text?: (arg: unknown, chunk: string) => void;
-				element?: HTMLElement;
-			}
+					add_text?: (arg: unknown, chunk: string) => void;
+					element?: HTMLElement;
+			  }
 			| undefined;
 		if (renderer?.add_text) {
 			renderer.add_text(null, chunk);
@@ -22,7 +22,7 @@ vi.mock("streaming-markdown", () => ({
 		}
 	},
 
-	parser_end: () => { },
+	parser_end: () => {},
 }));
 
 const makeConfig = () => ({
