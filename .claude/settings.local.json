@@ -41,7 +41,15 @@
       "Bash(pnpm db:generate:*)",
       "Bash(pnpm test:mobile:*)",
       "Bash(pnpm db:migrate:*)",
-      "Bash(pnpm test:shared:*)"
+      "Bash(pnpm test:shared:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install)",
+      "Bash(npx next build)",
+      "Bash(npm install:*)",
+      "WebSearch",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebFetch(domain:blog.cloudflare.com)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

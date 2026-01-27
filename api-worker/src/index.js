@@ -299,6 +299,19 @@ const fetchFitAssessmentCompletion = async (env, jobDescription, cvContext) => {
   return JSON.parse(content);
 };
 
+// Helper to create a short summary of assistant message for RAG expansion
+const summarizeAssistantMessage = (content) => {
+  if (!content) return '';
+
+  // Take first paragraph or first 300 chars, whichever is shorter
+  const firstParagraph = content.split('\n\n')[0];
+  const truncated = firstParagraph.length > 300
+    ? firstParagraph.slice(0, 297) + '...'
+    : firstParagraph;
+
+  return truncated.trim();
+};
+
 app.post('/api/chat', async (c) => {
   try {
     const body = await c.req.json();
@@ -306,6 +319,8 @@ app.post('/api/chat', async (c) => {
     // Support both single message (legacy) and messages array (new)
     let messages = [];
     let lastUserMessage = '';
+    let previousUserMessage = '';
+    let previousAssistantSummary = '';
 
     if (Array.isArray(body?.messages)) {
       // New format: messages array
@@ -314,6 +329,21 @@ app.post('/api/chat', async (c) => {
       );
       const lastUser = [...messages].reverse().find((m) => m.role === 'user');
       lastUserMessage = normalizeQuestion(lastUser?.content);
+
+      // Extract previous turn context for query expansion
+      if (messages.length >= 3) {
+        // Find the second-to-last user message
+        const userMessages = messages.filter((m) => m.role === 'user');
+        if (userMessages.length >= 2) {
+          previousUserMessage = userMessages[userMessages.length - 2].content || '';
+        }
+
+        // Find the last assistant message and summarize it
+        const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
+        if (lastAssistant) {
+          previousAssistantSummary = summarizeAssistantMessage(lastAssistant.content);
+        }
+      }
     } else if (body?.message) {
       // Legacy format: single message string
       lastUserMessage = normalizeQuestion(body.message);
@@ -373,7 +403,15 @@ app.post('/api/chat', async (c) => {
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
       try {
-        const results = await searchRag(c.env.AI, lastUserMessage, c.env.RAG_EMBEDDINGS);
+        const results = await searchRag(
+          c.env.AI,
+          lastUserMessage,
+          c.env.RAG_EMBEDDINGS,
+          {
+            previousUserMessage,
+            previousAssistantSummary
+          }
+        );
         if (results && results.length) {
           ragResults = results;
           ragContext = formatRagContext(results);
@@ -384,7 +422,28 @@ app.post('/api/chat', async (c) => {
     }
 
     const ragNames = ragResults.map((r) => r.questionName);
+    const expansionMetadata = ragResults._expansionMetadata || null;
     let responseText = '';
+
+    // Build response headers with expansion metrics
+    const buildHeaders = () => {
+      const headers = {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-RAG-Results': String(ragResults.length),
+        'X-Exact-Match': exactMatch ? 'true' : 'false'
+      };
+
+      if (expansionMetadata) {
+        headers['X-RAG-Expansion-Triggered'] = 'true';
+        headers['X-RAG-Expansion-Reason'] = expansionMetadata.reason;
+        headers['X-RAG-Pass-Used'] = expansionMetadata.usedPass2 ? 'pass2' : 'pass1';
+      } else {
+        headers['X-RAG-Expansion-Triggered'] = 'false';
+      }
+
+      return headers;
+    };
 
     try {
       const chatResponse = await fetchChatCompletion(
@@ -403,19 +462,17 @@ app.post('/api/chat', async (c) => {
           question: lastUserMessage,
           response: fullResponse,
           ragNames,
-          exactMatch: !!exactMatch
+          exactMatch: !!exactMatch,
+          expansionTriggered: !!expansionMetadata,
+          expansionReason: expansionMetadata?.reason,
+          expansionUsedPass2: expansionMetadata?.usedPass2
         }).catch((error) => {
           console.warn('Analytics failed:', error);
         });
       });
 
       return new Response(capturingStream, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'no-store',
-          'X-RAG-Results': String(ragResults.length),
-          'X-Exact-Match': exactMatch ? 'true' : 'false'
-        }
+        headers: buildHeaders()
       });
     } catch (error) {
       console.error('Chat completion error:', error);
@@ -427,7 +484,10 @@ app.post('/api/chat', async (c) => {
       question: lastUserMessage,
       response: responseText,
       ragNames,
-      exactMatch: !!exactMatch
+      exactMatch: !!exactMatch,
+      expansionTriggered: !!expansionMetadata,
+      expansionReason: expansionMetadata?.reason,
+      expansionUsedPass2: expansionMetadata?.usedPass2
     });
 
     const fallbackStream = streamText(responseText, {
@@ -435,12 +495,7 @@ app.post('/api/chat', async (c) => {
     });
 
     return new Response(fallbackStream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-store',
-        'X-RAG-Results': String(ragResults.length),
-        'X-Exact-Match': exactMatch ? 'true' : 'false'
-      }
+      headers: buildHeaders()
     });
   } catch (error) {
     console.error('Chat error:', error);
@@ -509,6 +564,13 @@ app.post('/api/fit-assessment', async (c) => {
 
       if (jobPostingJudgment && jobPostingJudgment.isJobPosting === false) {
         const message = 'This content does not appear to be a job posting. Please provide a job description or a link to one.';
+        await trackAnalytics(c, clientId, {
+        type: 'fit-assessment',
+        jobTitle: assessment.jobTitle,
+        company: assessment.company || null,
+        url: type === 'url' ? url : null,
+        jobPostingJudgment: jobPostingJudgment || '',
+      });
         return c.json({
           jobPostingJudgment,
           jobPostingMessage: jobPostingJudgment.reason || message
@@ -520,7 +582,12 @@ app.post('/api/fit-assessment', async (c) => {
         jobTitle: assessment.jobTitle,
         company: assessment.company || null,
         url: type === 'url' ? url : null,
-        verdict: assessment.verdict
+        verdict: assessment.verdict,
+        gaps: assessment.gaps || [],
+        matches: assessment.matches || [],
+        recommendation: assessment.recommendation || '',
+        summary: assessment.summary || '',
+        jobPostingJudgment: jobPostingJudgment || '',
       });
 
       return c.json(assessment);

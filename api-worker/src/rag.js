@@ -12,6 +12,19 @@ const DEFAULT_CHUNK_OVERLAP_TOKENS = 50;
 const MIN_SCORE_FOR_RAG = 0.6;
 const MAX_RESULTS = 5;
 
+// Query expansion constants
+const SHORT_MESSAGE_LEN = 10;
+const LOW_SIGNAL_TOKENS = [
+  'yes', 'yeah', 'yep', 'yup', 'ya',
+  'ok', 'okay', 'sure',
+  'no', 'nope', 'nah',
+  'more',  "more info", "info", "give me more info", 'tell me more',
+  'go on', 'continue', 
+  'that', 'this', 'it',
+  'why', 'how', 'what about that', 'what about it',
+  "more details", "details", "give me more details"
+];
+
 const textEncoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
 const textDecoder = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8') : null;
 
@@ -502,7 +515,50 @@ const buildRagContextString = (results) => {
     .join('\n\n');
 };
 
-export const searchRag = async (ai, query, cache) => {
+// Query expansion helpers
+const shouldExpandQuery = (query, firstPassResults) => {
+  const trimmed = (query || '').trim();
+
+  // Trigger 1: Very short message
+  if (trimmed.length <= SHORT_MESSAGE_LEN) {
+    return { triggered: true, reason: 'short-message' };
+  }
+
+  // Trigger 2: Low-signal token match (case insensitive)
+  const normalized = trimmed.toLowerCase();
+  if (LOW_SIGNAL_TOKENS.includes(normalized)) {
+    return { triggered: true, reason: 'low-signal-token' };
+  }
+
+  // Trigger 3: No results from first pass
+  if (!firstPassResults || firstPassResults.length === 0) {
+    return { triggered: true, reason: 'no-results' };
+  }
+
+  // Trigger 4: Weak top score (below threshold)
+  const topScore = firstPassResults[0]?.score || 0;
+  if (topScore < MIN_SCORE_FOR_RAG * 1.1) { // 10% buffer above minimum
+    return { triggered: true, reason: 'weak-top-score' };
+  }
+
+  return { triggered: false, reason: null };
+};
+
+const buildEffectiveQuery = (query, previousUserMessage, previousAssistantSummary) => {
+  const parts = [`User follow-up: ${query}`];
+
+  if (previousUserMessage) {
+    parts.push(`Refers to previous question: ${previousUserMessage}`);
+  }
+
+  if (previousAssistantSummary) {
+    parts.push(`Previous answer summary: ${previousAssistantSummary}`);
+  }
+
+  return parts.join('\n');
+};
+
+export const searchRag = async (ai, query, cache, previousContext = {}) => {
   if (!query) {
     return [];
   }
@@ -513,38 +569,93 @@ export const searchRag = async (ai, query, cache) => {
 
   await embedDocuments(ai, cache);
 
-  const [queryEmbedding] = await embedTexts(ai, [query]);
-  if (!queryEmbedding?.length) {
-    return [];
-  }
+  const { previousUserMessage = '', previousAssistantSummary = '' } = previousContext;
 
-  let scored = questionDocuments
-    .map((doc) => ({
-      ...doc,
-      score: cosineSimilarity(queryEmbedding, doc.embedding)
-    }));
-
-  scored = scored
-    .filter((doc) => doc.score >= MIN_SCORE_FOR_RAG)
-    .sort((a, b) => b.score - a.score);
-
-  const bestByQuestion = new Map();
-  for (const doc of scored) {
-    const existing = bestByQuestion.get(doc.questionId);
-    if (!existing || doc.score > existing.score) {
-      bestByQuestion.set(doc.questionId, {
-        questionId: doc.questionId,
-        questionName: doc.questionName,
-        context: doc.context || '',
-        score: doc.score,
-        matchedOn: doc.type
-      });
+  // Helper to run a single retrieval pass
+  const runRetrievalPass = async (searchQuery) => {
+    const [queryEmbedding] = await embedTexts(ai, [searchQuery]);
+    if (!queryEmbedding?.length) {
+      return [];
     }
+
+    let scored = questionDocuments
+      .map((doc) => ({
+        ...doc,
+        score: cosineSimilarity(queryEmbedding, doc.embedding)
+      }));
+
+    scored = scored
+      .filter((doc) => doc.score >= MIN_SCORE_FOR_RAG)
+      .sort((a, b) => b.score - a.score);
+
+    const bestByQuestion = new Map();
+    for (const doc of scored) {
+      const existing = bestByQuestion.get(doc.questionId);
+      if (!existing || doc.score > existing.score) {
+        bestByQuestion.set(doc.questionId, {
+          questionId: doc.questionId,
+          questionName: doc.questionName,
+          context: doc.context || '',
+          score: doc.score,
+          matchedOn: doc.type
+        });
+      }
+    }
+
+    return Array.from(bestByQuestion.values())
+      .sort((a, b) => b.score - a.score)
+      .slice(0, MAX_RESULTS);
+  };
+
+  // Pass 1: Standard retrieval with original query
+  const startTime = Date.now();
+  const pass1Results = await runRetrievalPass(query);
+  const pass1Time = Date.now() - startTime;
+
+  // Check if we should trigger query expansion
+  const expansionCheck = shouldExpandQuery(query, pass1Results);
+
+  // If expansion not triggered or no previous context available, return pass 1 results
+  if (!expansionCheck.triggered || (!previousUserMessage && !previousAssistantSummary)) {
+    console.log(`RAG: Pass 1 only (${pass1Results.length} results in ${pass1Time}ms)${expansionCheck.triggered ? `, expansion triggered but no context: ${expansionCheck.reason}` : ''}`);
+    return pass1Results;
   }
 
-  return Array.from(bestByQuestion.values())
-    .sort((a, b) => b.score - a.score)
-    .slice(0, MAX_RESULTS);
+  // Pass 2: Retrieval with expanded query
+  const effectiveQuery = buildEffectiveQuery(query, previousUserMessage, previousAssistantSummary);
+  const pass2Start = Date.now();
+  const pass2Results = await runRetrievalPass(effectiveQuery);
+  const pass2Time = Date.now() - pass2Start;
+
+  // Compare results and use pass 2 if it's better
+  const pass1TopScore = pass1Results[0]?.score || 0;
+  const pass2TopScore = pass2Results[0]?.score || 0;
+  const usePass2 = pass2Results.length > pass1Results.length || pass2TopScore > pass1TopScore;
+
+  const finalResults = usePass2 ? pass2Results : pass1Results;
+  const totalTime = pass1Time + pass2Time;
+
+  console.log(
+    `RAG: Two-pass retrieval (${totalTime}ms total) - ` +
+    `trigger: ${expansionCheck.reason}, ` +
+    `pass1: ${pass1Results.length} results (top: ${pass1TopScore.toFixed(3)}), ` +
+    `pass2: ${pass2Results.length} results (top: ${pass2TopScore.toFixed(3)}), ` +
+    `using: ${usePass2 ? 'pass2' : 'pass1'}`
+  );
+
+  // Attach metadata for metrics
+  finalResults._expansionMetadata = {
+    triggered: true,
+    reason: expansionCheck.reason,
+    usedPass2: usePass2,
+    pass1Count: pass1Results.length,
+    pass2Count: pass2Results.length,
+    pass1TopScore,
+    pass2TopScore,
+    totalLatencyMs: totalTime
+  };
+
+  return finalResults;
 };
 
 export const formatRagContext = (results) => {
