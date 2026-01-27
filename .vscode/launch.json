@@ -22,6 +22,28 @@
       "restart": true,
       "skipFiles": ["<node_internals>/**"],
       "localRoot": "${workspaceFolder}/api-worker"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch analytics-app (next dev)",
+      "cwd": "${workspaceFolder}/analytics-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9230"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to analytics-app (9230)",
+      "port": 9230,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "localRoot": "${workspaceFolder}/analytics-app"
     }
   ],
   "compounds": [
@@ -31,6 +53,7 @@
         "Launch api-worker (wrangler dev)",
         "Attach to api-worker (9229)"
       ]
+  
     }
   ]
 }
