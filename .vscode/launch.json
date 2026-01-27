@@ -44,16 +44,24 @@
       "restart": true,
       "skipFiles": ["<node_internals>/**"],
       "localRoot": "${workspaceFolder}/analytics-app"
-    }
-  ],
-  "compounds": [
+    },
     {
-      "name": "Run & Attach api-worker",
-      "configurations": [
-        "Launch api-worker (wrangler dev)",
-        "Attach to api-worker (9229)"
-      ]
-  
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CV: Vitest (run)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test", "--prefix", "cv", "--", "--run"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CV: Vitest (watch)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test:watch", "--prefix", "cv"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
