@@ -493,14 +493,23 @@ const embedDocuments = async (ai, cache, { force = false } = {}) => {
   }
 
   const pending = questionDocuments.filter((doc) => !doc.embedding);
-  for (let i = 0; i < pending.length; i += EMBEDDING_BATCH_SIZE) {
-    const batch = pending.slice(i, i + EMBEDDING_BATCH_SIZE);
-    const texts = batch.map((doc) => doc.text);
-    const embeddings = await embedTexts(ai, texts);
-    embeddings.forEach((embedding, index) => {
-      batch[index].embedding = embedding;
-    });
-    await Promise.all(batch.map((doc) => cacheDocumentEmbedding(cache, doc)));
+
+  if (pending.length > 0) {
+    const startTime = Date.now();
+    console.log(`[RAG] Generating embeddings for ${pending.length} documents (force: ${force})...`);
+
+    for (let i = 0; i < pending.length; i += EMBEDDING_BATCH_SIZE) {
+      const batch = pending.slice(i, i + EMBEDDING_BATCH_SIZE);
+      const texts = batch.map((doc) => doc.text);
+      const embeddings = await embedTexts(ai, texts);
+      embeddings.forEach((embedding, index) => {
+        batch[index].embedding = embedding;
+      });
+      await Promise.all(batch.map((doc) => cacheDocumentEmbedding(cache, doc)));
+    }
+
+    const duration = Date.now() - startTime;
+    console.log(`[RAG] Generated ${pending.length} embeddings in ${duration}ms (avg: ${(duration / pending.length).toFixed(2)}ms/doc)`);
   }
 };
 
@@ -617,7 +626,6 @@ export const searchRag = async (ai, query, cache, previousContext = {}) => {
 
   // If expansion not triggered or no previous context available, return pass 1 results
   if (!expansionCheck.triggered || (!previousUserMessage && !previousAssistantSummary)) {
-    console.log(`RAG: Pass 1 only (${pass1Results.length} results in ${pass1Time}ms)${expansionCheck.triggered ? `, expansion triggered but no context: ${expansionCheck.reason}` : ''}`);
     return pass1Results;
   }
 

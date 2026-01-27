@@ -356,7 +356,8 @@ app.post('/api/chat', async (c) => {
           response: exactMatch.context,
           ragNames: [],
           exactMatch: true,
-          expansionTriggered: false
+          expansionTriggered: false,
+          llmResponseTimeMs: 0 // No LLM call for exact verbatim match
         });
         return new Response(exactMatch.context, {
           headers: {
@@ -416,6 +417,7 @@ app.post('/api/chat', async (c) => {
     };
 
     try {
+      const llmStartTime = Date.now();
       const chatResponse = await fetchChatCompletion(
         c.env,
         exactMatch ? messages.slice(-1) : messages,
@@ -427,6 +429,7 @@ app.post('/api/chat', async (c) => {
       });
 
       const capturingStream = createCapturingStream(stream, (fullResponse) => {
+        const llmDuration = Date.now() - llmStartTime;
         trackAnalytics(c, clientId, {
           type: 'chat',
           question: lastUserMessage,
@@ -435,7 +438,8 @@ app.post('/api/chat', async (c) => {
           exactMatch: !!exactMatch,
           expansionTriggered: !!expansionMetadata,
           expansionReason: expansionMetadata?.reason,
-          expansionUsedPass2: expansionMetadata?.usedPass2
+          expansionUsedPass2: expansionMetadata?.usedPass2,
+          llmResponseTimeMs: llmDuration
         }).catch((error) => {
           console.warn('Analytics failed:', error);
         });
@@ -457,7 +461,8 @@ app.post('/api/chat', async (c) => {
       exactMatch: !!exactMatch,
       expansionTriggered: !!expansionMetadata,
       expansionReason: expansionMetadata?.reason,
-      expansionUsedPass2: expansionMetadata?.usedPass2
+      expansionUsedPass2: expansionMetadata?.usedPass2,
+      llmResponseTimeMs: null // Error case, no LLM response
     }).catch((error) => {
       console.warn('Analytics failed:', error);
     });
