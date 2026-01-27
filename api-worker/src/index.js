@@ -113,7 +113,7 @@ const streamCompletionResponse = (response, { delayMs = 0 } = {}) => {
       const reader = response.body.getReader();
       let buffer = '';
       let done = false;
-
+      
       while (!done) {
         const result = await reader.read();
         done = result.done;
@@ -143,7 +143,7 @@ const streamCompletionResponse = (response, { delayMs = 0 } = {}) => {
                 }
               }
             } catch (error) {
-              console.warn('Failed to parse stream chunk', error);
+              console.warn('[STREAM] Failed to parse chunk:', error);
             }
           }
         }
@@ -194,19 +194,36 @@ async function checkRateLimit(c, clientId) {
   return true;
 }
 
-async function trackAnalytics(c, clientId, message, response) {
+async function trackAnalytics(c, clientId, data) {
   const analytics = {
     timestamp: new Date().toISOString(),
     clientId,
-    message,
-    responseLength: response.length,
-    userAgent: c.req.header('User-Agent')
+    userAgent: c.req.header('User-Agent'),
+    ...data
   };
 
   if (c.env.LOG_ANALYTICS === 'true') {
     console.log('Analytics:', JSON.stringify(analytics));
   }
 }
+
+const createCapturingStream = (sourceStream, onComplete) => {
+  let captured = '';
+  const transform = new TransformStream({
+    transform(chunk, controller) {
+      const text = typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
+      captured += text;
+      controller.enqueue(chunk);
+    },
+    flush() {
+      if (onComplete) {
+        onComplete(captured);
+      }
+    }
+  });
+
+  return sourceStream.pipeThrough(transform);
+};
 
 const fetchFitAssessmentCompletion = async (env, jobDescription, cvContext) => {
   const { apiKey, model, baseUrl, appName, appUrl } = getOpenRouterConfig(env);
@@ -333,7 +350,14 @@ app.post('/api/chat', async (c) => {
       // verbatim and avoid leaking them in fallback text.
       if (exactMatch.verbatim) {
         // Track analytics and return the exact context text immediately
-        await trackAnalytics(c, clientId, lastUserMessage, exactMatch.context);
+        await trackAnalytics(c, clientId, {
+          type: 'chat',
+          question: lastUserMessage,
+          response: exactMatch.context,
+          ragNames: [],
+          exactMatch: true,
+          expansionTriggered: false
+        });
         return new Response(exactMatch.context, {
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
@@ -402,7 +426,7 @@ app.post('/api/chat', async (c) => {
         delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 0
       });
 
-      const capturingStream = createCapturingStream(rawStream, (fullResponse) => {
+      const capturingStream = createCapturingStream(stream, (fullResponse) => {
         trackAnalytics(c, clientId, {
           type: 'chat',
           question: lastUserMessage,
@@ -422,7 +446,7 @@ app.post('/api/chat', async (c) => {
       });
     } catch (error) {
       console.error('Chat completion error:', error);
-      responseText = `I'm having trouble reaching the chat service right now. ${ragContext}`;
+      responseText = `I'm having trouble reaching the chat service right now.`;
     }
 
     await trackAnalytics(c, clientId, {
@@ -434,6 +458,8 @@ app.post('/api/chat', async (c) => {
       expansionTriggered: !!expansionMetadata,
       expansionReason: expansionMetadata?.reason,
       expansionUsedPass2: expansionMetadata?.usedPass2
+    }).catch((error) => {
+      console.warn('Analytics failed:', error);
     });
 
     const fallbackStream = streamText(responseText, {
