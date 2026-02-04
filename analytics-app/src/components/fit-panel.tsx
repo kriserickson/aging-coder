@@ -46,7 +46,9 @@ export function FitPanel({ data }: FitPanelProps) {
   const [grouped, setGrouped] = useState(false);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
+    if (!searchQuery.trim()) {
+      return data;
+    }
     const q = searchQuery.toLowerCase();
     return data.filter(
       entry =>
@@ -58,7 +60,9 @@ export function FitPanel({ data }: FitPanelProps) {
   }, [data, searchQuery]);
 
   const sortedData = useMemo(() => {
-    if (!sortConfig) return filteredData;
+    if (!sortConfig) {
+      return filteredData;
+    }
     const { column, direction } = sortConfig;
     return [...filteredData].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[column];
@@ -71,7 +75,9 @@ export function FitPanel({ data }: FitPanelProps) {
   }, [filteredData, sortConfig]);
 
   const groupedData = useMemo((): GroupedFitEntry[] => {
-    if (!grouped) return [];
+    if (!grouped) {
+      return [];
+    }
     const map = new Map<string, GroupedFitEntry>();
     for (const entry of filteredData) {
       const key = `${entry.jobTitle?.trim().toLowerCase()}-${entry.company?.trim().toLowerCase() || ''}`;
@@ -229,8 +235,8 @@ export function FitPanel({ data }: FitPanelProps) {
       <div className="font-medium text-gray-700">
         {row.count} assessment{row.count !== 1 ? 's' : ''}
       </div>
-      {row.entries.map((entry, i) => (
-        <div key={i} className="border-l-2 border-blue-200 pl-3 py-1">
+      {row.entries.map(entry => (
+        <div key={entry.timestamp} className="border-l-2 border-blue-200 pl-3 py-1">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">{formatDate(entry.timestamp)}</span>
             {renderVerdictBadge(entry.verdict)}
@@ -264,6 +270,7 @@ export function FitPanel({ data }: FitPanelProps) {
           />
         </div>
         <button
+          type="button"
           onClick={() => setGrouped(!grouped)}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md ${
             grouped

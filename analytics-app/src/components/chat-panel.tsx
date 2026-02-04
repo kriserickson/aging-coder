@@ -40,7 +40,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
   const [grouped, setGrouped] = useState(false);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
+    if (!searchQuery.trim()) {
+      return data;
+    }
     const q = searchQuery.toLowerCase();
     return data.filter(
       entry =>
@@ -51,7 +53,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
   }, [data, searchQuery]);
 
   const sortedData = useMemo(() => {
-    if (!sortConfig) return filteredData;
+    if (!sortConfig) {
+      return filteredData;
+    }
     const { column, direction } = sortConfig;
     return [...filteredData].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[column];
@@ -64,7 +68,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
   }, [filteredData, sortConfig]);
 
   const groupedData = useMemo((): GroupedChatEntry[] => {
-    if (!grouped) return [];
+    if (!grouped) {
+      return [];
+    }
     const map = new Map<string, GroupedChatEntry>();
     for (const entry of filteredData) {
       const key = entry.question?.trim().toLowerCase() || '';
@@ -116,9 +122,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
       case 'ragNames':
         return row.ragNames?.length ? (
           <div className="flex flex-wrap gap-1">
-            {row.ragNames.map((name, i) => (
+            {row.ragNames.map(name => (
               <span
-                key={i}
+                key={name}
                 className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded"
               >
                 {truncate(name, 30)}
@@ -155,9 +161,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
         const allNames = new Set(row.entries.flatMap(e => e.ragNames || []));
         return allNames.size ? (
           <div className="flex flex-wrap gap-1">
-            {Array.from(allNames).map((name, i) => (
+            {Array.from(allNames).map(name => (
               <span
-                key={i}
+                key={name}
                 className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded"
               >
                 {truncate(name, 30)}
@@ -195,8 +201,8 @@ export function ChatPanel({ data }: ChatPanelProps) {
         <div>
           <span className="font-medium text-gray-700">RAG Data Used:</span>
           <ul className="mt-0.5 list-disc list-inside text-gray-700">
-            {row.ragNames.map((name, i) => (
-              <li key={i}>{name}</li>
+            {row.ragNames.map(name => (
+              <li key={name}>{name}</li>
             ))}
           </ul>
         </div>
@@ -215,7 +221,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
         {row.count} occurrence{row.count !== 1 ? 's' : ''}
       </div>
       {row.entries.map((entry, i) => (
-        <div key={i} className="border-l-2 border-blue-200 pl-3 py-1">
+        <div key={`${entry.timestamp}-${i}`} className="border-l-2 border-blue-200 pl-3 py-1">
           <div className="text-xs text-gray-500 mb-1">{formatDate(entry.timestamp)}</div>
           <p className="text-gray-800 whitespace-pre-wrap">{truncate(entry.response, 200)}</p>
         </div>
@@ -237,6 +243,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
           />
         </div>
         <button
+          type="button"
           onClick={() => setGrouped(!grouped)}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md ${
             grouped

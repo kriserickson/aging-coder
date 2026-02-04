@@ -15,7 +15,7 @@ interface ValidationResult {
 }
 
 interface ParsedAuthRequest {
-  requestBody: any;
+  requestBody: unknown;
   requestUrl: URL;
   authResult: ValidationResult;
 }
@@ -24,11 +24,11 @@ interface Env {
   API_PASSWORD?: string;
 }
 
-const normalizeAuthValue = (value: any): string | undefined => {
+const normalizeAuthValue = (value: unknown): string | undefined => {
   if (value == null) {
     return undefined;
   }
-  const stringValue = value.toString().trim();
+  const stringValue = String(value).trim();
   return stringValue.length ? stringValue : undefined;
 };
 
@@ -48,10 +48,10 @@ const buildResetSignature = async (
   return bufferToHex(digest);
 };
 
-const getResetAuthFields = (c: Context, body: any, url: URL): AuthFields => {
+const getResetAuthFields = (c: Context, body: unknown, url: URL): AuthFields => {
   const headerValue = (name: string) => normalizeAuthValue(c.req.header(name));
   const queryValue = (name: string) => normalizeAuthValue(url.searchParams.get(name));
-  const requestBody = body ?? {};
+  const requestBody = (body as Record<string, unknown>) ?? {};
 
   const saltFromBody = normalizeAuthValue(requestBody.salt);
   const dateFromBody = normalizeAuthValue(requestBody.date);
@@ -132,7 +132,7 @@ const validateResetSignature = async ({
 };
 
 const parseResetAuthRequest = async (c: Context<{ Bindings: Env }>): Promise<ParsedAuthRequest> => {
-  let requestBody: any = null;
+  let requestBody: unknown = null;
   try {
     requestBody = await c.req.json();
   } catch (_err) {

@@ -33,7 +33,7 @@ interface Env {
 }
 
 interface AI {
-  run(model: string, input: { text: string | string[] }): Promise<any>;
+  run(model: string, input: { text: string | string[] }): Promise<unknown>;
 }
 
 interface KVNamespace {
@@ -95,11 +95,11 @@ interface AnalyticsData {
   company?: string | null;
   url?: string | null;
   verdict?: string;
-  gaps?: any[];
-  matches?: any[];
+  gaps?: unknown[];
+  matches?: unknown[];
   recommendation?: string;
   summary?: string;
-  jobPostingJudgment?: any;
+  jobPostingJudgment?: unknown;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -369,7 +369,7 @@ const fetchFitAssessmentCompletion = async (
     throw new Error(`Fit assessment failed: ${response.status} ${errorText}`);
   }
 
-  const data: any = await response.json();
+  const data: unknown = await response.json();
   const content = data?.choices?.[0]?.message?.content;
 
   if (!content) {
@@ -443,13 +443,13 @@ app.post('/api/chat', async c => {
       return c.json({ error: 'Daily question limit reached. Please try again tomorrow.' }, 429);
     }
 
-    let ragResults: any[] = [];
+    let ragResults: unknown[] = [];
     // Always include CV data as the base context
     const cvContext = formatAllContext();
     let ragContext = '';
 
     // Check for exact question match first (skip RAG if we have a match)
-    let exactMatch: any = null;
+    let exactMatch: unknown = null;
     try {
       exactMatch = await findExactQuestionMatch(lastUserMessage);
     } catch (err) {
@@ -500,7 +500,8 @@ app.post('/api/chat', async c => {
     }
 
     const ragNames = ragResults.map(r => r.questionName);
-    const expansionMetadata = (ragResults as any)._expansionMetadata || null;
+    const expansionMetadata =
+      (ragResults as unknown as Record<string, unknown>)._expansionMetadata || null;
     let responseText = '';
 
     // Build response headers with expansion metrics
@@ -718,8 +719,9 @@ app.post('/api/rag/embeddings', async c => {
     // Determine whether to force regeneration (ignore cache). Accepts JSON body { force: true } or ?force=true
     let force = false;
     try {
-      const body: any = await c.req.json();
-      if (body?.force === true || body?.force === 'true') {
+      const body: unknown = await c.req.json();
+      const bodyObj = (body as Record<string, unknown>) ?? {};
+      if (bodyObj?.force === true || bodyObj?.force === 'true') {
         force = true;
       }
     } catch (_err) {

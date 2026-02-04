@@ -83,7 +83,7 @@ interface PreviousContext {
 }
 
 interface AI {
-  run(model: string, input: { text: string | string[] }): Promise<any>;
+  run(model: string, input: { text: string | string[] }): Promise<unknown>;
 }
 
 interface KVNamespace {
@@ -351,31 +351,32 @@ const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
-const extractEmbeddings = (result: any, expectedLength: number): number[][] => {
-  const isEmbeddingArray = (arr: any): arr is number[] =>
+const extractEmbeddings = (result: unknown, expectedLength: number): number[][] => {
+  const isEmbeddingArray = (arr: unknown): arr is number[] =>
     Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'number';
 
   // Case A: result is an array of embedding arrays directly (e.g., [[..],[..],...])
   if (Array.isArray(result) && result.length === expectedLength && result.every(isEmbeddingArray)) {
-    return result;
+    return result as number[][];
   }
 
   // Case A2: result is a single embedding vector (e.g., [0.1, 0.2, ...])
   if (Array.isArray(result) && isEmbeddingArray(result)) {
     // Single embedding returned directly; wrap for consistency
-    return [result];
+    return [result as number[]];
   }
 
   // Case B: result.data is an array; items may be embedding arrays or objects with .embedding
-  const data = result?.data;
+  const data = (result as { data?: unknown })?.data;
   if (Array.isArray(data)) {
     const embeddings = data
-      .map((item: any) => {
+      .map((item: unknown) => {
         if (isEmbeddingArray(item)) {
           return item;
         }
-        if (item && isEmbeddingArray(item.embedding)) {
-          return item.embedding;
+        const embeddingCandidate = (item as Record<string, unknown>)?.embedding;
+        if (isEmbeddingArray(embeddingCandidate)) {
+          return embeddingCandidate;
         }
         return null;
       })
@@ -489,9 +490,13 @@ const chunkText = (
   );
   const tokens: TokenPosition[] = [];
   const regex = /\S+/g;
-  let match;
+  let match: RegExpExecArray | null = null;
 
-  while ((match = regex.exec(text)) !== null) {
+  while (true) {
+    match = regex.exec(text);
+    if (match === null) {
+      break;
+    }
     tokens.push({
       start: match.index,
       end: match.index + match[0].length,
@@ -524,7 +529,7 @@ const chunkText = (
   return chunks;
 };
 
-const _flattenData = (value: any, path: string[] = []): FlattenedData[] => {
+const _flattenData = (value: unknown, path: string[] = []): FlattenedData[] => {
   if (value === null || value === undefined) {
     return [];
   }
@@ -750,10 +755,12 @@ export const searchRag = async (
       return [];
     }
 
-    let scored = questionDocuments.map(doc => ({
-      ...doc,
-      score: cosineSimilarity(queryEmbedding, doc.embedding!),
-    }));
+    let scored = questionDocuments
+      .filter(doc => Array.isArray(doc.embedding))
+      .map(doc => ({
+        ...doc,
+        score: cosineSimilarity(queryEmbedding, doc.embedding as number[]),
+      }));
 
     scored = scored.filter(doc => doc.score >= MIN_SCORE_FOR_RAG).sort((a, b) => b.score - a.score);
 
@@ -814,7 +821,7 @@ export const searchRag = async (
   // Attach metadata for metrics
   finalResults._expansionMetadata = {
     triggered: true,
-    reason: expansionCheck.reason!,
+    reason: expansionCheck.reason ?? 'expansion',
     usedPass2: usePass2,
     pass1Count: pass1Results.length,
     pass2Count: pass2Results.length,

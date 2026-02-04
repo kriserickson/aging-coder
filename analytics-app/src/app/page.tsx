@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import { ChatPanel } from '@/components/chat-panel';
 import { FitPanel } from '@/components/fit-panel';
 import { IpFilter } from '@/components/ip-filter';
@@ -25,11 +25,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [excludedIps, setExcludedIps] = useIpFilter();
+  const id = useId();
 
   const allClientIds = useMemo(() => {
     const ids = new Set<string>();
-    allChatData.forEach(e => ids.add(e.clientId));
-    allFitData.forEach(e => ids.add(e.clientId));
+    allChatData.forEach(e => {
+      ids.add(e.clientId)
+    });
+    allFitData.forEach(e => {
+      ids.add(e.clientId)
+    });
     return Array.from(ids);
   }, [allChatData, allFitData]);
 
@@ -54,8 +59,8 @@ export default function Home() {
     setError(null);
 
     try {
-      const startISO = new Date(dateRange.start + 'T00:00:00Z').toISOString();
-      const endISO = new Date(dateRange.end + 'T23:59:59Z').toISOString();
+      const startISO = new Date(`${dateRange.start}T00:00:00Z`).toISOString();
+      const endISO = new Date(`${dateRange.end}T23:59:59Z`).toISOString();
 
       const res = await fetch(
         `/api/logs?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`,
@@ -92,21 +97,27 @@ export default function Home() {
     fetchData();
   }, [fetchData]);
 
-  return (
+  return (    
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-gray-900">CV Chat Analytics</h1>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <label className="text-gray-600">From:</label>
+            <label htmlFor={`${id}-start-date`} className="text-gray-600">
+              From:
+            </label>
             <input
+              id={`${id}-start-date`}
               type="date"
               value={dateRange.start}
               onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))}
               className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <label className="text-gray-600">To:</label>
+            <label htmlFor={`${id}-end-date`} className="text-gray-600">
+              To:
+            </label>
             <input
+              id={`${id}-end-date`}
               type="date"
               value={dateRange.end}
               onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))}
@@ -119,6 +130,7 @@ export default function Home() {
             allClientIds={allClientIds}
           />
           <button
+            type="button"
             onClick={fetchData}
             disabled={loading}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"

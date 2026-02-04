@@ -120,7 +120,10 @@ export const buildConversationMessages = (
   // Add context as first user message if we have messages
   if (messages.length > 0) {
     // For conversation context, we inject the CV context in the first exchange
-    const message = messages.pop()!;
+    const message = messages.pop();
+    if (!message) {
+      return result;
+    }
 
     // Add all conversation messages
     for (const msg of messages) {

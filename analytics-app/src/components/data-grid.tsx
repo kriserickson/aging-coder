@@ -2,8 +2,7 @@
 
 import { ChevronDown, ChevronRight, ChevronsUpDown, ChevronUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { type ColumnConfig, type SortConfig, SortDirection } from '@/lib/types';
-import { formatDate, truncate } from '@/lib/utils';
+import type { ColumnConfig, SortConfig } from '@/lib/types';
 
 interface DataGridProps<T> {
   data: T[];
@@ -91,6 +90,7 @@ export function DataGrid<T>({
                         {renderExpanded && (
                           <td className="w-8 px-2 py-2">
                             <button
+                              type="button"
                               onClick={() => toggleExpand(key)}
                               className="p-0.5 rounded hover:bg-gray-200"
                             >

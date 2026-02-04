@@ -8,7 +8,7 @@ export interface FetchResult {
 export async function fetchWorkerLogs(
   accountId: string,
   apiToken: string,
-  workerName: string,
+  _workerName: string,
   startTime: string,
   endTime: string,
 ): Promise<FetchResult> {
@@ -108,7 +108,9 @@ interface CfEvent {
 
 function parseQueryResponse(data: unknown): AnalyticsEntry[] {
   const entries: AnalyticsEntry[] = [];
-  if (!data || typeof data !== 'object') return entries;
+  if (!data || typeof data !== 'object') {
+    return entries;
+  }
 
   const d = data as Record<string, unknown>;
 
@@ -157,19 +159,23 @@ function parseQueryResponse(data: unknown): AnalyticsEntry[] {
   console.log(`[CF API] Found ${allRows.length} total rows to parse`);
 
   for (const row of allRows) {
-    if (!row || typeof row !== 'object') continue;
+    if (!row || typeof row !== 'object') {
+      continue;
+    }
 
     // Extract message from various possible field locations
     const message =
       (row as CfEvent)?.$metadata?.message ||
       (row['$metadata.message'] as string) ||
-      (row['message'] as string) ||
+      (row.message as string) ||
       null;
 
-    if (!message || typeof message !== 'string') continue;
+    if (!message || typeof message !== 'string') {
+      continue;
+    }
 
     // Extract timestamp
-    const ts = row['timestamp'] || row['Timestamp'];
+    const ts = row.timestamp || row.Timestamp;
     const timestamp =
       typeof ts === 'number'
         ? new Date(ts).toISOString()
@@ -178,7 +184,9 @@ function parseQueryResponse(data: unknown): AnalyticsEntry[] {
           : new Date().toISOString();
 
     const parsed = parseAnalyticsMessage(message, timestamp);
-    if (parsed) entries.push(parsed);
+    if (parsed) {
+      entries.push(parsed);
+    }
   }
 
   console.log(`[CF API] Parsed ${entries.length} analytics entries`);
@@ -187,11 +195,15 @@ function parseQueryResponse(data: unknown): AnalyticsEntry[] {
 
 function parseAnalyticsMessage(message: string, fallbackTimestamp: string): AnalyticsEntry | null {
   const match = message.match(/Analytics:\s*(.+)$/);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
 
   try {
     const data = JSON.parse(match[1]);
-    if (!data.type) return null;
+    if (!data.type) {
+      return null;
+    }
     if (!data.timestamp) {
       data.timestamp = fallbackTimestamp;
     }
