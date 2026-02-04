@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Search, Users } from 'lucide-react';
-import { ChatAnalytics, ColumnConfig, SortConfig, GroupedChatEntry } from '@/lib/types';
+import { useMemo, useState } from 'react';
 import { useColumnConfig } from '@/hooks/use-column-config';
+import type { ChatAnalytics, ColumnConfig, GroupedChatEntry, SortConfig } from '@/lib/types';
+import { formatDate, truncate } from '@/lib/utils';
 import { ColumnSelector } from './column-selector';
 import { DataGrid } from './data-grid';
-import { truncate, formatDate } from '@/lib/utils';
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
   { key: 'timestamp', label: 'Date', visible: true, sortable: true },
@@ -43,10 +43,10 @@ export function ChatPanel({ data }: ChatPanelProps) {
     if (!searchQuery.trim()) return data;
     const q = searchQuery.toLowerCase();
     return data.filter(
-      (entry) =>
+      entry =>
         entry.question?.toLowerCase().includes(q) ||
         entry.response?.toLowerCase().includes(q) ||
-        entry.ragNames?.some((name) => name.toLowerCase().includes(q))
+        entry.ragNames?.some(name => name.toLowerCase().includes(q)),
     );
   }, [data, searchQuery]);
 
@@ -97,7 +97,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
   }, [filteredData, grouped, sortConfig]);
 
   const handleSort = (column: string) => {
-    setSortConfig((prev) => {
+    setSortConfig(prev => {
       if (prev?.column === column) {
         return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
       }
@@ -117,7 +117,10 @@ export function ChatPanel({ data }: ChatPanelProps) {
         return row.ragNames?.length ? (
           <div className="flex flex-wrap gap-1">
             {row.ragNames.map((name, i) => (
-              <span key={i} className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+              <span
+                key={i}
+                className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded"
+              >
                 {truncate(name, 30)}
               </span>
             ))}
@@ -132,7 +135,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
           <span className="text-gray-400">No</span>
         );
       case 'clientId':
-        return <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>;
+        return (
+          <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>
+        );
       case 'userAgent':
         return <span className="text-gray-500 text-xs">{truncate(row.userAgent, 40)}</span>;
       default:
@@ -147,11 +152,14 @@ export function ChatPanel({ data }: ChatPanelProps) {
       case 'count':
         return <span className="font-medium text-blue-700">{row.count}</span>;
       case 'ragNames': {
-        const allNames = new Set(row.entries.flatMap((e) => e.ragNames || []));
+        const allNames = new Set(row.entries.flatMap(e => e.ragNames || []));
         return allNames.size ? (
           <div className="flex flex-wrap gap-1">
             {Array.from(allNames).map((name, i) => (
-              <span key={i} className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+              <span
+                key={i}
+                className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded"
+              >
                 {truncate(name, 30)}
               </span>
             ))}
@@ -161,7 +169,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
         );
       }
       case 'exactMatch': {
-        const anyExact = row.entries.some((e) => e.exactMatch);
+        const anyExact = row.entries.some(e => e.exactMatch);
         return anyExact ? (
           <span className="text-green-600 font-medium">Yes</span>
         ) : (
@@ -224,7 +232,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
             type="text"
             placeholder="Search questions, responses, RAG data..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -243,9 +251,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
           columns={grouped ? groupedColumns : columns}
           onToggle={grouped ? toggleGroupedColumn : toggleColumn}
         />
-        <span className="text-xs text-gray-500">
-          {filteredData.length} entries
-        </span>
+        <span className="text-xs text-gray-500">{filteredData.length} entries</span>
       </div>
 
       {grouped ? (

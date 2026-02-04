@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Search, Users } from 'lucide-react';
-import { FitAnalytics, ColumnConfig, SortConfig, GroupedFitEntry } from '@/lib/types';
+import { useMemo, useState } from 'react';
 import { useColumnConfig } from '@/hooks/use-column-config';
+import type { ColumnConfig, FitAnalytics, GroupedFitEntry, SortConfig } from '@/lib/types';
+import { formatDate, truncate } from '@/lib/utils';
 import { ColumnSelector } from './column-selector';
 import { DataGrid } from './data-grid';
-import { truncate, formatDate } from '@/lib/utils';
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
   { key: 'timestamp', label: 'Date', visible: true, sortable: true },
@@ -49,11 +49,11 @@ export function FitPanel({ data }: FitPanelProps) {
     if (!searchQuery.trim()) return data;
     const q = searchQuery.toLowerCase();
     return data.filter(
-      (entry) =>
+      entry =>
         entry.jobTitle?.toLowerCase().includes(q) ||
         entry.company?.toLowerCase().includes(q) ||
         entry.verdict?.toLowerCase().includes(q) ||
-        entry.url?.toLowerCase().includes(q)
+        entry.url?.toLowerCase().includes(q),
     );
   }, [data, searchQuery]);
 
@@ -110,7 +110,7 @@ export function FitPanel({ data }: FitPanelProps) {
   }, [filteredData, grouped, sortConfig]);
 
   const handleSort = (column: string) => {
-    setSortConfig((prev) => {
+    setSortConfig(prev => {
       if (prev?.column === column) {
         return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
       }
@@ -155,7 +155,9 @@ export function FitPanel({ data }: FitPanelProps) {
           <span className="text-gray-400">-</span>
         );
       case 'clientId':
-        return <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>;
+        return (
+          <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>
+        );
       case 'userAgent':
         return <span className="text-gray-500 text-xs">{truncate(row.userAgent, 40)}</span>;
       default:
@@ -257,7 +259,7 @@ export function FitPanel({ data }: FitPanelProps) {
             type="text"
             placeholder="Search job title, company, verdict..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -276,9 +278,7 @@ export function FitPanel({ data }: FitPanelProps) {
           columns={grouped ? groupedColumns : columns}
           onToggle={grouped ? toggleGroupedColumn : toggleColumn}
         />
-        <span className="text-xs text-gray-500">
-          {filteredData.length} entries
-        </span>
+        <span className="text-xs text-gray-500">{filteredData.length} entries</span>
       </div>
 
       {grouped ? (

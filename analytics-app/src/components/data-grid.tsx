@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronRight } from 'lucide-react';
-import { ColumnConfig, SortConfig, SortDirection } from '@/lib/types';
-import { truncate, formatDate } from '@/lib/utils';
+import { ChevronDown, ChevronRight, ChevronsUpDown, ChevronUp } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { type ColumnConfig, type SortConfig, SortDirection } from '@/lib/types';
+import { formatDate, truncate } from '@/lib/utils';
 
 interface DataGridProps<T> {
   data: T[];
@@ -26,13 +26,10 @@ export function DataGrid<T>({
 }: DataGridProps<T>) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const visibleColumns = useMemo(
-    () => columns.filter((col) => col.visible),
-    [columns]
-  );
+  const visibleColumns = useMemo(() => columns.filter(col => col.visible), [columns]);
 
   const toggleExpand = (key: string) => {
-    setExpandedRows((prev) => {
+    setExpandedRows(prev => {
       const next = new Set(prev);
       if (next.has(key)) {
         next.delete(key);
@@ -55,11 +52,7 @@ export function DataGrid<T>({
   };
 
   if (data.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500 text-sm">
-        No data found.
-      </div>
-    );
+    return <div className="text-center py-8 text-gray-500 text-sm">No data found.</div>;
   }
 
   return (
@@ -67,10 +60,8 @@ export function DataGrid<T>({
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
-            {renderExpanded && (
-              <th className="w-8 px-2 py-2" />
-            )}
-            {visibleColumns.map((col) => (
+            {renderExpanded && <th className="w-8 px-2 py-2" />}
+            {visibleColumns.map(col => (
               <th
                 key={col.key}
                 className={`px-3 py-2 text-left font-medium text-gray-700 ${
@@ -111,7 +102,7 @@ export function DataGrid<T>({
                             </button>
                           </td>
                         )}
-                        {visibleColumns.map((col) => (
+                        {visibleColumns.map(col => (
                           <td key={col.key} className="px-3 py-2 max-w-[300px]">
                             {renderCell(row, col.key)}
                           </td>
@@ -119,10 +110,7 @@ export function DataGrid<T>({
                       </tr>
                       {isExpanded && renderExpanded && (
                         <tr className="bg-gray-50">
-                          <td
-                            colSpan={visibleColumns.length + 1}
-                            className="px-4 py-3"
-                          >
+                          <td colSpan={visibleColumns.length + 1} className="px-4 py-3">
                             {renderExpanded(row)}
                           </td>
                         </tr>

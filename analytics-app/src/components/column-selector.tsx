@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { Settings2 } from 'lucide-react';
+import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ColumnConfig } from '@/lib/types';
+import type { ColumnConfig } from '@/lib/types';
 
 interface ColumnSelectorProps {
   columns: ColumnConfig[];
@@ -29,16 +29,14 @@ export function ColumnSelector({ columns, onToggle }: ColumnSelectorProps) {
             <div className="text-xs font-semibold text-gray-500 mb-2 uppercase">
               Show/Hide Columns
             </div>
-            {columns.map((col) => (
+            {columns.map(col => (
               <label
                 key={col.key}
                 className="flex items-center gap-2 py-1 cursor-pointer text-sm hover:bg-gray-50 px-1 rounded"
               >
                 <Checkbox
                   checked={col.visible}
-                  onCheckedChange={(checked) =>
-                    onToggle(col.key, checked === true)
-                  }
+                  onCheckedChange={checked => onToggle(col.key, checked === true)}
                 />
                 {col.label}
               </label>

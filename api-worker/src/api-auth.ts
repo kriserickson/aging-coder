@@ -1,6 +1,30 @@
+import type { Context } from 'hono';
+
 const AUTH_WINDOW_MS = 5 * 60 * 1000;
 
-const normalizeAuthValue = (value) => {
+interface AuthFields {
+  salt?: string;
+  date?: string;
+  encodedSaltDate?: string;
+}
+
+interface ValidationResult {
+  valid: boolean;
+  status?: number;
+  message?: string;
+}
+
+interface ParsedAuthRequest {
+  requestBody: any;
+  requestUrl: URL;
+  authResult: ValidationResult;
+}
+
+interface Env {
+  API_PASSWORD?: string;
+}
+
+const normalizeAuthValue = (value: any): string | undefined => {
   if (value == null) {
     return undefined;
   }
@@ -8,21 +32,25 @@ const normalizeAuthValue = (value) => {
   return stringValue.length ? stringValue : undefined;
 };
 
-const bufferToHex = (buffer) =>
+const bufferToHex = (buffer: ArrayBuffer): string =>
   Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .map(byte => byte.toString(16).padStart(2, '0'))
     .join('');
 
-const buildResetSignature = async (salt, date, password) => {
+const buildResetSignature = async (
+  salt: string,
+  date: string,
+  password: string,
+): Promise<string> => {
   const encoder = new TextEncoder();
   const payload = `${salt}|${date}|${password}`;
   const digest = await crypto.subtle.digest('SHA-256', encoder.encode(payload));
   return bufferToHex(digest);
 };
 
-const getResetAuthFields = (c, body, url) => {
-  const headerValue = (name) => normalizeAuthValue(c.req.header(name));
-  const queryValue = (name) => normalizeAuthValue(url.searchParams.get(name));
+const getResetAuthFields = (c: Context, body: any, url: URL): AuthFields => {
+  const headerValue = (name: string) => normalizeAuthValue(c.req.header(name));
+  const queryValue = (name: string) => normalizeAuthValue(url.searchParams.get(name));
   const requestBody = body ?? {};
 
   const saltFromBody = normalizeAuthValue(requestBody.salt);
@@ -33,23 +61,36 @@ const getResetAuthFields = (c, body, url) => {
     normalizeAuthValue(requestBody.token);
 
   return {
-    salt: saltFromBody ?? headerValue('X-Reset-Salt') ?? headerValue('X-Rag-Salt') ?? queryValue('salt'),
-    date: dateFromBody ?? headerValue('X-Reset-Date') ?? headerValue('X-Rag-Date') ?? queryValue('date'),
+    salt:
+      saltFromBody ??
+      headerValue('X-Reset-Salt') ??
+      headerValue('X-Rag-Salt') ??
+      queryValue('salt'),
+    date:
+      dateFromBody ??
+      headerValue('X-Reset-Date') ??
+      headerValue('X-Rag-Date') ??
+      queryValue('date'),
     encodedSaltDate:
       encodedFromBody ??
       headerValue('X-Encoded-Salt-Date') ??
       headerValue('X-Reset-Signature') ??
       queryValue('encodedSaltDate') ??
-      queryValue('encoded')
+      queryValue('encoded'),
   };
 };
 
-const validateResetSignature = async ({ salt, date, encodedSaltDate, password }) => {
+const validateResetSignature = async ({
+  salt,
+  date,
+  encodedSaltDate,
+  password,
+}: AuthFields & { password?: string }): Promise<ValidationResult> => {
   if (!password) {
     return {
       valid: false,
       status: 500,
-      message: 'API_PASSWORD is not configured for resetting embeddings.'
+      message: 'API_PASSWORD is not configured for resetting embeddings.',
     };
   }
 
@@ -57,7 +98,7 @@ const validateResetSignature = async ({ salt, date, encodedSaltDate, password })
     return {
       valid: false,
       status: 401,
-      message: 'Missing reset authentication payload.'
+      message: 'Missing reset authentication payload.',
     };
   }
 
@@ -66,7 +107,7 @@ const validateResetSignature = async ({ salt, date, encodedSaltDate, password })
     return {
       valid: false,
       status: 401,
-      message: 'Invalid reset timestamp.'
+      message: 'Invalid reset timestamp.',
     };
   }
 
@@ -74,7 +115,7 @@ const validateResetSignature = async ({ salt, date, encodedSaltDate, password })
     return {
       valid: false,
       status: 401,
-      message: 'Reset timestamp is outside the allowed window.'
+      message: 'Reset timestamp is outside the allowed window.',
     };
   }
 
@@ -83,18 +124,18 @@ const validateResetSignature = async ({ salt, date, encodedSaltDate, password })
     return {
       valid: false,
       status: 401,
-      message: 'Invalid reset authentication token.'
+      message: 'Invalid reset authentication token.',
     };
   }
 
   return { valid: true };
 };
 
-const parseResetAuthRequest = async (c) => {
-  let requestBody = null;
+const parseResetAuthRequest = async (c: Context<{ Bindings: Env }>): Promise<ParsedAuthRequest> => {
+  let requestBody: any = null;
   try {
     requestBody = await c.req.json();
-  } catch (err) {
+  } catch (_err) {
     // ignore malformed or empty bodies
   }
 
@@ -104,10 +145,10 @@ const parseResetAuthRequest = async (c) => {
     salt,
     date,
     encodedSaltDate,
-    password: c.env.API_PASSWORD
+    password: c.env.API_PASSWORD,
   });
 
   return { requestBody, requestUrl, authResult };
 };
 
-export { parseResetAuthRequest   };
+export { parseResetAuthRequest };

@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const Tabs = TabsPrimitive.Root;
@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={cn(
       'inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-600',
-      className
+      className,
     )}
     {...props}
   />
@@ -29,7 +29,7 @@ const TabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm',
-      className
+      className,
     )}
     {...props}
   />
@@ -42,7 +42,10 @@ const TabsContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
-    className={cn('mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500', className)}
+    className={cn(
+      'mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+      className,
+    )}
     {...props}
   />
 ));

@@ -1,7 +1,7 @@
 'use client';
 
+import { Filter, Plus, X } from 'lucide-react';
 import { useState } from 'react';
-import { Filter, X, Plus } from 'lucide-react';
 
 interface IpFilterProps {
   excludedIps: string[];
@@ -22,13 +22,11 @@ export function IpFilter({ excludedIps, onUpdate, allClientIds }: IpFilterProps)
   };
 
   const removeIp = (ip: string) => {
-    onUpdate(excludedIps.filter((i) => i !== ip));
+    onUpdate(excludedIps.filter(i => i !== ip));
   };
 
   // Get unique client IDs not already excluded
-  const suggestions = Array.from(new Set(allClientIds)).filter(
-    (id) => !excludedIps.includes(id)
-  );
+  const suggestions = Array.from(new Set(allClientIds)).filter(id => !excludedIps.includes(id));
 
   return (
     <div className="relative">
@@ -52,13 +50,11 @@ export function IpFilter({ excludedIps, onUpdate, allClientIds }: IpFilterProps)
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-md shadow-lg p-3 min-w-[280px]">
-            <div className="text-xs font-semibold text-gray-500 mb-2 uppercase">
-              Excluded IPs
-            </div>
+            <div className="text-xs font-semibold text-gray-500 mb-2 uppercase">Excluded IPs</div>
 
             {excludedIps.length > 0 && (
               <div className="space-y-1 mb-3">
-                {excludedIps.map((ip) => (
+                {excludedIps.map(ip => (
                   <div
                     key={ip}
                     className="flex items-center justify-between gap-2 px-2 py-1 bg-orange-50 rounded text-sm"
@@ -80,8 +76,8 @@ export function IpFilter({ excludedIps, onUpdate, allClientIds }: IpFilterProps)
                 type="text"
                 placeholder="Add IP to exclude..."
                 value={newIp}
-                onChange={(e) => setNewIp(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={e => setNewIp(e.target.value)}
+                onKeyDown={e => {
                   if (e.key === 'Enter') addIp(newIp);
                 }}
                 className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
@@ -97,11 +93,9 @@ export function IpFilter({ excludedIps, onUpdate, allClientIds }: IpFilterProps)
 
             {suggestions.length > 0 && (
               <>
-                <div className="text-xs text-gray-500 mb-1">
-                  Click to exclude:
-                </div>
+                <div className="text-xs text-gray-500 mb-1">Click to exclude:</div>
                 <div className="max-h-[150px] overflow-y-auto space-y-0.5">
-                  {suggestions.slice(0, 20).map((id) => (
+                  {suggestions.slice(0, 20).map(id => (
                     <button
                       key={id}
                       onClick={() => addIp(id)}

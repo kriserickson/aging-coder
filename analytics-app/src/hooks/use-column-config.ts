@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ColumnConfig } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import type { ColumnConfig } from '@/lib/types';
 
 const STORAGE_KEY_PREFIX = 'analytics-columns-';
 
 export function useColumnConfig(
   panelKey: string,
-  defaultColumns: ColumnConfig[]
+  defaultColumns: ColumnConfig[],
 ): [ColumnConfig[], (key: string, visible: boolean) => void] {
   const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
 
@@ -16,11 +16,11 @@ export function useColumnConfig(
     if (stored) {
       try {
         const parsed: Record<string, boolean> = JSON.parse(stored);
-        setColumns((prev) =>
-          prev.map((col) => ({
+        setColumns(prev =>
+          prev.map(col => ({
             ...col,
             visible: parsed[col.key] !== undefined ? parsed[col.key] : col.visible,
-          }))
+          })),
         );
       } catch {
         // ignore invalid stored data
@@ -29,18 +29,13 @@ export function useColumnConfig(
   }, [panelKey]);
 
   const toggleColumn = (key: string, visible: boolean) => {
-    setColumns((prev) => {
-      const updated = prev.map((col) =>
-        col.key === key ? { ...col, visible } : col
-      );
+    setColumns(prev => {
+      const updated = prev.map(col => (col.key === key ? { ...col, visible } : col));
       const visibilityMap: Record<string, boolean> = {};
-      updated.forEach((col) => {
+      updated.forEach(col => {
         visibilityMap[col.key] = col.visible;
       });
-      localStorage.setItem(
-        STORAGE_KEY_PREFIX + panelKey,
-        JSON.stringify(visibilityMap)
-      );
+      localStorage.setItem(STORAGE_KEY_PREFIX + panelKey, JSON.stringify(visibilityMap));
       return updated;
     });
   };

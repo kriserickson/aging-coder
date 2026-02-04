@@ -1,4 +1,4 @@
-import { AnalyticsEntry } from './types';
+import type { AnalyticsEntry } from './types';
 
 export interface FetchResult {
   entries: AnalyticsEntry[];
@@ -10,7 +10,7 @@ export async function fetchWorkerLogs(
   apiToken: string,
   workerName: string,
   startTime: string,
-  endTime: string
+  endTime: string,
 ): Promise<FetchResult> {
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/observability/telemetry/query`;
 
@@ -48,10 +48,10 @@ export async function fetchWorkerLogs(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({}),
-      }
+      },
     );
     if (keysRes.ok) {
-      const keysData = await keysRes.json() as Record<string, unknown>;
+      const keysData = (await keysRes.json()) as Record<string, unknown>;
       const keys = keysData.result;
       console.log('[CF API] Available keys:', JSON.stringify(keys).slice(0, 2000));
     } else {
@@ -170,9 +170,12 @@ function parseQueryResponse(data: unknown): AnalyticsEntry[] {
 
     // Extract timestamp
     const ts = row['timestamp'] || row['Timestamp'];
-    const timestamp = typeof ts === 'number'
-      ? new Date(ts).toISOString()
-      : typeof ts === 'string' ? ts : new Date().toISOString();
+    const timestamp =
+      typeof ts === 'number'
+        ? new Date(ts).toISOString()
+        : typeof ts === 'string'
+          ? ts
+          : new Date().toISOString();
 
     const parsed = parseAnalyticsMessage(message, timestamp);
     if (parsed) entries.push(parsed);
@@ -182,10 +185,7 @@ function parseQueryResponse(data: unknown): AnalyticsEntry[] {
   return entries;
 }
 
-function parseAnalyticsMessage(
-  message: string,
-  fallbackTimestamp: string
-): AnalyticsEntry | null {
+function parseAnalyticsMessage(message: string, fallbackTimestamp: string): AnalyticsEntry | null {
   const match = message.match(/Analytics:\s*(.+)$/);
   if (!match) return null;
 
@@ -202,10 +202,7 @@ function parseAnalyticsMessage(
 }
 
 // Debug helper - fetch available telemetry keys
-export async function fetchTelemetryKeys(
-  accountId: string,
-  apiToken: string
-): Promise<unknown> {
+export async function fetchTelemetryKeys(accountId: string, apiToken: string): Promise<unknown> {
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/observability/telemetry/keys`;
 
   const response = await fetch(url, {
