@@ -108,7 +108,7 @@ export function DataGrid<T>({
                 </tr>
                 {isExpanded && renderExpanded && (
                   <tr key={`${key}-expanded`} className="bg-gray-50">
-                    <td colSpan={visibleColumns.length + (renderExpanded ? 1 : 0)} className="px-4 py-3">
+                    <td colSpan={visibleColumns.length + 1} className="px-4 py-3">
                       {renderExpanded(row)}
                     </td>
                   </tr>
