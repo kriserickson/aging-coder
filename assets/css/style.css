@@ -21,6 +21,8 @@
     /* links on footer */
     --tag-bg: #ffe0e0;
     /* pill background */
+    --tag-fg: #9a0000;
+    /* pill text – 7.16:1 contrast on --tag-bg */
     --code-bg: #fdf6e3;
     /* code/pre background */
     --diagram-bg: #85837e;
@@ -72,6 +74,8 @@
     --footer-fg: #ffd6d6;
     --footer-link: #ffaaaa;
     --tag-bg: #581d1d;
+    --tag-fg: #ff8888;
+    /* pill text – 5.68:1 contrast on --tag-bg */
     --code-bg: #002b36;
     --code-fg: #93a1a1;
     --code-border: #073642;
@@ -471,7 +475,7 @@ article {
 
 .tag-pill {
     font-size: 0.9rem;
-    color: var(--primary);
+    color: var(--tag-fg);
     background: var(--tag-bg);
     padding: 0.2rem 0.7rem;
     border-radius: 1rem;

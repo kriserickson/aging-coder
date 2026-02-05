@@ -33,7 +33,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="{% if title %}{{ title }}{% else %}{{ site.title }}{% endif %}">
 <meta property="og:description" content="{% if description %}{{ description }}{% else %}{{ site.description }}{% endif %}">
-<meta property="og:url" content="{{ page.url }}">
+<meta property="og:url" content="{{ site.url }}{{ page.url }}">
 <meta property="og:site_name" content="{{ site.title }}">
 <meta property="og:image" content="{% if imagefeature %}/img/{{ imagefeature }}{% else %}/img/{{ site.logo }}{% endif %}">
 
@@ -46,20 +46,31 @@
 
 {# Canonical URL #}
 {% set canonical = page.url.replace('index.njk', '') %}
-<link rel="canonical" href="{{ canonical }}">
+<link rel="canonical" href="{{ site.url }}{{ canonical }}">
 <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="{{ site.title }} Feed">
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-{# Modern Google Font #}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-{# Heading font: Merriweather for a nicer site title and subtitle #}
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
-{# Pico CSS #}
-<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
-{# Custom site CSS overrides (optional, for later steps) #}
+{# Preconnect to font and CDN origins for faster resource fetching #}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+
+{# Pico CSS – pinned version for reliable caching #}
+<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2.1.1/css/pico.min.css">
+{# Custom site CSS overrides #}
 <link rel="stylesheet" href="{{ '/assets/css/style.css' | assetUrl }}">
+
+{# Google Fonts – loaded async to avoid render-blocking #}
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+</noscript>
 
 <!-- Extra Css -->
 {# Accept extra_css from frontmatter (preferred) or fallback to page.extra_css #}
