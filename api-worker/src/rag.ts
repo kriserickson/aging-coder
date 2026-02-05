@@ -1,7 +1,98 @@
 import cvData from './rag-data/cv.json';
 import questionsData from './rag-data/questions.json';
 
-const questionEntries = questionsData?.questions || [];
+interface Question {
+  name?: string;
+  context?: string;
+  verbatim?: boolean;
+}
+
+interface QuestionsData {
+  questions: Question[];
+}
+
+interface Document {
+  id: string;
+  questionId: string;
+  type: 'name' | 'context';
+  text: string;
+  context: string;
+  questionName: string;
+  chunkIndex?: number;
+  embedding: number[] | null;
+  _textHash?: string;
+}
+
+export interface RagResult {
+  questionId: string;
+  questionName: string;
+  context: string;
+  score: number;
+  matchedOn: string;
+}
+
+export interface RagResultWithMetadata extends Array<RagResult> {
+  _expansionMetadata?: ExpansionMetadata;
+}
+
+export interface ExpansionMetadata {
+  triggered: boolean;
+  reason: string;
+  usedPass2: boolean;
+  pass1Count: number;
+  pass2Count: number;
+  pass1TopScore: number;
+  pass2TopScore: number;
+  totalLatencyMs: number;
+}
+
+export interface ExactMatch {
+  question: string;
+  context: string;
+  verbatim: boolean;
+}
+
+interface EmbeddingStatus {
+  total: number;
+  cached: number;
+  missing: number;
+  documents: DocumentStatus[];
+}
+
+interface DocumentStatus {
+  id: string;
+  questionId: string;
+  type: string;
+  hasEmbedding: boolean;
+  embdeddingLength: number;
+}
+
+interface TokenPosition {
+  start: number;
+  end: number;
+}
+
+interface FlattenedData {
+  path: string[];
+  text: string;
+}
+
+interface PreviousContext {
+  previousUserMessage?: string;
+  previousAssistantSummary?: string;
+}
+
+interface AI {
+  run(model: string, input: { text: string | string[] }): Promise<unknown>;
+}
+
+interface KVNamespace {
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+  delete(key: string): Promise<void>;
+}
+
+const questionEntries: Question[] = (questionsData as QuestionsData)?.questions || [];
 
 const EMBEDDING_MODEL = '@cf/baai/bge-small-en-v1.5';
 const EMBEDDING_BATCH_SIZE = 20;
@@ -15,20 +106,40 @@ const MAX_RESULTS = 5;
 // Query expansion constants
 const SHORT_MESSAGE_LEN = 10;
 const LOW_SIGNAL_TOKENS = [
-  'yes', 'yeah', 'yep', 'yup', 'ya',
-  'ok', 'okay', 'sure',
-  'no', 'nope', 'nah',
-  'more',  "more info", "info", "give me more info", 'tell me more',
-  'go on', 'continue', 
-  'that', 'this', 'it',
-  'why', 'how', 'what about that', 'what about it',
-  "more details", "details", "give me more details"
+  'yes',
+  'yeah',
+  'yep',
+  'yup',
+  'ya',
+  'ok',
+  'okay',
+  'sure',
+  'no',
+  'nope',
+  'nah',
+  'more',
+  'more info',
+  'info',
+  'give me more info',
+  'tell me more',
+  'go on',
+  'continue',
+  'that',
+  'this',
+  'it',
+  'why',
+  'how',
+  'what about that',
+  'what about it',
+  'more details',
+  'details',
+  'give me more details',
 ];
 
 const textEncoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
 const textDecoder = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8') : null;
 
-const encodeUtf8 = (value) => {
+const encodeUtf8 = (value: string): Uint8Array => {
   const normalized = value ?? '';
   if (textEncoder) {
     return textEncoder.encode(normalized);
@@ -39,7 +150,7 @@ const encodeUtf8 = (value) => {
   throw new Error('Text encoding is not supported in this environment.');
 };
 
-const decodeUtf8 = (value) => {
+const decodeUtf8 = (value: string | ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -60,16 +171,16 @@ const decodeUtf8 = (value) => {
   return String(value);
 };
 
-const toHexString = (buffer) =>
+const toHexString = (buffer: ArrayBuffer): string =>
   Array.from(new Uint8Array(buffer))
-    .map((value) => value.toString(16).padStart(2, '0'))
+    .map(value => value.toString(16).padStart(2, '0'))
     .join('');
 
-const hashString = async (value) => {
+const hashString = async (value: string): Promise<string> => {
   const normalized = value ?? '';
   const bytes = encodeUtf8(normalized);
   if (globalThis.crypto?.subtle?.digest) {
-    const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+    const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes.buffer as ArrayBuffer);
     return toHexString(digest);
   }
 
@@ -81,28 +192,28 @@ const hashString = async (value) => {
 };
 
 // Exact question matching - build hash lookup at startup
-let questionHashMap = null;
-let questionHashMapPromise = null;
+let questionHashMap: Map<string, ExactMatch> | null = null;
+let questionHashMapPromise: Promise<Map<string, ExactMatch>> | null = null;
 
-const normalizeQuestionText = (text) => {
+const normalizeQuestionText = (text: string): string => {
   if (!text) {
     return '';
   }
   return text.trim().toLowerCase();
 };
 
-const slugifyQuestionText = (text) => {
+const slugifyQuestionText = (text: string): string => {
   const normalized = normalizeQuestionText(text);
   const slug = normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   return slug || 'question';
 };
 
-const buildQuestionId = (question, index) => {
-  const base = slugifyQuestionText(question?.name) || `question-${index}`;
+const buildQuestionId = (question: Question, index: number): string => {
+  const base = slugifyQuestionText(question?.name || '') || `question-${index}`;
   return `question:${base}`;
 };
 
-const buildQuestionHashMap = async () => {
+const buildQuestionHashMap = async (): Promise<Map<string, ExactMatch>> => {
   if (questionHashMap) {
     return questionHashMap;
   }
@@ -111,8 +222,8 @@ const buildQuestionHashMap = async () => {
   }
 
   questionHashMapPromise = (async () => {
-    const map = new Map();
-    const questions = questionsData?.questions || [];
+    const map = new Map<string, ExactMatch>();
+    const questions = (questionsData as QuestionsData)?.questions || [];
 
     for (const q of questions) {
       if (!q.name) {
@@ -121,9 +232,9 @@ const buildQuestionHashMap = async () => {
       const normalized = normalizeQuestionText(q.name);
       const hash = await hashString(normalized);
       map.set(hash, {
-        name: q.name,
-        context: q.context,
-        verbatim: !!q.verbatim
+        question: q.name,
+        context: q.context || '',
+        verbatim: !!q.verbatim,
       });
     }
 
@@ -134,7 +245,7 @@ const buildQuestionHashMap = async () => {
   return questionHashMapPromise;
 };
 
-export const findExactQuestionMatch = async (question) => {
+export const findExactQuestionMatch = async (question: string): Promise<ExactMatch | null> => {
   if (!question) {
     return null;
   }
@@ -146,18 +257,18 @@ export const findExactQuestionMatch = async (question) => {
   const match = map.get(hash);
   if (match) {
     return {
-      question: match.name,
+      question: match.question,
       context: match.context,
-      verbatim: !!match.verbatim
+      verbatim: !!match.verbatim,
     };
   }
 
   return null;
 };
 
-const buildCacheKey = (docId) => `${EMBEDDING_CACHE_PREFIX}${docId}`;
+const buildCacheKey = (docId: string): string => `${EMBEDDING_CACHE_PREFIX}${docId}`;
 
-const ensureDocumentHash = async (doc) => {
+const ensureDocumentHash = async (doc: Document): Promise<string> => {
   if (doc._textHash) {
     return doc._textHash;
   }
@@ -165,7 +276,10 @@ const ensureDocumentHash = async (doc) => {
   return doc._textHash;
 };
 
-const hydrateDocumentFromCache = async (cache, doc) => {
+const hydrateDocumentFromCache = async (
+  cache: KVNamespace | undefined,
+  doc: Document,
+): Promise<void> => {
   if (!cache) {
     return;
   }
@@ -196,7 +310,10 @@ const hydrateDocumentFromCache = async (cache, doc) => {
   }
 };
 
-const cacheDocumentEmbedding = async (cache, doc) => {
+const cacheDocumentEmbedding = async (
+  cache: KVNamespace | undefined,
+  doc: Document,
+): Promise<void> => {
   if (!cache || !doc.embedding) {
     return;
   }
@@ -204,7 +321,7 @@ const cacheDocumentEmbedding = async (cache, doc) => {
   try {
     const payload = JSON.stringify({
       hash: await ensureDocumentHash(doc),
-      embedding: doc.embedding
+      embedding: doc.embedding,
     });
     await cache.put(buildCacheKey(doc.id), payload);
   } catch (err) {
@@ -212,7 +329,7 @@ const cacheDocumentEmbedding = async (cache, doc) => {
   }
 };
 
-const cosineSimilarity = (vecA, vecB) => {
+const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
   if (!vecA?.length || !vecB?.length) {
     return 0;
   }
@@ -234,30 +351,36 @@ const cosineSimilarity = (vecA, vecB) => {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
-const extractEmbeddings = (result, expectedLength) => {
-  const isEmbeddingArray = (arr) => Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'number';
+const extractEmbeddings = (result: unknown, expectedLength: number): number[][] => {
+  const isEmbeddingArray = (arr: unknown): arr is number[] =>
+    Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'number';
 
   // Case A: result is an array of embedding arrays directly (e.g., [[..],[..],...])
   if (Array.isArray(result) && result.length === expectedLength && result.every(isEmbeddingArray)) {
-    return result;
+    return result as number[][];
   }
 
   // Case A2: result is a single embedding vector (e.g., [0.1, 0.2, ...])
   if (Array.isArray(result) && isEmbeddingArray(result)) {
     // Single embedding returned directly; wrap for consistency
-    return [result];
+    return [result as number[]];
   }
 
   // Case B: result.data is an array; items may be embedding arrays or objects with .embedding
-  const data = result?.data;
+  const data = (result as { data?: unknown })?.data;
   if (Array.isArray(data)) {
     const embeddings = data
-      .map((item) => {
-        if (isEmbeddingArray(item)) return item;
-        if (item && isEmbeddingArray(item.embedding)) return item.embedding;
+      .map((item: unknown) => {
+        if (isEmbeddingArray(item)) {
+          return item;
+        }
+        const embeddingCandidate = (item as Record<string, unknown>)?.embedding;
+        if (isEmbeddingArray(embeddingCandidate)) {
+          return embeddingCandidate;
+        }
         return null;
       })
-      .filter(Boolean);
+      .filter((e): e is number[] => e !== null);
 
     if (embeddings.length === expectedLength) {
       return embeddings;
@@ -265,21 +388,22 @@ const extractEmbeddings = (result, expectedLength) => {
   }
 
   // Case C: single-call response: result.embedding may be an embedding array
-  if (isEmbeddingArray(result?.embedding)) {
-    return expectedLength === 1 ? [result.embedding] : [result.embedding].slice(0, expectedLength);
+  const embedding = (result as { embedding?: unknown })?.embedding;
+  if (isEmbeddingArray(embedding)) {
+    return expectedLength === 1 ? [embedding] : [embedding].slice(0, expectedLength);
   }
 
   // Nothing matched
   return [];
 };
 
-const ensureAiBinding = (ai) => {
+const ensureAiBinding = (ai: AI | undefined): void => {
   if (!ai) {
     throw new Error('Cloudflare AI binding is not configured.');
   }
 };
 
-const fallbackEmbedding = (text) => {
+const fallbackEmbedding = (text: string): number[] => {
   // Deterministic lightweight fallback embedding from text
   const dims = EMBEDDING_FALLBACK_DIM;
   const vec = new Array(dims).fill(0);
@@ -293,10 +417,10 @@ const fallbackEmbedding = (text) => {
   }
   // Normalize vector
   const norm = Math.sqrt(vec.reduce((s, v) => s + v * v, 0)) || 1;
-  return vec.map((v) => v / norm);
+  return vec.map(v => v / norm);
 };
 
-const embedTexts = async (ai, texts) => {
+const embedTexts = async (ai: AI, texts: string[]): Promise<number[][]> => {
   ensureAiBinding(ai);
 
   // First, try batching the texts in a single call
@@ -307,13 +431,18 @@ const embedTexts = async (ai, texts) => {
       return embeddings;
     }
 
-    console.warn('embedTexts: batch embedding returned unexpected length:', embeddings.length, 'expected:', texts.length);
+    console.warn(
+      'embedTexts: batch embedding returned unexpected length:',
+      embeddings.length,
+      'expected:',
+      texts.length,
+    );
   } catch (err) {
     console.warn('embedTexts: batch embedding failed:', err);
   }
 
   // Fallback: embed each text individually
-  const singleEmbeds = [];
+  const singleEmbeds: (number[] | null)[] = [];
   for (const t of texts) {
     try {
       const r = await ai.run(EMBEDDING_MODEL, { text: t });
@@ -336,27 +465,42 @@ const embedTexts = async (ai, texts) => {
   const succeeded = finalEmbeds.filter(Boolean).length;
   if (succeeded !== texts.length) {
     // This should not happen because fallbackEmbedding always returns an array
-    console.warn('embedTexts: unexpected missing embeddings after fallback. succeeded:', succeeded, 'expected:', texts.length);
+    console.warn(
+      'embedTexts: unexpected missing embeddings after fallback. succeeded:',
+      succeeded,
+      'expected:',
+      texts.length,
+    );
   }
 
   return finalEmbeds;
 };
 
-const chunkText = (text, { chunkTokens = MAX_CONTEXT_CHUNK_TOKENS, overlapTokens = DEFAULT_CHUNK_OVERLAP_TOKENS } = {}) => {
+const chunkText = (
+  text: string,
+  { chunkTokens = MAX_CONTEXT_CHUNK_TOKENS, overlapTokens = DEFAULT_CHUNK_OVERLAP_TOKENS } = {},
+): string[] => {
   if (!text) {
     return [];
   }
 
   const normalizedChunkTokens = Math.max(1, Math.floor(chunkTokens));
-  const normalizedOverlap = Math.max(0, Math.min(Math.floor(overlapTokens), normalizedChunkTokens - 1));
-  const tokens = [];
+  const normalizedOverlap = Math.max(
+    0,
+    Math.min(Math.floor(overlapTokens), normalizedChunkTokens - 1),
+  );
+  const tokens: TokenPosition[] = [];
   const regex = /\S+/g;
-  let match;
+  let match: RegExpExecArray | null = null;
 
-  while ((match = regex.exec(text)) !== null) {
+  while (true) {
+    match = regex.exec(text);
+    if (match === null) {
+      break;
+    }
     tokens.push({
       start: match.index,
-      end: match.index + match[0].length
+      end: match.index + match[0].length,
     });
   }
 
@@ -365,7 +509,7 @@ const chunkText = (text, { chunkTokens = MAX_CONTEXT_CHUNK_TOKENS, overlapTokens
     return trimmed ? [trimmed] : [];
   }
 
-  const chunks = [];
+  const chunks: string[] = [];
   let startTokenIndex = 0;
 
   while (startTokenIndex < tokens.length) {
@@ -386,31 +530,33 @@ const chunkText = (text, { chunkTokens = MAX_CONTEXT_CHUNK_TOKENS, overlapTokens
   return chunks;
 };
 
-const flattenData = (value, path = []) => {
+const _flattenData = (value: unknown, path: string[] = []): FlattenedData[] => {
   if (value === null || value === undefined) {
     return [];
   }
 
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    return [{
-      path,
-      text: String(value)
-    }];
+    return [
+      {
+        path,
+        text: String(value),
+      },
+    ];
   }
 
   if (Array.isArray(value)) {
-    return value.flatMap((item, index) => flattenData(item, [...path, String(index)]));
+    return value.flatMap((item, index) => _flattenData(item, [...path, String(index)]));
   }
 
   if (typeof value === 'object') {
-    return Object.entries(value).flatMap(([key, item]) => flattenData(item, [...path, key]));
+    return Object.entries(value).flatMap(([key, item]) => _flattenData(item, [...path, key]));
   }
 
   return [];
 };
 
-const buildQuestionDocuments = () => {
-  const documents = [];
+const buildQuestionDocuments = (): Document[] => {
+  const documents: Document[] = [];
 
   questionEntries.forEach((question, index) => {
     const questionId = buildQuestionId(question, index);
@@ -430,7 +576,7 @@ const buildQuestionDocuments = () => {
         text: nameText,
         context: nameText,
         questionName,
-        embedding: null
+        embedding: null,
       });
     }
 
@@ -445,7 +591,7 @@ const buildQuestionDocuments = () => {
           context: chunk,
           questionName,
           chunkIndex,
-          embedding: null
+          embedding: null,
         });
       });
     }
@@ -454,10 +600,12 @@ const buildQuestionDocuments = () => {
   return documents;
 };
 
+const questionDocuments: Document[] = buildQuestionDocuments();
 
-const questionDocuments = buildQuestionDocuments();
-
-const deleteDocumentEmbeddingFromCache = async (cache, doc) => {
+const deleteDocumentEmbeddingFromCache = async (
+  cache: KVNamespace | undefined,
+  doc: Document,
+): Promise<void> => {
   if (!cache) {
     return;
   }
@@ -469,16 +617,20 @@ const deleteDocumentEmbeddingFromCache = async (cache, doc) => {
   }
 };
 
-const resetAllQuestionEmbeddings = async (cache) => {
+const resetAllQuestionEmbeddings = async (cache: KVNamespace | undefined): Promise<void> => {
   if (cache) {
-    await Promise.all(questionDocuments.map((doc) => deleteDocumentEmbeddingFromCache(cache, doc)));
+    await Promise.all(questionDocuments.map(doc => deleteDocumentEmbeddingFromCache(cache, doc)));
   }
-  questionDocuments.forEach((doc) => {
+  questionDocuments.forEach(doc => {
     doc.embedding = null;
   });
 };
 
-const embedDocuments = async (ai, cache, { force = false } = {}) => {
+const embedDocuments = async (
+  ai: AI,
+  cache: KVNamespace | undefined,
+  { force = false } = {},
+): Promise<void> => {
   ensureAiBinding(ai);
 
   if (force) {
@@ -492,31 +644,47 @@ const embedDocuments = async (ai, cache, { force = false } = {}) => {
     }
   }
 
-  const pending = questionDocuments.filter((doc) => !doc.embedding);
-  for (let i = 0; i < pending.length; i += EMBEDDING_BATCH_SIZE) {
-    const batch = pending.slice(i, i + EMBEDDING_BATCH_SIZE);
-    const texts = batch.map((doc) => doc.text);
-    const embeddings = await embedTexts(ai, texts);
-    embeddings.forEach((embedding, index) => {
-      batch[index].embedding = embedding;
-    });
-    await Promise.all(batch.map((doc) => cacheDocumentEmbedding(cache, doc)));
+  const pending = questionDocuments.filter(doc => !doc.embedding);
+
+  if (pending.length > 0) {
+    const startTime = Date.now();
+    console.log(`[RAG] Generating embeddings for ${pending.length} documents (force: ${force})...`);
+
+    for (let i = 0; i < pending.length; i += EMBEDDING_BATCH_SIZE) {
+      const batch = pending.slice(i, i + EMBEDDING_BATCH_SIZE);
+      const texts = batch.map(doc => doc.text);
+      const embeddings = await embedTexts(ai, texts);
+      embeddings.forEach((embedding, index) => {
+        batch[index].embedding = embedding;
+      });
+      await Promise.all(batch.map(doc => cacheDocumentEmbedding(cache, doc)));
+    }
+
+    const duration = Date.now() - startTime;
+    console.log(
+      `[RAG] Generated ${pending.length} embeddings in ${duration}ms (avg: ${(duration / pending.length).toFixed(2)}ms/doc)`,
+    );
   }
 };
 
-
-const buildRagContextString = (results) => {
+const buildRagContextString = (results: RagResult[]): string => {
   const contexts = results.map(result => {
-    return questionDocuments.find(question => question.questionId == result.questionId && question.type === 'context')
+    return questionDocuments.find(
+      question => question.questionId === result.questionId && question.type === 'context',
+    );
   });
 
   return contexts
+    .filter((context): context is Document => context !== undefined)
     .map(context => `- ${context.questionName}\n${context.context}`)
     .join('\n\n');
 };
 
 // Query expansion helpers
-const shouldExpandQuery = (query, firstPassResults) => {
+const shouldExpandQuery = (
+  query: string,
+  firstPassResults: RagResult[],
+): { triggered: boolean; reason: string | null } => {
   const trimmed = (query || '').trim();
 
   // Trigger 1: Very short message
@@ -537,14 +705,19 @@ const shouldExpandQuery = (query, firstPassResults) => {
 
   // Trigger 4: Weak top score (below threshold)
   const topScore = firstPassResults[0]?.score || 0;
-  if (topScore < MIN_SCORE_FOR_RAG * 1.1) { // 10% buffer above minimum
+  if (topScore < MIN_SCORE_FOR_RAG * 1.1) {
+    // 10% buffer above minimum
     return { triggered: true, reason: 'weak-top-score' };
   }
 
   return { triggered: false, reason: null };
 };
 
-const buildEffectiveQuery = (query, previousUserMessage, previousAssistantSummary) => {
+const buildEffectiveQuery = (
+  query: string,
+  previousUserMessage: string,
+  previousAssistantSummary: string,
+): string => {
   const parts = [`User follow-up: ${query}`];
 
   if (previousUserMessage) {
@@ -558,13 +731,18 @@ const buildEffectiveQuery = (query, previousUserMessage, previousAssistantSummar
   return parts.join('\n');
 };
 
-export const searchRag = async (ai, query, cache, previousContext = {}) => {
+export const searchRag = async (
+  ai: AI,
+  query: string,
+  cache: KVNamespace | undefined,
+  previousContext: PreviousContext = {},
+): Promise<RagResultWithMetadata> => {
   if (!query) {
-    return [];
+    return [] as RagResultWithMetadata;
   }
 
   if (!questionDocuments.length) {
-    return [];
+    return [] as RagResultWithMetadata;
   }
 
   await embedDocuments(ai, cache);
@@ -572,23 +750,22 @@ export const searchRag = async (ai, query, cache, previousContext = {}) => {
   const { previousUserMessage = '', previousAssistantSummary = '' } = previousContext;
 
   // Helper to run a single retrieval pass
-  const runRetrievalPass = async (searchQuery) => {
+  const runRetrievalPass = async (searchQuery: string): Promise<RagResult[]> => {
     const [queryEmbedding] = await embedTexts(ai, [searchQuery]);
     if (!queryEmbedding?.length) {
       return [];
     }
 
     let scored = questionDocuments
-      .map((doc) => ({
+      .filter(doc => Array.isArray(doc.embedding))
+      .map(doc => ({
         ...doc,
-        score: cosineSimilarity(queryEmbedding, doc.embedding)
+        score: cosineSimilarity(queryEmbedding, doc.embedding as number[]),
       }));
 
-    scored = scored
-      .filter((doc) => doc.score >= MIN_SCORE_FOR_RAG)
-      .sort((a, b) => b.score - a.score);
+    scored = scored.filter(doc => doc.score >= MIN_SCORE_FOR_RAG).sort((a, b) => b.score - a.score);
 
-    const bestByQuestion = new Map();
+    const bestByQuestion = new Map<string, RagResult>();
     for (const doc of scored) {
       const existing = bestByQuestion.get(doc.questionId);
       if (!existing || doc.score > existing.score) {
@@ -597,7 +774,7 @@ export const searchRag = async (ai, query, cache, previousContext = {}) => {
           questionName: doc.questionName,
           context: doc.context || '',
           score: doc.score,
-          matchedOn: doc.type
+          matchedOn: doc.type,
         });
       }
     }
@@ -617,8 +794,7 @@ export const searchRag = async (ai, query, cache, previousContext = {}) => {
 
   // If expansion not triggered or no previous context available, return pass 1 results
   if (!expansionCheck.triggered || (!previousUserMessage && !previousAssistantSummary)) {
-    console.log(`RAG: Pass 1 only (${pass1Results.length} results in ${pass1Time}ms)${expansionCheck.triggered ? `, expansion triggered but no context: ${expansionCheck.reason}` : ''}`);
-    return pass1Results;
+    return pass1Results as RagResultWithMetadata;
   }
 
   // Pass 2: Retrieval with expanded query
@@ -632,33 +808,33 @@ export const searchRag = async (ai, query, cache, previousContext = {}) => {
   const pass2TopScore = pass2Results[0]?.score || 0;
   const usePass2 = pass2Results.length > pass1Results.length || pass2TopScore > pass1TopScore;
 
-  const finalResults = usePass2 ? pass2Results : pass1Results;
+  const finalResults = (usePass2 ? pass2Results : pass1Results) as RagResultWithMetadata;
   const totalTime = pass1Time + pass2Time;
 
   console.log(
     `RAG: Two-pass retrieval (${totalTime}ms total) - ` +
-    `trigger: ${expansionCheck.reason}, ` +
-    `pass1: ${pass1Results.length} results (top: ${pass1TopScore.toFixed(3)}), ` +
-    `pass2: ${pass2Results.length} results (top: ${pass2TopScore.toFixed(3)}), ` +
-    `using: ${usePass2 ? 'pass2' : 'pass1'}`
+      `trigger: ${expansionCheck.reason}, ` +
+      `pass1: ${pass1Results.length} results (top: ${pass1TopScore.toFixed(3)}), ` +
+      `pass2: ${pass2Results.length} results (top: ${pass2TopScore.toFixed(3)}), ` +
+      `using: ${usePass2 ? 'pass2' : 'pass1'}`,
   );
 
   // Attach metadata for metrics
   finalResults._expansionMetadata = {
     triggered: true,
-    reason: expansionCheck.reason,
+    reason: expansionCheck.reason ?? 'expansion',
     usedPass2: usePass2,
     pass1Count: pass1Results.length,
     pass2Count: pass2Results.length,
     pass1TopScore,
     pass2TopScore,
-    totalLatencyMs: totalTime
+    totalLatencyMs: totalTime,
   };
 
   return finalResults;
 };
 
-export const formatRagContext = (results) => {
+export const formatRagContext = (results: RagResult[]): string => {
   if (!results.length) {
     return 'No relevant context found.';
   }
@@ -666,42 +842,48 @@ export const formatRagContext = (results) => {
   return buildRagContextString(results);
 };
 
-export const formatAllContext = () => {
+export const formatAllContext = (): string => {
   return JSON.stringify(cvData, null, 2);
 };
 
-const describeDocumentStatus = (doc) => ({
+const describeDocumentStatus = (doc: Document): DocumentStatus => ({
   id: doc.id,
   questionId: doc.questionId,
   type: doc.type,
   hasEmbedding: Array.isArray(doc.embedding) && doc.embedding.length > 0,
-  embdeddingLength: Array.isArray(doc.embedding) ? doc.embedding.length : 0
+  embdeddingLength: Array.isArray(doc.embedding) ? doc.embedding.length : 0,
 });
 
-const buildEmbeddingStatus = async (cache) => {
-  const statuses = [];
+const buildEmbeddingStatus = async (cache: KVNamespace | undefined): Promise<EmbeddingStatus> => {
+  const statuses: DocumentStatus[] = [];
   for (const doc of questionDocuments) {
     if (cache && !doc.embedding) {
       await hydrateDocumentFromCache(cache, doc);
     }
     statuses.push(describeDocumentStatus(doc));
   }
-  const cachedCount = statuses.filter((status) => status.hasEmbedding).length;
+  const cachedCount = statuses.filter(status => status.hasEmbedding).length;
   return {
     total: statuses.length,
     cached: cachedCount,
     missing: statuses.length - cachedCount,
-    documents: statuses
+    documents: statuses,
   };
 };
 
-export const getQuestionEmbeddingStatus = async (cache) => buildEmbeddingStatus(cache);
+export const getQuestionEmbeddingStatus = async (
+  cache: KVNamespace | undefined,
+): Promise<EmbeddingStatus> => buildEmbeddingStatus(cache);
 
-export const clearQuestionEmbeddings = async (cache) => {
+export const clearQuestionEmbeddings = async (cache: KVNamespace | undefined): Promise<void> => {
   await resetAllQuestionEmbeddings(cache);
 };
 
-export const prepareQuestionEmbeddings = async (ai, cache, options = {}) => {
+export const prepareQuestionEmbeddings = async (
+  ai: AI,
+  cache: KVNamespace | undefined,
+  options: { force?: boolean } = {},
+): Promise<EmbeddingStatus> => {
   await embedDocuments(ai, cache, options);
   return buildEmbeddingStatus(cache);
 };

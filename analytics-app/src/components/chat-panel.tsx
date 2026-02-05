@@ -1,28 +1,28 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Search, Users } from 'lucide-react';
-import { ChatAnalytics, ColumnConfig, SortConfig, GroupedChatEntry } from '@/lib/types';
+import { useMemo, useState } from 'react';
 import { useColumnConfig } from '@/hooks/use-column-config';
+import type { ChatAnalytics, ColumnConfig, GroupedChatEntry, SortConfig } from '@/lib/types';
+import { formatDate, truncate } from '@/lib/utils';
 import { ColumnSelector } from './column-selector';
 import { DataGrid } from './data-grid';
-import { truncate, formatDate } from '@/lib/utils';
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { key: 'timestamp', label: 'Date', visible: true, sortable: true },
-  { key: 'question', label: 'Question', visible: true, sortable: true },
-  { key: 'response', label: 'Response', visible: true, sortable: false },
-  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false },
-  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true },
-  { key: 'clientId', label: 'Client', visible: false, sortable: true },
-  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false },
+  { key: 'timestamp', label: 'Date', visible: true, sortable: true, width: '140px' },
+  { key: 'question', label: 'Question', visible: true, sortable: true, width: '25%' },
+  { key: 'response', label: 'Response', visible: true, sortable: false, width: '30%' },
+  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false, width: '20%' },
+  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true, width: '100px' },
+  { key: 'clientId', label: 'Client', visible: false, sortable: true, width: '150px' },
+  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false, width: '200px' },
 ];
 
 const GROUPED_COLUMNS: ColumnConfig[] = [
-  { key: 'question', label: 'Question', visible: true, sortable: true },
-  { key: 'count', label: 'Count', visible: true, sortable: true },
-  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false },
-  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true },
+  { key: 'question', label: 'Question', visible: true, sortable: true, width: '40%' },
+  { key: 'count', label: 'Count', visible: true, sortable: true, width: '80px' },
+  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false, width: '30%' },
+  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true, width: '100px' },
 ];
 
 interface ChatPanelProps {
@@ -40,18 +40,22 @@ export function ChatPanel({ data }: ChatPanelProps) {
   const [grouped, setGrouped] = useState(false);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
+    if (!searchQuery.trim()) {
+      return data;
+    }
     const q = searchQuery.toLowerCase();
     return data.filter(
-      (entry) =>
+      entry =>
         entry.question?.toLowerCase().includes(q) ||
         entry.response?.toLowerCase().includes(q) ||
-        entry.ragNames?.some((name) => name.toLowerCase().includes(q))
+        entry.ragNames?.some(name => name.toLowerCase().includes(q)),
     );
   }, [data, searchQuery]);
 
   const sortedData = useMemo(() => {
-    if (!sortConfig) return filteredData;
+    if (!sortConfig) {
+      return filteredData;
+    }
     const { column, direction } = sortConfig;
     return [...filteredData].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[column];
@@ -64,7 +68,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
   }, [filteredData, sortConfig]);
 
   const groupedData = useMemo((): GroupedChatEntry[] => {
-    if (!grouped) return [];
+    if (!grouped) {
+      return [];
+    }
     const map = new Map<string, GroupedChatEntry>();
     for (const entry of filteredData) {
       const key = entry.question?.trim().toLowerCase() || '';
@@ -97,7 +103,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
   }, [filteredData, grouped, sortConfig]);
 
   const handleSort = (column: string) => {
-    setSortConfig((prev) => {
+    setSortConfig(prev => {
       if (prev?.column === column) {
         return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
       }
@@ -116,8 +122,11 @@ export function ChatPanel({ data }: ChatPanelProps) {
       case 'ragNames':
         return row.ragNames?.length ? (
           <div className="flex flex-wrap gap-1">
-            {row.ragNames.map((name, i) => (
-              <span key={i} className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+            {row.ragNames.map(name => (
+              <span
+                key={name}
+                className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded"
+              >
                 {truncate(name, 30)}
               </span>
             ))}
@@ -132,7 +141,9 @@ export function ChatPanel({ data }: ChatPanelProps) {
           <span className="text-gray-400">No</span>
         );
       case 'clientId':
-        return <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>;
+        return (
+          <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>
+        );
       case 'userAgent':
         return <span className="text-gray-500 text-xs">{truncate(row.userAgent, 40)}</span>;
       default:
@@ -147,11 +158,14 @@ export function ChatPanel({ data }: ChatPanelProps) {
       case 'count':
         return <span className="font-medium text-blue-700">{row.count}</span>;
       case 'ragNames': {
-        const allNames = new Set(row.entries.flatMap((e) => e.ragNames || []));
+        const allNames = new Set(row.entries.flatMap(e => e.ragNames || []));
         return allNames.size ? (
           <div className="flex flex-wrap gap-1">
-            {Array.from(allNames).map((name, i) => (
-              <span key={i} className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+            {Array.from(allNames).map(name => (
+              <span
+                key={name}
+                className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded"
+              >
                 {truncate(name, 30)}
               </span>
             ))}
@@ -161,7 +175,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
         );
       }
       case 'exactMatch': {
-        const anyExact = row.entries.some((e) => e.exactMatch);
+        const anyExact = row.entries.some(e => e.exactMatch);
         return anyExact ? (
           <span className="text-green-600 font-medium">Yes</span>
         ) : (
@@ -187,8 +201,8 @@ export function ChatPanel({ data }: ChatPanelProps) {
         <div>
           <span className="font-medium text-gray-700">RAG Data Used:</span>
           <ul className="mt-0.5 list-disc list-inside text-gray-700">
-            {row.ragNames.map((name, i) => (
-              <li key={i}>{name}</li>
+            {row.ragNames.map(name => (
+              <li key={name}>{name}</li>
             ))}
           </ul>
         </div>
@@ -207,7 +221,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
         {row.count} occurrence{row.count !== 1 ? 's' : ''}
       </div>
       {row.entries.map((entry, i) => (
-        <div key={i} className="border-l-2 border-blue-200 pl-3 py-1">
+        <div key={`${entry.timestamp}-${i}`} className="border-l-2 border-blue-200 pl-3 py-1">
           <div className="text-xs text-gray-500 mb-1">{formatDate(entry.timestamp)}</div>
           <p className="text-gray-800 whitespace-pre-wrap">{truncate(entry.response, 200)}</p>
         </div>
@@ -224,11 +238,12 @@ export function ChatPanel({ data }: ChatPanelProps) {
             type="text"
             placeholder="Search questions, responses, RAG data..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <button
+          type="button"
           onClick={() => setGrouped(!grouped)}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md ${
             grouped
@@ -243,9 +258,7 @@ export function ChatPanel({ data }: ChatPanelProps) {
           columns={grouped ? groupedColumns : columns}
           onToggle={grouped ? toggleGroupedColumn : toggleColumn}
         />
-        <span className="text-xs text-gray-500">
-          {filteredData.length} entries
-        </span>
+        <span className="text-xs text-gray-500">{filteredData.length} entries</span>
       </div>
 
       {grouped ? (

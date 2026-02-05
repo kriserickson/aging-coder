@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { Settings2 } from 'lucide-react';
+import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ColumnConfig } from '@/lib/types';
+import type { ColumnConfig } from '@/lib/types';
 
 interface ColumnSelectorProps {
   columns: ColumnConfig[];
@@ -16,6 +16,7 @@ export function ColumnSelector({ columns, onToggle }: ColumnSelectorProps) {
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
       >
@@ -24,21 +25,31 @@ export function ColumnSelector({ columns, onToggle }: ColumnSelectorProps) {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            aria-label="Close overlay"
+            className="fixed inset-0 z-40"
+            onClick={() => setOpen(false)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setOpen(false);
+              }
+            }}
+          />
           <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-md shadow-lg p-3 min-w-[180px]">
             <div className="text-xs font-semibold text-gray-500 mb-2 uppercase">
               Show/Hide Columns
             </div>
-            {columns.map((col) => (
+            {columns.map(col => (
               <label
                 key={col.key}
+                htmlFor={`col-${col.key}`}
                 className="flex items-center gap-2 py-1 cursor-pointer text-sm hover:bg-gray-50 px-1 rounded"
               >
                 <Checkbox
+                  id={`col-${col.key}`}
                   checked={col.visible}
-                  onCheckedChange={(checked) =>
-                    onToggle(col.key, checked === true)
-                  }
+                  onCheckedChange={checked => onToggle(col.key, checked === true)}
                 />
                 {col.label}
               </label>

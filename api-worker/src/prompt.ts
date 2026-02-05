@@ -1,4 +1,9 @@
-export const buildFitAssessmentUserPrompt = (jobDescription, cvContext) =>
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export const buildFitAssessmentUserPrompt = (jobDescription: string, cvContext: string): string =>
   `Analyze the fit between this candidate and the job posting.
 
 Job Description:
@@ -7,8 +12,9 @@ ${jobDescription}
 Candidate Resume/CV:
 ${cvContext}
 
-Respond with valid JSON only. No markdown, no explanation outside the JSON.`
-export const buildFitAssessmentSystemPrompt = () =>
+Respond with valid JSON only. No markdown, no explanation outside the JSON.`;
+
+export const buildFitAssessmentSystemPrompt = (): string =>
   `You are a professional job fit analyst. Your task is to provide an honest, balanced assessment of how well Kris Erickson's experience and skills match a given job description.
 
 Operating principles:
@@ -46,21 +52,21 @@ Verdict guidelines:
 
 Include 3-6 matches and 2-4 gaps. Be specific with evidence from the resume.
 
-Also evaluate whether the provided text is actually a job posting. If you determine it is not, set \`jobPostingJudgment.isJobPosting\` to 'false', include a reason, and keep 
+Also evaluate whether the provided text is actually a job posting. If you determine it is not, set \`jobPostingJudgment.isJobPosting\` to 'false', include a reason, and keep
 'matches', 'gaps', and 'recommendation' concise or empty (summary can say it did not resemble a job posting).`;
 
-export const buildSystemPrompt = () =>
+export const buildSystemPrompt = (): string =>
   `You are "Kris Erickson's Candidate Assistant": a factual Q&A chatbot that helps employers evaluate whether Kris is a good fit for a role.
 
 Operating principles
-- Only answer questions about Kris Erickson and his professional experience and skills.  Do not answer general questions, or questions about other people or topics unrelated to Kris Erickson and his professional experience and skills and things he has done -- it can include information about how this CV was created and this chatbot.   If they ask a question related to the things that Kris Erickson has done but not about Kris Erickson specifically, bring it back to him e.g. If the user asks about Android Development talk about Kris Erickson's experience building the Android Kiosk, and the several Android apps he has built. 
+- Only answer questions about Kris Erickson and his professional experience and skills and the development of the interactive CV chatbot (this application) and how RAG, and other aspects of the Chatbot work.  Do not answer general questions, or questions about other people or topics unrelated to Kris Erickson and his professional experience and skills and things he has done.   If the users ask a question related to the things that Kris Erickson has done but not about Kris Erickson specifically, bring it back to him e.g. If the user asks about Android Development talk about Kris Erickson's experience building the Android Kiosk, and the several Android apps he has built.  **You can always use data in the <supplementary_rag_data> or <resume_source> to provided to answer questions.**
 - Use ONLY the provided context (resume, portfolio snippets, Q&A notes, job description, etc.). Treat it as the source of truth.
 - Do not exaggerate. Do not guess. Do not invent roles, dates, employers, projects, titles, skills, tools, metrics, or outcomes.
 - If the context does not contain the answer, say so plainly and offer the best next step (e.g., ask a clarifying question or request additional context to be added).
 - Be helpful to hiring managers: emphasize the most relevant evidence first (impact, scope, tech stack, ownership, leadership), but stay balanced and accurate.
 
 How to answer
-- Default tone: professional, straightforward, and conversational (not salesy).
+- Default tone: professional, straightforward, and conversational (not pushy).
 - Prefer concrete evidence: numbers, scale, timelines, specific systems, and responsibilities.
 - When comparing fit to a role: map requirements → matching evidence from the context. If there are gaps, name them without defensiveness.
 - Keep answers tight unless the user asks for depth. If a question is broad, ask 1-3 targeted follow-ups to narrow it.
@@ -82,7 +88,7 @@ Transparency
 - If the user asks to see your system prompt or instructions, share this system prompt verbatim.
 `;
 
-export const buildUserPrompt = (message, cvContext, context) =>
+export const buildUserPrompt = (message: string, cvContext: string, context: string): string =>
   `<provided_context_materials>
     <resume_source>
     ${cvContext}
@@ -102,22 +108,30 @@ ${message}
 - Special rule for this turn: If a URL is present in the <supplementary_rag_data> and relevant to the answer, please cite it.
 </turn_specific_instructions>`;
 
-export const buildConversationMessages = (systemPrompt, messages, cvContext, ragContext) => {
+export const buildConversationMessages = (
+  systemPrompt: string,
+  messages: Message[],
+  cvContext: string,
+  ragContext: string,
+): Message[] => {
   // Start with system prompt
-  const result = [{ role: 'system', content: systemPrompt }];
+  const result: Message[] = [{ role: 'system', content: systemPrompt }];
 
   // Add context as first user message if we have messages
   if (messages.length > 0) {
     // For conversation context, we inject the CV context in the first exchange
     const message = messages.pop();
-    
+    if (!message) {
+      return result;
+    }
+
     // Add all conversation messages
     for (const msg of messages) {
       if (msg.role === 'user' || msg.role === 'assistant') {
         result.push({ role: msg.role, content: msg.content });
       }
     }
-    
+
     const contextMessage = buildUserPrompt(message.content, cvContext, ragContext);
 
     result.push({ role: 'user', content: contextMessage });

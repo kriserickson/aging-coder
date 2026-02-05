@@ -1,4 +1,4 @@
-import { AnalyticsEntry } from './types';
+import type { AnalyticsEntry } from './types';
 
 export interface FetchResult {
   entries: AnalyticsEntry[];
@@ -8,9 +8,9 @@ export interface FetchResult {
 export async function fetchWorkerLogs(
   accountId: string,
   apiToken: string,
-  workerName: string,
+  _workerName: string,
   startTime: string,
-  endTime: string
+  endTime: string,
 ): Promise<FetchResult> {
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/observability/telemetry/query`;
 
@@ -48,10 +48,10 @@ export async function fetchWorkerLogs(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({}),
-      }
+      },
     );
     if (keysRes.ok) {
-      const keysData = await keysRes.json() as Record<string, unknown>;
+      const keysData = (await keysRes.json()) as Record<string, unknown>;
       const keys = keysData.result;
       console.log('[CF API] Available keys:', JSON.stringify(keys).slice(0, 2000));
     } else {
@@ -108,7 +108,9 @@ interface CfEvent {
 
 function parseQueryResponse(data: unknown): AnalyticsEntry[] {
   const entries: AnalyticsEntry[] = [];
-  if (!data || typeof data !== 'object') return entries;
+  if (!data || typeof data !== 'object') {
+    return entries;
+  }
 
   const d = data as Record<string, unknown>;
 
@@ -157,41 +159,51 @@ function parseQueryResponse(data: unknown): AnalyticsEntry[] {
   console.log(`[CF API] Found ${allRows.length} total rows to parse`);
 
   for (const row of allRows) {
-    if (!row || typeof row !== 'object') continue;
+    if (!row || typeof row !== 'object') {
+      continue;
+    }
 
     // Extract message from various possible field locations
     const message =
       (row as CfEvent)?.$metadata?.message ||
       (row['$metadata.message'] as string) ||
-      (row['message'] as string) ||
+      (row.message as string) ||
       null;
 
-    if (!message || typeof message !== 'string') continue;
+    if (!message || typeof message !== 'string') {
+      continue;
+    }
 
     // Extract timestamp
-    const ts = row['timestamp'] || row['Timestamp'];
-    const timestamp = typeof ts === 'number'
-      ? new Date(ts).toISOString()
-      : typeof ts === 'string' ? ts : new Date().toISOString();
+    const ts = row.timestamp || row.Timestamp;
+    const timestamp =
+      typeof ts === 'number'
+        ? new Date(ts).toISOString()
+        : typeof ts === 'string'
+          ? ts
+          : new Date().toISOString();
 
     const parsed = parseAnalyticsMessage(message, timestamp);
-    if (parsed) entries.push(parsed);
+    if (parsed) {
+      entries.push(parsed);
+    }
   }
 
   console.log(`[CF API] Parsed ${entries.length} analytics entries`);
   return entries;
 }
 
-function parseAnalyticsMessage(
-  message: string,
-  fallbackTimestamp: string
-): AnalyticsEntry | null {
+function parseAnalyticsMessage(message: string, fallbackTimestamp: string): AnalyticsEntry | null {
   const match = message.match(/Analytics:\s*(.+)$/);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
 
   try {
     const data = JSON.parse(match[1]);
-    if (!data.type) return null;
+    if (!data.type) {
+      return null;
+    }
     if (!data.timestamp) {
       data.timestamp = fallbackTimestamp;
     }
@@ -202,10 +214,7 @@ function parseAnalyticsMessage(
 }
 
 // Debug helper - fetch available telemetry keys
-export async function fetchTelemetryKeys(
-  accountId: string,
-  apiToken: string
-): Promise<unknown> {
+export async function fetchTelemetryKeys(accountId: string, apiToken: string): Promise<unknown> {
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/observability/telemetry/keys`;
 
   const response = await fetch(url, {

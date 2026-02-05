@@ -8,7 +8,7 @@ export async function GET() {
   if (!accountId || !apiToken) {
     return NextResponse.json(
       { error: 'CF_ACCOUNT_ID and CF_API_TOKEN must be set in .env.local' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

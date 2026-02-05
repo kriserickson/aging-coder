@@ -1,28 +1,28 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Search, Users } from 'lucide-react';
-import { FitAnalytics, ColumnConfig, SortConfig, GroupedFitEntry } from '@/lib/types';
+import { useMemo, useState } from 'react';
 import { useColumnConfig } from '@/hooks/use-column-config';
+import type { ColumnConfig, FitAnalytics, GroupedFitEntry, SortConfig } from '@/lib/types';
+import { formatDate, truncate } from '@/lib/utils';
 import { ColumnSelector } from './column-selector';
 import { DataGrid } from './data-grid';
-import { truncate, formatDate } from '@/lib/utils';
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { key: 'timestamp', label: 'Date', visible: true, sortable: true },
-  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true },
-  { key: 'company', label: 'Company', visible: true, sortable: true },
-  { key: 'verdict', label: 'Verdict', visible: true, sortable: true },
-  { key: 'url', label: 'URL', visible: true, sortable: false },
-  { key: 'clientId', label: 'Client', visible: false, sortable: true },
-  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false },
+  { key: 'timestamp', label: 'Date', visible: true, sortable: true, width: '140px' },
+  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true, width: '30%' },
+  { key: 'company', label: 'Company', visible: true, sortable: true, width: '20%' },
+  { key: 'verdict', label: 'Verdict', visible: true, sortable: true, width: '100px' },
+  { key: 'url', label: 'URL', visible: true, sortable: false, width: '25%' },
+  { key: 'clientId', label: 'Client', visible: false, sortable: true, width: '150px' },
+  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false, width: '200px' },
 ];
 
 const GROUPED_COLUMNS: ColumnConfig[] = [
-  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true },
-  { key: 'company', label: 'Company', visible: true, sortable: true },
-  { key: 'verdict', label: 'Verdict', visible: true, sortable: true },
-  { key: 'count', label: 'Count', visible: true, sortable: true },
+  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true, width: '35%' },
+  { key: 'company', label: 'Company', visible: true, sortable: true, width: '25%' },
+  { key: 'verdict', label: 'Verdict', visible: true, sortable: true, width: '100px' },
+  { key: 'count', label: 'Count', visible: true, sortable: true, width: '80px' },
 ];
 
 interface FitPanelProps {
@@ -46,19 +46,23 @@ export function FitPanel({ data }: FitPanelProps) {
   const [grouped, setGrouped] = useState(false);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
+    if (!searchQuery.trim()) {
+      return data;
+    }
     const q = searchQuery.toLowerCase();
     return data.filter(
-      (entry) =>
+      entry =>
         entry.jobTitle?.toLowerCase().includes(q) ||
         entry.company?.toLowerCase().includes(q) ||
         entry.verdict?.toLowerCase().includes(q) ||
-        entry.url?.toLowerCase().includes(q)
+        entry.url?.toLowerCase().includes(q),
     );
   }, [data, searchQuery]);
 
   const sortedData = useMemo(() => {
-    if (!sortConfig) return filteredData;
+    if (!sortConfig) {
+      return filteredData;
+    }
     const { column, direction } = sortConfig;
     return [...filteredData].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[column];
@@ -71,7 +75,9 @@ export function FitPanel({ data }: FitPanelProps) {
   }, [filteredData, sortConfig]);
 
   const groupedData = useMemo((): GroupedFitEntry[] => {
-    if (!grouped) return [];
+    if (!grouped) {
+      return [];
+    }
     const map = new Map<string, GroupedFitEntry>();
     for (const entry of filteredData) {
       const key = `${entry.jobTitle?.trim().toLowerCase()}-${entry.company?.trim().toLowerCase() || ''}`;
@@ -110,7 +116,7 @@ export function FitPanel({ data }: FitPanelProps) {
   }, [filteredData, grouped, sortConfig]);
 
   const handleSort = (column: string) => {
-    setSortConfig((prev) => {
+    setSortConfig(prev => {
       if (prev?.column === column) {
         return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
       }
@@ -155,7 +161,9 @@ export function FitPanel({ data }: FitPanelProps) {
           <span className="text-gray-400">-</span>
         );
       case 'clientId':
-        return <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>;
+        return (
+          <span className="text-gray-500 font-mono text-xs">{truncate(row.clientId, 20)}</span>
+        );
       case 'userAgent':
         return <span className="text-gray-500 text-xs">{truncate(row.userAgent, 40)}</span>;
       default:
@@ -227,8 +235,8 @@ export function FitPanel({ data }: FitPanelProps) {
       <div className="font-medium text-gray-700">
         {row.count} assessment{row.count !== 1 ? 's' : ''}
       </div>
-      {row.entries.map((entry, i) => (
-        <div key={i} className="border-l-2 border-blue-200 pl-3 py-1">
+      {row.entries.map(entry => (
+        <div key={entry.timestamp} className="border-l-2 border-blue-200 pl-3 py-1">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">{formatDate(entry.timestamp)}</span>
             {renderVerdictBadge(entry.verdict)}
@@ -257,11 +265,12 @@ export function FitPanel({ data }: FitPanelProps) {
             type="text"
             placeholder="Search job title, company, verdict..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <button
+          type="button"
           onClick={() => setGrouped(!grouped)}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md ${
             grouped
@@ -276,9 +285,7 @@ export function FitPanel({ data }: FitPanelProps) {
           columns={grouped ? groupedColumns : columns}
           onToggle={grouped ? toggleGroupedColumn : toggleColumn}
         />
-        <span className="text-xs text-gray-500">
-          {filteredData.length} entries
-        </span>
+        <span className="text-xs text-gray-500">{filteredData.length} entries</span>
       </div>
 
       {grouped ? (

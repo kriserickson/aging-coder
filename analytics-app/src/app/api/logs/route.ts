@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { fetchWorkerLogs } from '@/lib/cloudflare-api';
 
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   if (!accountId || !apiToken) {
     return NextResponse.json(
       { error: 'CF_ACCOUNT_ID and CF_API_TOKEN must be set in .env.local' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       apiToken,
       workerName,
       startTime,
-      endTime
+      endTime,
     );
 
     const response: Record<string, unknown> = { entries, startTime, endTime };

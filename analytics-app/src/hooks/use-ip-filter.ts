@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'analytics-excluded-ips';
 
@@ -22,7 +22,7 @@ export function useIpFilter(): [string[], (ips: string[]) => void] {
   }, []);
 
   const updateExcludedIps = (ips: string[]) => {
-    const cleaned = ips.map((ip) => ip.trim()).filter(Boolean);
+    const cleaned = ips.map(ip => ip.trim()).filter(Boolean);
     setExcludedIps(cleaned);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
   };
