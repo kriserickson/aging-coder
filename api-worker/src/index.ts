@@ -9,11 +9,14 @@ import {
   buildUserPrompt,
 } from './prompt';
 import {
+  type ExactMatch,
+  type ExpansionMetadata,
   findExactQuestionMatch,
   formatAllContext,
   formatRagContext,
   getQuestionEmbeddingStatus,
   prepareQuestionEmbeddings,
+  type RagResultWithMetadata,
   searchRag,
 } from './rag';
 
@@ -64,6 +67,14 @@ interface OpenRouterConfig {
   baseUrl: string;
   appName: string;
   appUrl: string;
+}
+
+interface ChatCompletionResponse {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    } | null;
+  } | null> | null;
 }
 
 interface FitAssessment {
@@ -211,6 +222,10 @@ const streamCompletionResponse = (response: Response, { delayMs = 0 } = {}): Rea
   return new ReadableStream({
     async start(controller) {
       const reader = response.body?.getReader();
+      if (!reader) {
+        controller.close();
+        return;
+      }
       let buffer = '';
       let done = false;
 
@@ -370,7 +385,8 @@ const fetchFitAssessmentCompletion = async (
   }
 
   const data: unknown = await response.json();
-  const content = data?.choices?.[0]?.message?.content;
+  const parsed = data as ChatCompletionResponse;
+  const content = parsed?.choices?.[0]?.message?.content;
 
   if (!content) {
     throw new Error('No response content from AI');
@@ -443,13 +459,13 @@ app.post('/api/chat', async c => {
       return c.json({ error: 'Daily question limit reached. Please try again tomorrow.' }, 429);
     }
 
-    let ragResults: unknown[] = [];
+    let ragResults: RagResultWithMetadata = [] as RagResultWithMetadata;
     // Always include CV data as the base context
     const cvContext = formatAllContext();
     let ragContext = '';
 
     // Check for exact question match first (skip RAG if we have a match)
-    let exactMatch: unknown = null;
+    let exactMatch: ExactMatch | null = null;
     try {
       exactMatch = await findExactQuestionMatch(lastUserMessage);
     } catch (err) {
@@ -483,6 +499,7 @@ app.post('/api/chat', async c => {
 
       // Non-verbatim: safe to include directly in ragContext
       ragContext = exactMatch.context;
+      ragResults = [{questionId: '', questionName: exactMatch.question, context: exactMatch.context, score: 1, matchedOn: 'exactMatch'}];
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
       try {
@@ -500,8 +517,7 @@ app.post('/api/chat', async c => {
     }
 
     const ragNames = ragResults.map(r => r.questionName);
-    const expansionMetadata =
-      (ragResults as unknown as Record<string, unknown>)._expansionMetadata || null;
+    const expansionMetadata: ExpansionMetadata | null = ragResults._expansionMetadata || null;
     let responseText = '';
 
     // Build response headers with expansion metrics

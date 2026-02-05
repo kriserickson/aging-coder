@@ -48,6 +48,7 @@ export interface ColumnConfig {
   label: string;
   visible: boolean;
   sortable: boolean;
+  width?: string;
 }
 
 export interface DateRange {

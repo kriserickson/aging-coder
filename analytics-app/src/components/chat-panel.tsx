@@ -9,20 +9,20 @@ import { ColumnSelector } from './column-selector';
 import { DataGrid } from './data-grid';
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { key: 'timestamp', label: 'Date', visible: true, sortable: true },
-  { key: 'question', label: 'Question', visible: true, sortable: true },
-  { key: 'response', label: 'Response', visible: true, sortable: false },
-  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false },
-  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true },
-  { key: 'clientId', label: 'Client', visible: false, sortable: true },
-  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false },
+  { key: 'timestamp', label: 'Date', visible: true, sortable: true, width: '140px' },
+  { key: 'question', label: 'Question', visible: true, sortable: true, width: '25%' },
+  { key: 'response', label: 'Response', visible: true, sortable: false, width: '30%' },
+  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false, width: '20%' },
+  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true, width: '100px' },
+  { key: 'clientId', label: 'Client', visible: false, sortable: true, width: '150px' },
+  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false, width: '200px' },
 ];
 
 const GROUPED_COLUMNS: ColumnConfig[] = [
-  { key: 'question', label: 'Question', visible: true, sortable: true },
-  { key: 'count', label: 'Count', visible: true, sortable: true },
-  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false },
-  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true },
+  { key: 'question', label: 'Question', visible: true, sortable: true, width: '40%' },
+  { key: 'count', label: 'Count', visible: true, sortable: true, width: '80px' },
+  { key: 'ragNames', label: 'RAG Data', visible: true, sortable: false, width: '30%' },
+  { key: 'exactMatch', label: 'Exact Match', visible: true, sortable: true, width: '100px' },
 ];
 
 interface ChatPanelProps {

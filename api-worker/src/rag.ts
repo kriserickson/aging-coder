@@ -23,7 +23,7 @@ interface Document {
   _textHash?: string;
 }
 
-interface RagResult {
+export interface RagResult {
   questionId: string;
   questionName: string;
   context: string;
@@ -31,11 +31,11 @@ interface RagResult {
   matchedOn: string;
 }
 
-interface RagResultWithMetadata extends Array<RagResult> {
+export interface RagResultWithMetadata extends Array<RagResult> {
   _expansionMetadata?: ExpansionMetadata;
 }
 
-interface ExpansionMetadata {
+export interface ExpansionMetadata {
   triggered: boolean;
   reason: string;
   usedPass2: boolean;
@@ -46,7 +46,7 @@ interface ExpansionMetadata {
   totalLatencyMs: number;
 }
 
-interface ExactMatch {
+export interface ExactMatch {
   question: string;
   context: string;
   verbatim: boolean;
@@ -380,7 +380,7 @@ const extractEmbeddings = (result: unknown, expectedLength: number): number[][] 
         }
         return null;
       })
-      .filter(Boolean);
+      .filter((e): e is number[] => e !== null);
 
     if (embeddings.length === expectedLength) {
       return embeddings;
@@ -388,8 +388,9 @@ const extractEmbeddings = (result: unknown, expectedLength: number): number[][] 
   }
 
   // Case C: single-call response: result.embedding may be an embedding array
-  if (isEmbeddingArray(result?.embedding)) {
-    return expectedLength === 1 ? [result.embedding] : [result.embedding].slice(0, expectedLength);
+  const embedding = (result as { embedding?: unknown })?.embedding;
+  if (isEmbeddingArray(embedding)) {
+    return expectedLength === 1 ? [embedding] : [embedding].slice(0, expectedLength);
   }
 
   // Nothing matched

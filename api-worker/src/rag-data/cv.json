@@ -101,11 +101,7 @@
         },
         {
           "label": "AI",
-          "values": [
-            "Fine-tuning LLMs (LoRA, SIT)",
-            "Prompt engineering",
-            "AI-assisted coding tools"
-          ]
+          "values": ["Fine-tuning LLMs (LoRA, SIT)", "Prompt engineering", "AI-assisted coding tools"]
         }
       ],
       "description": "Passionate about AI/ML with hands-on experience in machine learning and modern AI tools."
@@ -120,16 +116,7 @@
         },
         {
           "label": "Technologies",
-          "values": [
-            "Java",
-            "Kotlin",
-            "Jetpack Compose",
-            "ReactNative",
-            "Swift",
-            "SwiftUI",
-            "Flutter",
-            "Cordova"
-          ]
+          "values": ["Java", "Kotlin", "Jetpack Compose", "ReactNative", "Swift", "SwiftUI", "Flutter", "Cordova"]
         }
       ],
       "description": "Full-stack mobile development experience across native and cross-platform technologies."
@@ -185,9 +172,7 @@
       "items": [
         {
           "label": "Breadth",
-          "values": [
-            "Released production code in 10+ languages; experience in 20+ programming languages"
-          ]
+          "values": ["Released production code in 10+ languages; experience in 20+ programming languages"]
         }
       ],
       "description": "Polyglot developer with extensive language experience across different paradigms."

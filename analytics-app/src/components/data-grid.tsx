@@ -56,7 +56,7 @@ export function DataGrid<T>({
 
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-md">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm table-fixed">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
             {renderExpanded && <th className="w-8 px-2 py-2" />}
@@ -66,6 +66,7 @@ export function DataGrid<T>({
                 className={`px-3 py-2 text-left font-medium text-gray-700 ${
                   col.sortable ? 'cursor-pointer select-none hover:bg-gray-100' : ''
                 }`}
+                style={col.width ? { width: col.width } : undefined}
                 onClick={() => col.sortable && onSort(col.key)}
               >
                 <span className="inline-flex items-center gap-1">
@@ -82,43 +83,37 @@ export function DataGrid<T>({
             const isExpanded = expandedRows.has(key);
 
             return (
-              <tr key={key} className="group">
-                <td colSpan={visibleColumns.length + (renderExpanded ? 1 : 0)} className="p-0">
-                  <table className="w-full">
-                    <tbody>
-                      <tr className="border-b border-gray-100 hover:bg-blue-50/30">
-                        {renderExpanded && (
-                          <td className="w-8 px-2 py-2">
-                            <button
-                              type="button"
-                              onClick={() => toggleExpand(key)}
-                              className="p-0.5 rounded hover:bg-gray-200"
-                            >
-                              <ChevronRight
-                                className={`h-3.5 w-3.5 text-gray-500 transition-transform ${
-                                  isExpanded ? 'rotate-90' : ''
-                                }`}
-                              />
-                            </button>
-                          </td>
-                        )}
-                        {visibleColumns.map(col => (
-                          <td key={col.key} className="px-3 py-2 max-w-[300px]">
-                            {renderCell(row, col.key)}
-                          </td>
-                        ))}
-                      </tr>
-                      {isExpanded && renderExpanded && (
-                        <tr className="bg-gray-50">
-                          <td colSpan={visibleColumns.length + 1} className="px-4 py-3">
-                            {renderExpanded(row)}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </td>
-              </tr>
+              <>
+                <tr key={key} className="border-b border-gray-100 hover:bg-blue-50/30">
+                  {renderExpanded && (
+                    <td className="w-8 px-2 py-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(key)}
+                        className="p-0.5 rounded hover:bg-gray-200"
+                      >
+                        <ChevronRight
+                          className={`h-3.5 w-3.5 text-gray-500 transition-transform ${
+                            isExpanded ? 'rotate-90' : ''
+                          }`}
+                        />
+                      </button>
+                    </td>
+                  )}
+                  {visibleColumns.map(col => (
+                    <td key={col.key} className="px-3 py-2 overflow-hidden" style={col.width ? { width: col.width } : undefined}>
+                      <div className="overflow-hidden">{renderCell(row, col.key)}</div>
+                    </td>
+                  ))}
+                </tr>
+                {isExpanded && renderExpanded && (
+                  <tr key={`${key}-expanded`} className="bg-gray-50">
+                    <td colSpan={visibleColumns.length + (renderExpanded ? 1 : 0)} className="px-4 py-3">
+                      {renderExpanded(row)}
+                    </td>
+                  </tr>
+                )}
+              </>
             );
           })}
         </tbody>

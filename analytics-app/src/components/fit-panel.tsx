@@ -9,20 +9,20 @@ import { ColumnSelector } from './column-selector';
 import { DataGrid } from './data-grid';
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { key: 'timestamp', label: 'Date', visible: true, sortable: true },
-  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true },
-  { key: 'company', label: 'Company', visible: true, sortable: true },
-  { key: 'verdict', label: 'Verdict', visible: true, sortable: true },
-  { key: 'url', label: 'URL', visible: true, sortable: false },
-  { key: 'clientId', label: 'Client', visible: false, sortable: true },
-  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false },
+  { key: 'timestamp', label: 'Date', visible: true, sortable: true, width: '140px' },
+  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true, width: '30%' },
+  { key: 'company', label: 'Company', visible: true, sortable: true, width: '20%' },
+  { key: 'verdict', label: 'Verdict', visible: true, sortable: true, width: '100px' },
+  { key: 'url', label: 'URL', visible: true, sortable: false, width: '25%' },
+  { key: 'clientId', label: 'Client', visible: false, sortable: true, width: '150px' },
+  { key: 'userAgent', label: 'User Agent', visible: false, sortable: false, width: '200px' },
 ];
 
 const GROUPED_COLUMNS: ColumnConfig[] = [
-  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true },
-  { key: 'company', label: 'Company', visible: true, sortable: true },
-  { key: 'verdict', label: 'Verdict', visible: true, sortable: true },
-  { key: 'count', label: 'Count', visible: true, sortable: true },
+  { key: 'jobTitle', label: 'Job Title', visible: true, sortable: true, width: '35%' },
+  { key: 'company', label: 'Company', visible: true, sortable: true, width: '25%' },
+  { key: 'verdict', label: 'Verdict', visible: true, sortable: true, width: '100px' },
+  { key: 'count', label: 'Count', visible: true, sortable: true, width: '80px' },
 ];
 
 interface FitPanelProps {
