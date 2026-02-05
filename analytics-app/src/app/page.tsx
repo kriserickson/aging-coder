@@ -30,10 +30,10 @@ export default function Home() {
   const allClientIds = useMemo(() => {
     const ids = new Set<string>();
     allChatData.forEach(e => {
-      ids.add(e.clientId)
+      ids.add(e.clientId);
     });
     allFitData.forEach(e => {
-      ids.add(e.clientId)
+      ids.add(e.clientId);
     });
     return Array.from(ids);
   }, [allChatData, allFitData]);
