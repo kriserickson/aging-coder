@@ -10,3 +10,6 @@ reports
 .wrangler
 
 assets/js/cv.*
+
+# Ignore local cache
+.cache/
