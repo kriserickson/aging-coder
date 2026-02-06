@@ -106,7 +106,21 @@ module.exports = function (eleventyConfig) {
     // Also ensure an alt attribute exists (empty if necessary) to improve accessibility
     eleventyConfig.addTransform('wrapImages', function (content, outputPath) {
         if (outputPath && outputPath.endsWith('.html')) {
-            return content.replace(/<img\b([^>]*)>/gi, function (match, attrs) {
+            // Track whether each <img> sits inside a <picture> element.
+            // We do this by scanning for <picture> and </picture> boundaries.
+            let insidePicture = 0;
+            return content.replace(/<\/?picture\b[^>]*>|<img\b([^>]*)>/gi, function (match, attrs, offset) {
+                // Track <picture> nesting
+                if (/^<picture\b/i.test(match)) {
+                    insidePicture++;
+                    return match;
+                }
+                if (/^<\/picture/i.test(match)) {
+                    insidePicture = Math.max(0, insidePicture - 1);
+                    return match;
+                }
+
+                // From here it's an <img> tag
                 // Normalize existing attributes string
                 let attrStr = attrs || '';
 
@@ -138,6 +152,12 @@ module.exports = function (eleventyConfig) {
                     });
                 } else {
                     attrStr += ' class="img-inline"';
+                }
+
+                // Don't wrap in <p> if inside a <picture> — the <img> must
+                // remain a direct child of <picture> for <source> to work.
+                if (insidePicture > 0) {
+                    return `<img${attrStr}>`;
                 }
 
                 // Return wrapped image

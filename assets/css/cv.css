@@ -1304,6 +1304,10 @@ body.modal-open {
     font-size: 0.9rem;
 }
 
+[data-theme="dark"] .fit-verdict-content p {
+    color: var(--text-color);
+}
+
 /* Section headers */
 .fit-section-header {
     font-size: 0.75rem;
@@ -1403,6 +1407,25 @@ body.modal-open {
     border: 1px solid color-mix(in srgb, #ef4444 28%, transparent);
     color: #7f1d1d;
     /* dark red text */
+}
+
+/* Dark mode: override both background and text for readable contrast */
+[data-theme="dark"] .fit-recommendation.strong-fit {
+    background: #0d2818;
+    border-color: #10b981;
+    color: #a7f3d0;
+}
+
+[data-theme="dark"] .fit-recommendation.moderate-fit {
+    background: #2d1a00;
+    border-color: #f59e0b;
+    color: #fde68a;
+}
+
+[data-theme="dark"] .fit-recommendation.weak-fit {
+    background: #2d0a0a;
+    border-color: #ef4444;
+    color: #fecaca;
 }
 
 .fit-recommendation-header {

@@ -88,9 +88,6 @@ export function setupFitModal() {
 		closeBtn.addEventListener("click", closeFitModal);
 	}
 
-	if (overlay) {
-		overlay.addEventListener("click", closeFitModal);
-	}
 
 	tabs.forEach((tab) => {
 		tab.addEventListener("click", () => {
