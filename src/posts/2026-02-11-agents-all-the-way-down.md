@@ -39,13 +39,11 @@ I don’t bring this up to dunk on anyone. The impulse is understandable. In a l
 
 And that’s where my old story starts whispering.
 
-Because if you remove human verification from consequential software—software that isn’t just “an app that helps one person,” (one of the very valid use-cases for vibe-coded Apps) but a service, a platform, a dependency, a supply chain, you don’t just increase the chance of bugs.
-
-You change what “trust” means.
+Because removing human verification means very different things depending on the stakes. If you’re building a personal tool, a weekend experiment, an internal script, or a one-off app that automates your own workflow, vibe coding can be entirely reasonable. The blast radius is small. You are the user. You absorb the risk. But when the software becomes a service, a platform, a dependency, a supply chain component—something other people rely on—you don’t just increase the chance of bugs. You change what “trust” means.
 
 Instead of trust in *authorship* (a teammate you know, with incentives you understand), you end up relying on trust in *outputs* (the thing compiled, ran, and didn’t immediately catch fire) and trust in *process* (the hope that the pipeline, tests, and guardrails are enough).
 
-That’s not how we treat junior developers. Junior devs are brilliant and necessary, and they still ship bugs. We protect systems from those bugs by building social and technical rituals: code review, tests, staged rollouts, limited permissions, monitoring, incident response, and the simple act of asking, “why is it written like this?”
+That’s not how we treat junior developers. When someone new joins a team, we don’t distrust their intelligence — we account for their context. Their unfamiliarity with the codebase can lead to subtle integration mistakes. Their lack of experience with production scale can produce solutions that work perfectly in isolation but quietly degrade performance or exhaust resources under load. They may not yet see the historical landmines, the architectural tradeoffs, or the edge cases that only surface at 10× traffic. None of that makes them bad engineers. It makes them engineers who need review. We protect systems from those bugs by building social and technical rituals: code review, tests, staged rollouts, limited permissions, monitoring, incident response, and the simple act of asking, “why is it written like this?”
 
 With AI-generated code, the temptation is to keep the output and delete the rituals, because it feels like you’re deleting friction, not deleting safety.
 
@@ -94,6 +92,8 @@ That’s the part that makes OpenClaw (and frameworks like it) such a perfect co
 Some of this is solvable with engineering discipline. Not magically. Not with vibes. With the same seriousness you apply to production systems today.
 
 If an AI is writing code for anything that matters, treat it like your most junior dev on their first week, helpful, fast, and absolutely not to be trusted without review. Don’t let it merge to main without a human. Don’t let it deploy without a human. Don’t give it broad credentials “just for convenience.” Scope tokens to repositories, not orgs. Scope access to read-only by default. Make dangerous operations require confirmation. Log every tool call. Build sandboxes. Build staged rollouts. Assume your retrieval sources can be poisoned and your agent can be socially engineered, because it can.
+
+As we use AI assisted coding over time, my fear is that we grow to trust it more, and more and start relaxing our discipline.  Code reviews become glances, the plan that was generated that we used to go over with a fine toothed comb becomes a chore to audit and correct small flaws.  The long discussions we had with the Agent to build the code become shorter and we assume that it knows what we want.  This is where the subtle errors will slip in, and this is what we must guard against.  With great power comes great responsibility, and my fear is as we become more comfortable and more trusting of our AI assistants we will grow less vigilant.
 
 The deeper fixes are harder, and they live closer to the model than most people want to think about. Multi-stream architectures, stronger instruction hierarchy training, tool-gating that’s more than a prompt; these are all directions people are exploring, but none of them give you the thing everyone quietly wants: a guarantee.
 We may get better. But “better” isn’t the same as “safe enough to hand over your inbox and your deploy keys and stop looking.”
