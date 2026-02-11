@@ -50,7 +50,10 @@
       "WebFetch(domain:developers.cloudflare.com)",
       "WebFetch(domain:blog.cloudflare.com)",
       "Bash(npm uninstall:*)",
-      "Bash(npm run typecheck:*)"
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:blog:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

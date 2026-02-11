@@ -149,7 +149,7 @@ describe("openChat", () => {
 });
 
 describe("setupChatHandlers", () => {
-	it("closes the modal from close button and overlay", async () => {
+	it("closes the modal from close button but not overlay", async () => {
 		const modal = document.getElementById("chat-modal");
 		modal?.classList.add("active");
 		document.body.classList.add("modal-open");
@@ -158,18 +158,18 @@ describe("setupChatHandlers", () => {
 		const chat = await import("../src/chat");
 		chat.setupChatHandlers();
 
-		const closeButton = document.querySelector(".chat-close") as HTMLElement;
-		closeButton.click();
-		expect(modal?.classList.contains("active")).toBe(false);
-		expect(document.body.classList.contains("modal-open")).toBe(false);
-
-		modal?.classList.add("active");
-		document.body.classList.add("modal-open");
+		// Overlay click should NOT close the modal
 		const overlay = document.querySelector(
 			".chat-modal-overlay",
 		) as HTMLElement;
 		overlay.click();
+		expect(modal?.classList.contains("active")).toBe(true);
+
+		// Close button should close the modal
+		const closeButton = document.querySelector(".chat-close") as HTMLElement;
+		closeButton.click();
 		expect(modal?.classList.contains("active")).toBe(false);
+		expect(document.body.classList.contains("modal-open")).toBe(false);
 	});
 });
 

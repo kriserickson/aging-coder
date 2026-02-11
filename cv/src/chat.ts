@@ -291,9 +291,6 @@ export function setupChatHandlers() {
 		closeButton.addEventListener("click", closeChat);
 	}
 
-	if (overlay) {
-		overlay.addEventListener("click", closeChat);
-	}
 
 	if (sendButton) {
 		sendButton.addEventListener("click", sendMessage);
