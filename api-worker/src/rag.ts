@@ -633,16 +633,21 @@ const embedDocuments = async (
 ): Promise<void> => {
   ensureAiBinding(ai);
 
+  const alreadyInMemory = questionDocuments.filter(doc => doc.embedding).length;
+  const totalDocs = questionDocuments.length;
+  const hydrateStart = Date.now();
+
   if (force) {
     await resetAllQuestionEmbeddings(cache);
   } else if (cache) {
-    for (const questionDocument of questionDocuments) {
-      if (questionDocument.embedding) {
-        continue;
-      }
-      await hydrateDocumentFromCache(cache, questionDocument);
-    }
+    const needHydration = questionDocuments.filter(doc => !doc.embedding);
+    console.log(`[RAG] Hydrating ${needHydration.length}/${totalDocs} docs from KV (${alreadyInMemory} already in memory)...`);
+    await Promise.all(needHydration.map(doc => hydrateDocumentFromCache(cache, doc)));
   }
+
+  const hydrateDuration = Date.now() - hydrateStart;
+  const hydratedCount = questionDocuments.filter(doc => doc.embedding).length - alreadyInMemory;
+  console.log(`[RAG] KV hydration took ${hydrateDuration}ms (hydrated ${hydratedCount} docs, ${alreadyInMemory} were already in memory)`);
 
   const pending = questionDocuments.filter(doc => !doc.embedding);
 
@@ -788,6 +793,7 @@ export const searchRag = async (
   const startTime = Date.now();
   const pass1Results = await runRetrievalPass(query);
   const pass1Time = Date.now() - startTime;
+  console.log(`[RAG] Pass 1 retrieval took ${pass1Time}ms (${pass1Results.length} results)`);
 
   // Check if we should trigger query expansion
   const expansionCheck = shouldExpandQuery(query, pass1Results);
