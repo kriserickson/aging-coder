@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronRight, ChevronsUpDown, ChevronUp } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import type { ColumnConfig, SortConfig } from '@/lib/types';
 
 interface DataGridProps<T> {
@@ -79,17 +79,17 @@ export function DataGrid<T>({
         </thead>
         <tbody>
           {data.map((row, index) => {
-            const key = getRowKey(row, index);
-            const isExpanded = expandedRows.has(key);
+            const rowKey = getRowKey(row, index);
+            const isExpanded = expandedRows.has(rowKey);
 
             return (
-              <>
-                <tr key={key} className="border-b border-gray-100 hover:bg-blue-50/30">
+              <Fragment key={rowKey}>
+                <tr key={rowKey} className="border-b border-gray-100 hover:bg-blue-50/30">
                   {renderExpanded && (
                     <td className="w-8 px-2 py-2">
                       <button
                         type="button"
-                        onClick={() => toggleExpand(key)}
+                        onClick={() => toggleExpand(rowKey)}
                         className="p-0.5 rounded hover:bg-gray-200"
                       >
                         <ChevronRight
@@ -107,13 +107,13 @@ export function DataGrid<T>({
                   ))}
                 </tr>
                 {isExpanded && renderExpanded && (
-                  <tr key={`${key}-expanded`} className="bg-gray-50">
+                  <tr key={`${rowKey}-expanded`} className="bg-gray-50">
                     <td colSpan={visibleColumns.length + 1} className="px-4 py-3">
                       {renderExpanded(row)}
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

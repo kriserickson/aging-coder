@@ -14,13 +14,13 @@ const Image = require('@11ty/eleventy-img');
 const path = require('node:path');
 
 function getPosts(collectionApi) {
-    return collectionApi.getFilteredByGlob('src/posts/**/*.md').filter(function (post) {
+    return collectionApi.getFilteredByGlob('src/posts/**/*.md').filter((post) => {
         // Skip drafts if we are in production mode
         return post.data.draft !== true || !isBuild;
     });
 }
 
-module.exports = function (eleventyConfig) {
+module.exports = (eleventyConfig) => {
     // Simple HTML escaper used for Mermaid content
     function escapeHtml(str) {
         return String(str)
@@ -31,9 +31,7 @@ module.exports = function (eleventyConfig) {
             .replace(/'/g, '&#39;');
     }
 
-    eleventyConfig.addFilter('cgi_encode', function (str) {
-        return encodeURIComponent(str.toLowerCase());
-    });
+    eleventyConfig.addFilter('cgi_encode', (str) => encodeURIComponent(str.toLowerCase()));
 
     // Helper: produce a cache-busted URL for a local path based on file mtime
     function getCacheBusted(inputPath, fallback) {
@@ -56,18 +54,18 @@ module.exports = function (eleventyConfig) {
                 String(mtime.getUTCMinutes()).padStart(2, '0');
             return `${relPath}?v=${ver}`;
         } catch (e) {
+            console.warn(`getCacheBusted: failed to stat ${inputPath}: ${e?.message || 'unknown error'}`);
+
             // If stat fails, return the provided fallback (original ref) to preserve previous behavior
             return typeof fallback !== 'undefined' ? fallback : inputPath;
         }
     }
 
     // Asset URL cache-busting filter: append ?v=YYYYMMDDHHMM based on file mtime
-    eleventyConfig.addFilter('assetUrl', function (assetPath) {
-        return getCacheBusted(assetPath, assetPath);
-    });
+    eleventyConfig.addFilter('assetUrl', (assetPath) => getCacheBusted(assetPath, assetPath));
 
     // Resolve a CSS reference from frontmatter or template and return a cache-busted href
-    eleventyConfig.addFilter('resolveCss', function (cssRef) {
+    eleventyConfig.addFilter('resolveCss', (cssRef) => {
         if (!cssRef) {
           return '';
         }
@@ -85,7 +83,7 @@ module.exports = function (eleventyConfig) {
     });
 
   // Resolve a Js reference from frontmatter or template and return a cache-busted href
-  eleventyConfig.addFilter('resolveJs', function (jsRef) {
+  eleventyConfig.addFilter('resolveJs', (jsRef) => {
     if (!jsRef) {
       return '';
     }
@@ -104,68 +102,68 @@ module.exports = function (eleventyConfig) {
 
     // Transform images: wrap <img> tags and add lazy/loading attributes and a lightweight class
     // Also ensure an alt attribute exists (empty if necessary) to improve accessibility
-    eleventyConfig.addTransform('wrapImages', function (content, outputPath) {
-        if (outputPath && outputPath.endsWith('.html')) {
-            // Track whether each <img> sits inside a <picture> element.
-            // We do this by scanning for <picture> and </picture> boundaries.
-            let insidePicture = 0;
-            return content.replace(/<\/?picture\b[^>]*>|<img\b([^>]*)>/gi, function (match, attrs, offset) {
-                // Track <picture> nesting
-                if (/^<picture\b/i.test(match)) {
-                    insidePicture++;
-                    return match;
-                }
-                if (/^<\/picture/i.test(match)) {
-                    insidePicture = Math.max(0, insidePicture - 1);
-                    return match;
-                }
-
-                // From here it's an <img> tag
-                // Normalize existing attributes string
-                let attrStr = attrs || '';
-
-                // Helper to test if an attribute exists
-                const hasAttr = (name) => new RegExp('\\b' + name + '\\s*=', 'i').test(attrStr);
-
-                // Add alt attribute if missing
-                if (!hasAttr('alt')) {
-                    attrStr += ' alt=""';
-                }
-
-                // Add loading attribute if missing
-                if (!hasAttr('loading')) {
-                    attrStr += ' loading="lazy"';
-                }
-                // Add decoding attribute if missing
-                if (!hasAttr('decoding')) {
-                    attrStr += ' decoding="async"';
-                }
-                // Ensure there is a class attribute and include 'img-inline'
-                if (hasAttr('class')) {
-                    // Append img-inline to existing class attr
-                    attrStr = attrStr.replace(/class=(['"])([^'"]*)(\1)/i, function (_, q, v) {
-                        // avoid duplicate
-                        if (v.split(/\s+/).includes('img-inline')) {
-                            return `class=${q}${v}${q}`;
+    eleventyConfig.addTransform('wrapImages', (content, outputPath) => {
+            if (outputPath?.endsWith('.html')) {
+                // Track whether each <img> sits inside a <picture> element.
+                // We do this by scanning for <picture> and </picture> boundaries.
+                let insidePicture = 0;
+                return content.replace(/<\/?picture\b[^>]*>|<img\b([^>]*)>/gi, (match, attrs) => {
+                        // Track <picture> nesting
+                        if (/^<picture\b/i.test(match)) {
+                            insidePicture++;
+                            return match;
                         }
-                        return `class=${q}${v} img-inline${q}`;
+                        if (/^<\/picture/i.test(match)) {
+                            insidePicture = Math.max(0, insidePicture - 1);
+                            return match;
+                        }
+
+                        // From here it's an <img> tag
+                        // Normalize existing attributes string
+                        let attrStr = attrs || '';
+
+                        // Helper to test if an attribute exists
+                        const hasAttr = (name) => new RegExp(`\\b${name}\\s*=`, 'i').test(attrStr);
+
+                        // Add alt attribute if missing
+                        if (!hasAttr('alt')) {
+                            attrStr += ' alt=""';
+                        }
+
+                        // Add loading attribute if missing
+                        if (!hasAttr('loading')) {
+                            attrStr += ' loading="lazy"';
+                        }
+                        // Add decoding attribute if missing
+                        if (!hasAttr('decoding')) {
+                            attrStr += ' decoding="async"';
+                        }
+                        // Ensure there is a class attribute and include 'img-inline'
+                        if (hasAttr('class')) {
+                            // Append img-inline to existing class attr
+                            attrStr = attrStr.replace(/class=(['"])([^'"]*)(\1)/i, (_, q, v) => {
+                                    // avoid duplicate
+                                    if (v.split(/\s+/).includes('img-inline')) {
+                                        return `class=${q}${v}${q}`;
+                                    }
+                                    return `class=${q}${v} img-inline${q}`;
+                                });
+                        } else {
+                            attrStr += ' class="img-inline"';
+                        }
+
+                        // Don't wrap in <p> if inside a <picture> — the <img> must
+                        // remain a direct child of <picture> for <source> to work.
+                        if (insidePicture > 0) {
+                            return `<img${attrStr}>`;
+                        }
+
+                        // Return wrapped image
+                        return `<p class="with-image"><img${attrStr}></p>`;
                     });
-                } else {
-                    attrStr += ' class="img-inline"';
-                }
-
-                // Don't wrap in <p> if inside a <picture> — the <img> must
-                // remain a direct child of <picture> for <source> to work.
-                if (insidePicture > 0) {
-                    return `<img${attrStr}>`;
-                }
-
-                // Return wrapped image
-                return `<p class="with-image"><img${attrStr}></p>`;
-            });
-        }
-        return content;
-    });
+            }
+            return content;
+        });
 
     eleventyConfig.addPlugin(syntaxHighlight);
     eleventyConfig.addPlugin(rssPlugin);
@@ -177,7 +175,7 @@ module.exports = function (eleventyConfig) {
       if (typeof value !== 'string') {
         return value;
       }
-      return value.replace(/[&<>"']/g, function(char) {
+      return value.replace(/[&<>"']/g, (char) => {
         switch (char) {
           case '&': return '&amp;';
           case '<': return '&lt;';
@@ -190,44 +188,51 @@ module.exports = function (eleventyConfig) {
     });
 
     // Excerpt filter: prefer frontmatter.description; otherwise extract from templateContent
-    eleventyConfig.addFilter('excerpt', function (post, length = 200) {
+    eleventyConfig.addFilter('excerpt', (post, length = 200) => {
         if (!post) {
             return '';
         }
         try {
-            const desc = (post.data && post.data.description) ? String(post.data.description).trim() : '';
+            const desc = (post.data?.description) ? String(post.data.description).trim() : '';
             if (desc) {
                 return desc;
             }
 
-            // Fall back to post.templateContent (raw rendered markdown) or page.content
-            const raw = post.templateContent || (post.data && post.data.page && post.data.page.templateContent) || '';
+            // Fall back to reading the raw markdown source file
+            const inputPath = post.inputPath || post.data?.page?.inputPath;
+            if (!inputPath) {
+                return '';
+            }
+            const fileContent = fs.readFileSync(inputPath, 'utf-8');
+            // Strip frontmatter
+            const raw = fileContent.replace(/^---[\s\S]*?---\s*/, '');
             if (!raw) {
                 return '';
             }
 
-            // Strip HTML tags
-            const stripped = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            // Strip HTML tags and markdown syntax
+            const stripped = raw.replace(/<[^>]+>/g, ' ').replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[#*_~`>]/g, '').replace(/\s+/g, ' ').trim();
             if (!stripped) {
                 return '';
             }
             if (stripped.length <= length) {
                 return stripped;
             }
-            return stripped.slice(0, length).trim() + '…';
+            return `${stripped.slice(0, length).trim()}…`;
         } catch (e) {
+            console.error('Error generating excerpt for post', post.inputPath, e);
             return '';
         }
     });
 
     // Add filter to sort collections by their 'name' property (case-insensitive)
-    eleventyConfig.addFilter('sortByName', function (arr) {
+    eleventyConfig.addFilter('sortByName', (arr) => {
         if (!Array.isArray(arr)) {
             return arr;
         }
         return arr.slice().sort((a, b) => {
-            const na = String((a && a.name) ? a.name : a).trim().toLowerCase();
-            const nb = String((b && b.name) ? b.name : b).trim().toLowerCase();
+            const na = String((a?.name) ? a.name : a).trim().toLowerCase();
+            const nb = String((b?.name) ? b.name : b).trim().toLowerCase();
             return na.localeCompare(nb, undefined, {sensitivity: 'base'});
         });
     });
@@ -268,7 +273,7 @@ module.exports = function (eleventyConfig) {
             // files moved into e.g. src/posts/older/ will still be available at
             // /posts/<slug>/ like before.
             try {
-                if (data.page && data.page.filePathStem && data.page.filePathStem.startsWith('/posts')) {
+                if (data.page?.filePathStem?.startsWith('/posts')) {
                     // data.page.fileSlug should be the filename without extension
                     const slug = data.page.fileSlug || path.basename(data.page.filePathStem);
                     if (!slug) {
@@ -282,6 +287,7 @@ module.exports = function (eleventyConfig) {
                 }
             } catch (e) {
                 // If anything goes wrong, fall back to any explicit permalink the template provided
+                console.warn('Error computing permalink for', data.page?.inputPath, e);
             }
 
             // Return undefined if no special handling (use default Eleventy behavior)
@@ -294,162 +300,170 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addGlobalData('isBuild', isBuild);
     eleventyConfig.addGlobalData('env', process.env);
 
-    eleventyConfig.addCollection('posts', function (collectionApi) {
-        const posts = getPosts(collectionApi);
+    eleventyConfig.addCollection('posts', (collectionApi) => {
+            const posts = getPosts(collectionApi);
 
-        // Warn if multiple posts would canonicalize to the same slug (and thus the same /posts/<slug>/ URL)
-        const slugMap = {};
-        posts.forEach((post) => {
-            try {
-                const stem = post.filePathStem || (post.data && post.data.page && post.data.page.filePathStem) || '';
-                const slug = post.fileSlug || (stem ? path.basename(stem) : path.basename(post.inputPath || ''));
-                if (!slug) {
-                    return;
+            // Warn if multiple posts would canonicalize to the same slug (and thus the same /posts/<slug>/ URL)
+            const slugMap = {};
+            posts.forEach((post) => {
+                try {
+                    const stem = post.filePathStem || (post.data?.page?.filePathStem) || '';
+                    const slug = post.fileSlug || (stem ? path.basename(stem) : path.basename(post.inputPath || ''));
+                    if (!slug) {
+                        return;
+                    }
+                    if (slugMap[slug]) {
+                        console.warn(`Eleventy warning: duplicate post slug detected for '/posts/${slug}/'\n  - ${slugMap[slug]}\n  - ${post.inputPath || stem}`);
+                    } else {
+                        slugMap[slug] = post.inputPath || stem;
+                    }
+                } catch (e) {
+                    console.warn('Error computing slug for duplicate check for', post.inputPath, e);
+                    // ignore errors in warning code
                 }
-                if (slugMap[slug]) {
-                    console.warn(`Eleventy warning: duplicate post slug detected for '/posts/${slug}/'\n  - ${slugMap[slug]}\n  - ${post.inputPath || stem}`);
-                } else {
-                    slugMap[slug] = post.inputPath || stem;
-                }
-            } catch (e) {
-                // ignore errors in warning code
-            }
+            });
+
+            return posts.reverse();
         });
-
-        return posts.reverse();
-    });
 
     // Dev-friendly collection for legacy pagination: skip generating legacy redirect pages in dev to avoid massive re-renders
-    eleventyConfig.addCollection('legacyPaginatePosts', function (collectionApi) {
-        // In dev mode, return an empty array so `legacy-posts.njk` pagination produces no pages.
-        if (!isBuild) return [];
+    eleventyConfig.addCollection('legacyPaginatePosts', (collectionApi) => {
+            // In dev mode, return an empty array so `legacy-posts.njk` pagination produces no pages.
+            if (!isBuild) return [];
 
-        // In build mode, return the full posts collection so legacy pages are generated.
-        return getPosts(collectionApi);
-    });
+            // In build mode, return the full posts collection so legacy pages are generated.
+            return getPosts(collectionApi);
+        });
 
     // New: pre-rendered content for feed entries (avoids templateContent cycles)
-    eleventyConfig.addCollection('feedPosts', function (collectionApi) {
-        const md = markdownIt({html: true}).use(markdownItKatex).use(markdownItAnchor);
+    eleventyConfig.addCollection('feedPosts', (collectionApi) => {
+            const md = markdownIt({ html: true }).use(markdownItKatex).use(markdownItAnchor);
 
-        // Cache rendered feed content on disk to avoid re-rendering unchanged posts on each dev rebuild.
-        const CACHE_DIR = path.join(process.cwd(), '.cache');
-        const FEED_CACHE_FILE = path.join(CACHE_DIR, 'feedPosts.json');
-        try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch (e) { /* ignore */ }
+            // Cache rendered feed content on disk to avoid re-rendering unchanged posts on each dev rebuild.
+            const CACHE_DIR = path.join(process.cwd(), '.cache');
+            const FEED_CACHE_FILE = path.join(CACHE_DIR, 'feedPosts.json');
+            try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch (e) { 
+                console.warn('feedPosts: failed to create cache directory', e?.message  || e);
+             }
 
-        let cache = {};
-        try {
-            cache = JSON.parse(fs.readFileSync(FEED_CACHE_FILE, 'utf8')) || {};
-        } catch (e) {
-            cache = {};
-        }
-
-        // In dev mode, limit the number of posts processed for the feed and use caching.
-        const postsToProcess = isBuild ? getPosts(collectionApi) : getPosts(collectionApi).slice(0, 20);
-
-        const out = [];
-        for (const item of postsToProcess) {
-            const inputPath = item.inputPath;
-            if (!inputPath) continue;
-
-            let stat;
+            let cache = {};
             try {
-                stat = fs.statSync(inputPath);
+                cache = JSON.parse(fs.readFileSync(FEED_CACHE_FILE, 'utf8')) || {};
             } catch (e) {
-                console.warn(`feedPosts: skipping missing file ${inputPath}: ${e && e.message}`);
-                continue;
+                console.warn('feedPosts: failed to read cache, starting with empty cache', e?.message || e);
+                cache = {};
             }
 
-            const mtime = stat.mtimeMs;
-            const cached = cache[inputPath];
-            if (cached && cached.mtime === mtime && typeof cached.content === 'string') {
-                out.push({ url: item.url, date: item.date, data: item.data, content: cached.content });
-                continue;
+            // In dev mode, limit the number of posts processed for the feed and use caching.
+            const postsToProcess = isBuild ? getPosts(collectionApi) : getPosts(collectionApi).slice(0, 20);
+
+            const out = [];
+            for (const item of postsToProcess) {
+                const inputPath = item.inputPath;
+                if (!inputPath) continue;
+
+                let stat;
+                try {
+                    stat = fs.statSync(inputPath);
+                } catch (e) {
+                    console.warn(`feedPosts: skipping missing file ${inputPath}: ${e?.message || 'unknown error'}`);
+                    continue;
+                }
+
+                const mtime = stat.mtimeMs;
+                const cached = cache[inputPath];
+                if (cached && cached.mtime === mtime && typeof cached.content === 'string') {
+                    out.push({ url: item.url, date: item.date, data: item.data, content: cached.content });
+                    continue;
+                }
+
+                // Render and update cache
+                let raw;
+                try {
+                    raw = fs.readFileSync(inputPath, 'utf8');
+                } catch (e) {
+                    console.warn(`feedPosts: failed to read ${inputPath}: ${e?.message || 'unknown error'}`);
+                    continue;
+                }
+
+                const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
+                const markdown = fm.test(raw) ? raw.replace(fm, '') : raw;
+                const html = md.render(markdown);
+
+                out.push({ url: item.url, date: item.date, data: item.data, content: html });
+                cache[inputPath] = { mtime, content: html };
             }
 
-            // Render and update cache
-            let raw;
-            try {
-                raw = fs.readFileSync(inputPath, 'utf8');
-            } catch (e) {
-                console.warn(`feedPosts: failed to read ${inputPath}: ${e && e.message}`);
-                continue;
+            // Remove cache entries for files that no longer exist or weren't processed
+            const validKeys = new Set(postsToProcess.map(p => p.inputPath).filter(Boolean));
+            for (const k of Object.keys(cache)) {
+                if (!validKeys.has(k)) delete cache[k];
             }
 
-            const fm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
-            const markdown = fm.test(raw) ? raw.replace(fm, '') : raw;
-            const html = md.render(markdown);
-
-            out.push({ url: item.url, date: item.date, data: item.data, content: html });
-            cache[inputPath] = { mtime, content: html };
-        }
-
-        // Remove cache entries for files that no longer exist or weren't processed
-        const validKeys = new Set(postsToProcess.map(p => p.inputPath).filter(Boolean));
-        for (const k of Object.keys(cache)) {
-            if (!validKeys.has(k)) delete cache[k];
-        }
-
-        try { fs.writeFileSync(FEED_CACHE_FILE, JSON.stringify(cache), 'utf8'); } catch (e) { console.warn('feedPosts: failed to write cache', e && e.message); }
-
-        return out.filter(Boolean).reverse();
-    });
-
-    eleventyConfig.addCollection('categories', function (collectionApi) {
-        // Use getPosts helper so we consistently include drafts handling and globbing
-        const posts = getPosts(collectionApi);
-
-        const categories = {};
-        posts.forEach((post) => {
-            const cat = post.data && (post.data.category || (post.data.categories && post.data.categories[0]));
-            if (!cat) {
-                return;
+            try { 
+                fs.writeFileSync(FEED_CACHE_FILE, JSON.stringify(cache), 'utf8'); 
+            } catch (e) { 
+                console.warn('feedPosts: failed to write cache', e?.message || e); 
             }
-            const key = String(cat);
-            if (!categories[key]) {
-                categories[key] = {
-                    name: cat,
-                    size: 1,
-                    posts: [post]
-                };
-            } else {
-                categories[key].size++;
-                categories[key].posts.push(post);
-            }
+
+            return out.filter(Boolean).reverse();
         });
 
-        // Sort posts in each category by date (newest first)
-        Object.keys(categories).forEach(k => {
-            categories[k].posts.sort((a, b) => {
-                const ta = a.date ? new Date(a.date).getTime() : 0;
-                const tb = b.date ? new Date(b.date).getTime() : 0;
-                return tb - ta;
+    eleventyConfig.addCollection('categories', (collectionApi) => {
+            // Use getPosts helper so we consistently include drafts handling and globbing
+            const posts = getPosts(collectionApi);
+
+            const categories = {};
+            posts.forEach((post) => {
+                const cat = post.data && (post.data.category || (post.data.categories?.[0]));
+                if (!cat) {
+                    return;
+                }
+                const key = String(cat);
+                if (!categories[key]) {
+                    categories[key] = {
+                        name: cat,
+                        size: 1,
+                        posts: [post]
+                    };
+                } else {
+                    categories[key].size++;
+                    categories[key].posts.push(post);
+                }
             });
-        });
 
-        // Return categories sorted alphabetically by name (case-insensitive)
-        const sortedKeys = Object.keys(categories).sort((a, b) => {
-            const na = String((categories[a] && categories[a].name) ? categories[a].name : a).trim().toLowerCase();
-            const nb = String((categories[b] && categories[b].name) ? categories[b].name : b).trim().toLowerCase();
-            return na.localeCompare(nb, undefined, {sensitivity: 'base'});
+            // Sort posts in each category by date (newest first)
+            Object.keys(categories).forEach(k => {
+                categories[k].posts.sort((a, b) => {
+                    const ta = a.date ? new Date(a.date).getTime() : 0;
+                    const tb = b.date ? new Date(b.date).getTime() : 0;
+                    return tb - ta;
+                });
+            });
+
+            // Return categories sorted alphabetically by name (case-insensitive)
+            const sortedKeys = Object.keys(categories).sort((a, b) => {
+                const na = String((categories[a]?.name) ? categories[a].name : a).trim().toLowerCase();
+                const nb = String((categories[b]?.name) ? categories[b].name : b).trim().toLowerCase();
+                return na.localeCompare(nb, undefined, { sensitivity: 'base' });
+            });
+            return sortedKeys.map(k => categories[k]);
         });
-        return sortedKeys.map(k => categories[k]);
-    });
 
     // Add a featured collection so templates can reliably iterate featured posts
-    eleventyConfig.addCollection('featured', function (collectionApi) {
-        // Use getPosts to include files under src/posts/** (including nested folders) and respect drafts
-        return getPosts(collectionApi).filter(item => {
-            try {
-                // Accept boolean true or truthy values in frontmatter
-                return !!(item.data && item.data.featured);
-            } catch (e) {
-                return false;
-            }
-        }).reverse();
-    });
+    eleventyConfig.addCollection('featured', (collectionApi) =>
+            // Use getPosts to include files under src/posts/** (including nested folders) and respect drafts
+            getPosts(collectionApi).filter(item => {
+                try {
+                    // Accept boolean true or truthy values in frontmatter
+                    return !!(item.data?.featured);
+                } catch (e) {
+                    console.warn(`Failed to process featured post: ${e?.message || 'unknown error'}`);
+                    return false;
+                }
+            }).reverse());
 
-    eleventyConfig.addCollection('tags', function (collectionApi) {
+    eleventyConfig.addCollection('tags', (collectionApi) => {
         const posts = getPosts(collectionApi);
         const tags = {};
         posts.forEach((post) => {
@@ -484,17 +498,17 @@ module.exports = function (eleventyConfig) {
         return tags_sorted;
     });
 
-    eleventyConfig.addCollection('static-snippets', function (collectionApi) {
-        // Return all snippets with a 'snippet' property in frontmatter
-        return collectionApi.getFilteredByGlob('src/static-snippets/*.md').filter(item => !!item.data.snippet)
-            .map(item => {
-                // Attach raw markdown content for use in templates
-                item.data.rawMarkdown = require('fs').readFileSync(item.inputPath, 'utf8');
-                // Attach a raw permalink property for convenience
-                item.data.raw_permalink = (item.url.endsWith('/') ? item.url : item.url + '/') + 'raw/';
-                return item;
-            });
-    });
+    eleventyConfig.addCollection('static-snippets', (collectionApi) =>
+            // Return all snippets with a 'snippet' property in frontmatter
+            collectionApi.getFilteredByGlob('src/static-snippets/*.md').filter(item => !!item.data.snippet)
+                .map(item => {
+                    // Attach raw markdown content for use in templates
+                    item.data.rawMarkdown = require('node:fs').readFileSync(item.inputPath, 'utf8');
+                    // Attach a raw permalink property for convenience
+                    // biome-ignore lint/style/useTemplate: template literal within template literal isn't that clear.
+                    item.data.raw_permalink = (item.url.endsWith('/') ? item.url : `${item.url}/`) + 'raw/';
+                    return item;
+                }));
 
     // Add a filter to get a snippet by its 'snippet' frontmatter property (for both Liquid and Nunjucks)
     function findSnippetByName(snippets, name) {
@@ -505,79 +519,80 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addLiquidFilter('findSnippetByName', findSnippetByName);
 
     // Add a shortcode to generate a "view raw" link for a snippet
-    eleventyConfig.addShortcode('snippetRawLink', function (snippet) {
-        if (!snippet || !snippet.data.raw_permalink) {
-            return '';
-        }
-        return `<a class="external-link" href="${snippet.data.raw_permalink}">View raw markdown</a>`;
-    });
+    eleventyConfig.addShortcode('snippetRawLink', (snippet) => {
+            if (!snippet || !snippet.data.raw_permalink) {
+                return '';
+            }
+            return `<a class="external-link" href="${snippet.data.raw_permalink}">View raw markdown</a>`;
+        });
 
     // Responsive thumbnail shortcode using @11ty/eleventy-img
     // Generates WebP + JPEG resized images and proper srcset HTML. Falls back to simple markup for remote images or failures.
-    eleventyConfig.addNunjucksAsyncShortcode('thumbnail', async function (src, alt = '') {
-        if (!src) {
-            return '';
-        }
+    eleventyConfig.addNunjucksAsyncShortcode('thumbnail', async (src, alt = '') => {
+            if (!src) {
+                return '';
+            }
 
-        // In dev (non-build) mode, avoid expensive image processing to reduce memory and CPU usage.
-        // Return a simple lazy img that points at the likely static path instead.
-        if (!isBuild) {
-            const normalizedPath = src.startsWith('/') ? src : `/img/${src}`;
-            return `<figure class="cover-thumb"><img src="${normalizedPath}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
-        }
+            // In dev (non-build) mode, avoid expensive image processing to reduce memory and CPU usage.
+            // Return a simple lazy img that points at the likely static path instead.
+            if (!isBuild) {
+                const normalizedPath = src.startsWith('/') ? src : `/img/${src}`;
+                return `<figure class="cover-thumb"><img src="${normalizedPath}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
+            }
 
-        // If remote URL, return a simple lazy img
-        if (/^https?:\/\//i.test(src)) {
-            return `<figure class="cover-thumb"><img src="${src}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
-        }
+            // If remote URL, return a simple lazy img
+            if (/^https?:\/\//i.test(src)) {
+                return `<figure class="cover-thumb"><img src="${src}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
+            }
 
-        // Resolve local source path. Accept '/img/...' or 'blog/...' style paths.
-        // Media files have been moved under 'assets', so map requests accordingly.
-        let inputPath;
-        let normalized = src.startsWith('/') ? src.slice(1) : src;
+            // Resolve local source path. Accept '/img/...' or 'blog/...' style paths.
+            // Media files have been moved under 'assets', so map requests accordingly.
+            let inputPath;
+            const normalized = src.startsWith('/') ? src.slice(1) : src;
 
-        if (normalized.startsWith('img/')) {
-            // '/img/...' or 'img/...' -> assets/img/...
-            inputPath = path.join(process.cwd(), 'assets', normalized);
-        } else if (normalized.includes('/')) {
-            // 'blog/...', 'reactnative/...' etc -> assets/img/<normalized>
-            inputPath = path.join(process.cwd(), 'assets', 'img', normalized);
-        } else {
-            // simple filename -> assets/img/<filename>
-            inputPath = path.join(process.cwd(), 'assets', 'img', normalized);
-        }
+            if (normalized.startsWith('img/')) {
+                // '/img/...' or 'img/...' -> assets/img/...
+                inputPath = path.join(process.cwd(), 'assets', normalized);
+            } else if (normalized.includes('/')) {
+                // 'blog/...', 'reactnative/...' etc -> assets/img/<normalized>
+                inputPath = path.join(process.cwd(), 'assets', 'img', normalized);
+            } else {
+                // simple filename -> assets/img/<filename>
+                inputPath = path.join(process.cwd(), 'assets', 'img', normalized);
+            }
 
-        try {
-            const metadata = await Image(inputPath, {
-                widths: [160, 320, 480, 640, 1024],
-                formats: ['webp', 'jpeg'],
-                outputDir: './_site/img/',
-                urlPath: '/img/',
-            });
+            try {
+                const metadata = await Image(inputPath, {
+                    widths: [160, 320, 480, 640, 1024],
+                    formats: ['webp', 'jpeg'],
+                    outputDir: './_site/img/',
+                    urlPath: '/img/',
+                });
 
-            const imageAttributes = {
-                alt: alt || '',
-                sizes: '(min-width: 700px) 120px, (min-width: 480px) 320px, 100vw',
-                class: 'img-thumb',
-                loading: 'lazy',
-                decoding: 'async'
-            };
+                const imageAttributes = {
+                    alt: alt || '',
+                    sizes: '(min-width: 700px) 120px, (min-width: 480px) 320px, 100vw',
+                    class: 'img-thumb',
+                    loading: 'lazy',
+                    decoding: 'async'
+                };
 
-            // Image.generateHTML returns a string with figure/img markup — wrap in cover-thumb container
-            return Image.generateHTML(metadata, imageAttributes).replace(/<figure(.*?)>/i, function (m, attrs) {
-                if (/class=/.test(attrs)) {
-                    return `<figure${attrs.replace(/class=(['"])([^'"]*?)\1/i, function (_, q, v) {
-                        return `class=${q}${v} cover-thumb${q}`;
-                    })}>`;
-                }
-                return `<figure class="cover-thumb"${attrs}>`;
-            });
-        } catch (err) {
-            // Fallback: return simple markup referencing the static img path
-            const normalized = src.startsWith('/') ? src : `/img/${src}`;
-            return `<figure class="cover-thumb"><img src="${normalized}" alt="${(alt || '').replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
-        }
-    });
+                // Image.generateHTML returns a string with figure/img markup — wrap in cover-thumb container
+                return Image.generateHTML(metadata, imageAttributes).replace(/<figure(.*?)>/i, (_, attrs) => {
+                        if (/class=/.test(attrs)) {
+                            return `<figure${attrs.replace(/class=(['"])([^'"]*?)\1/i, (_, q, v) => `class=${q}${v} cover-thumb${q}`)}>`;
+                        }
+                        return `<figure class="cover-thumb"${attrs}>`;
+                    });
+            } catch (err) {
+                console.warn(`Error processing thumbnail for src "${src}": ${err?.message || 'unknown error'}`);
+                // Fallback: return simple markup referencing the static img path
+
+                const normalized = src.startsWith('/') ? src : `/img/${src}`;
+                return `<figure class="cover-thumb"><img src="${normalized}" alt="${(alt || '').
+                    replace(/"/g, '&quot;')}" class="img-thumb" loading="lazy" decoding="async"></figure>`;
+            }
+        });
 
     // Add Katex support for math rendering in markdown
     const mdLib = markdownIt({
@@ -591,10 +606,11 @@ module.exports = function (eleventyConfig) {
     // ```mermaid
     // graph TD; A-->B;
     // ```
-    const defaultFence = mdLib.renderer.rules.fence || function (tokens, idx, options, env, self) {
+    const defaultFence = mdLib.renderer.rules.fence || ((tokens, idx, options, env, self) => {
         return self.renderToken(tokens, idx, options, env, self);
-    };
-    mdLib.renderer.rules.fence = function (tokens, idx, options, env, self) {
+    });
+
+    mdLib.renderer.rules.fence = (tokens, idx, options, env, self) => {
         const token = tokens[idx];
         const info = (token.info || '').trim().toLowerCase();
         if (info === 'mermaid') {
@@ -610,9 +626,8 @@ module.exports = function (eleventyConfig) {
     // Nunjucks paired shortcode for Mermaid
     // Usage in Nunjucks or Markdown with njk engine:
     // {% mermaid %}graph TD; A-->B;{% endmermaid %}
-    eleventyConfig.addPairedShortcode('mermaid', function (content = '') {
-        return `<pre class="mermaid">${escapeHtml(content)}</pre>`;
-    });
+    eleventyConfig.addPairedShortcode('mermaid', (content = '') => 
+        `<pre class="mermaid">${escapeHtml(content)}</pre>`);
 
     // Use chokidar's awaitWriteFinish so the watcher waits until files are stable
     // (no further writes) for 60s before acting. Good for editors and tools that write in multiple chunks.
@@ -638,7 +653,7 @@ module.exports = function (eleventyConfig) {
             fs.copyFileSync(srcFile, path.join(destDir, 'cv.json'));
             console.log('✅ Copied cv.json to api-worker/src/rag-data');
         } catch (e) {
-            console.warn('⚠️ Failed to copy cv.json to api-worker/src/rag-data: ' + (e && e.message));
+            console.warn(`⚠️ Failed to copy cv.json to api-worker/src/rag-data: ${e?.message || 'unknown error'}`);
         }
     });
 

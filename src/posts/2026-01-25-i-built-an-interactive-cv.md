@@ -6,6 +6,7 @@ imagefeature: blog/interactive-cv.webp
 description: "A weekend build: a data-driven resume with a digital assistant, streaming Q&A, and a job-fit analyzer."
 tags: ["Programming", "LLM", "AI", "Career"]
 date: 2026-01-25
+featured: true
 ---
 
 ## A quick weekend build

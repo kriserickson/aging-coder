@@ -6,6 +6,7 @@ imagefeature: blog/agents-all-the-way-down.webp
 description: "When agents write, run, and “review” code for us, the real risk isn’t bugs—it’s what happens when we stop verifying and start trusting outputs by default."
 tags: [ "LLM", "AI", "Programming", "SciFi"]
 date: 2026-02-11
+featured: true
 ---
 
 ## What I Thought the End of Coding Would Look Like

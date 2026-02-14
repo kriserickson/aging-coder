@@ -5,7 +5,7 @@ title: "LLMs and Coding 6 months later"
 imagefeature: blog/llms-6months-later.webp
 description: "Good lord, it has been 6 months since I last wrote a post about LLMs and coding and how the world has changed. "
 tags: ["Programming", "LLM", "AI"]
-featured: true
+featured: false
 ---
 Good lord, has really been 6 months since I last 
 [wrote a post about LLMs and coding](/posts/2024-10-05-leveraging-llms-for-coding-insights-and-real-world-experiences/) - 
