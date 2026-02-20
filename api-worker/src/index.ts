@@ -410,8 +410,13 @@ const summarizeAssistantMessage = (content: string): string => {
 };
 
 app.post('/api/chat', async c => {
+  const timings: Record<string, number> = {};
+  const mark = (label: string) => { timings[label] = Date.now(); };
+  mark('request_start');
+
   try {
     const body: ChatRequestBody = await c.req.json();
+    mark('body_parsed');
 
     // Support both single message (legacy) and messages array (new)
     let messages: Message[] = [];
@@ -452,8 +457,10 @@ app.post('/api/chat', async c => {
       return c.json({ error: validationError }, 400);
     }
 
+    mark('message_validated');
     const clientId = getClientId(c);
     const canProceed = await checkRateLimit(c, clientId);
+    mark('rate_limit_checked');
 
     if (!canProceed) {
       return c.json({ error: 'Daily question limit reached. Please try again tomorrow.' }, 429);
@@ -465,12 +472,14 @@ app.post('/api/chat', async c => {
     let ragContext = '';
 
     // Check for exact question match first (skip RAG if we have a match)
+    mark('exact_match_start');
     let exactMatch: ExactMatch | null = null;
     try {
       exactMatch = await findExactQuestionMatch(lastUserMessage);
     } catch (err) {
       console.warn('Exact question match check failed:', err);
     }
+    mark('exact_match_done');
 
     if (exactMatch) {
       // If verbatim flag is true, return the stored context directly to the user
@@ -502,6 +511,7 @@ app.post('/api/chat', async c => {
       ragResults = [{questionId: '', questionName: exactMatch.question, context: exactMatch.context, score: 1, matchedOn: 'exactMatch'}];
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
+      mark('rag_search_start');
       try {
         const results = await searchRag(c.env.AI, lastUserMessage, c.env.RAG_EMBEDDINGS, {
           previousUserMessage,
@@ -514,6 +524,7 @@ app.post('/api/chat', async c => {
       } catch (err) {
         console.warn('RAG search failed, continuing with CV-only context:', err);
       }
+      mark('rag_search_done');
     }
 
     const ragNames = ragResults.map(r => r.questionName);
@@ -541,6 +552,7 @@ app.post('/api/chat', async c => {
     };
 
     try {
+      mark('llm_call_start');
       const llmStartTime = Date.now();
       const chatResponse = await fetchChatCompletion(
         c.env,
@@ -551,6 +563,14 @@ app.post('/api/chat', async c => {
       const stream = streamCompletionResponse(chatResponse, {
         delayMs: c.env.STREAM_DELAY_MS ? Number(c.env.STREAM_DELAY_MS) : 0,
       });
+
+      mark('llm_response_received');
+      // Log timing breakdown
+      const start = timings.request_start;
+      const breakdown = Object.entries(timings)
+        .map(([label, time]) => `${label}: +${time - start}ms`)
+        .join(', ');
+      console.log(`[TIMING] Chat request breakdown: ${breakdown}`);
 
       const capturingStream = createCapturingStream(stream, fullResponse => {
         const llmDuration = Date.now() - llmStartTime;

@@ -1,4 +1,4 @@
-{% if site.google_analytics %}
+{% if isBuild and site.google_analytics %}
 <script
   data-cfasync="false"
   async
@@ -23,6 +23,12 @@
   })
 
   gtag("config", "{{ site.google_analytics }}")
+</script>
+{% else %}
+<script>
+  function gtag() {
+    console.info("gtag called with arguments:", arguments);
+  }
 </script>
 {% endif %}
 
