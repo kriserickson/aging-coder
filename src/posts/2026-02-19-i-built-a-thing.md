@@ -43,7 +43,7 @@ The README summary is basically the whole product:
 - Every command gets `risk` (`safe` or `risky`) and `certainty` (0–100)
 - A safety matrix decides: auto-run vs. ask for confirmation
 
-That last part matters because LLM output is non-deterministic. The same request can yield different commands across runs. Even when you crank temperature down, you can still see variation depending on the model, provider, and upstream changes. [Treating generated shell commands as “trusted” is how you end up learning the hard way](https://community.openai.com/t/the-generated-code-varies-every-time-even-with-a-low-temperature/921970).)
+That last part matters because LLM output is non-deterministic. The same request can yield different commands across runs. Even when you crank temperature down, you can still see variation depending on the model, provider, and upstream changes. [Treating generated shell commands as “trusted” is how you end up learning the hard way](https://community.openai.com/t/the-generated-code-varies-every-time-even-with-a-low-temperature/921970).
 
 So the tool is opinionated: commands are suggestions, and you should review them.
 
@@ -53,11 +53,11 @@ Unless you want to live dangerously.
 
 I built it in Go for two reasons.
 
-First, it’s a CLI. I want a single binary. I want to be able “download a release artifact, drop it in some directory in your path, and done.” Not “install a runtime” or “activate a venv” or “this only works if your node version matches the author’s mood.” Go makes that easy.
+First, it’s a CLI. I want a single binary. I want to be able to “download a release artifact, drop it in some directory in your path, and done.” Not “install a runtime” or “activate a venv” or “this only works if your node version matches the author’s mood.” Go makes that easy.
 
-Second, I wanted to see how well AIs write Go. Not toy Go app. Real, boring Go: config loading, HTTP clients, CLI commands, tests, release artifacts, cross-platform builds. It’s a good way to find out what an LLM is actually good at versus what it sounds good at.
+Second, I wanted to see how well AIs write Go. Not a toy Go app. Real, boring Go: config loading, HTTP clients, CLI commands, tests, release artifacts, cross-platform builds. It’s a good way to find out what an LLM is actually good at versus what it sounds good at.
 
-Spoiler: it gets you to “working” shockingly fast, then you spend your time tightening edges and and adding more and more features since the original request worked so well.
+Spoiler: it gets you to "working" shockingly fast, then you spend your time tightening edges and adding more and more features since the original request worked so well.
 
 ## How it works: the basic loop, and the safety policy
 
@@ -305,7 +305,7 @@ drwxr-xr-x    4 kriserickson  staff   128B Jan  7 15:11 js
 drwxr-xr-x    2 kriserickson  staff    64B Jan 19 09:11 tests
 ```
 
-When you’re playing with prompts, models, or providers, debug output lets you understand what is going to and from the AI. so you can figure out what happened when it called the wrong commnad: “ah, it decided I’m on bash when I’m actually on zsh.”
+When you’re playing with prompts, models, or providers, debug output lets you understand what is going to and from the AI, so you can figure out what happened when it called the wrong command: “ah, it decided I’m on bash when I’m actually on zsh.”
 
 
 ## You should always verify what it’s doing
@@ -324,5 +324,9 @@ If you choose not to verify, you are explicitly opting into the “live dangerou
 
 ## Closing
 
-This was a quick and dirty little App that I started using as soon as I vibe coded it.  I wish I had months ago (though I am not sure it would have been so easy to produce).  Will it cost you money to run?  Yes, but if you stick with a model like gpt-4o-mini or the like it will take days of use to even spend a few pennies.   To me it is worth it rather than having to go the ChatGPT in the browser and ask again how find all the files that end in .js that contain the CONFIG_URL and aren't in the dist directory and aren't in node_modules.
+I started using this the same day I finished it. That's the bar for a useful tool: it solves the actual problem immediately, without ceremony.
+
+Will it cost you money? Yes. But stick with `gpt-4o-mini` and you'll burn through maybe a few pennies after days of use. That's a fair trade for never having to leave the terminal and re-explain your OS to a browser chatbot just to remember how to find all `.js` files containing `CONFIG_URL` that aren't in `dist` or `node_modules`.
+
+The real cost was always the context switch. Now I don't pay it.
 
