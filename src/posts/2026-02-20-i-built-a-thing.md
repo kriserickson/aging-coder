@@ -80,18 +80,18 @@ ai config set always_confirm false
 Then after prompting the LLM it applies this decision matrix:
 
 - `safe` commands can auto-run if certainty meets your threshold (defaulting to 80% certainty)
-- `risky` commands can auto-run **only** if they’re whitelisted (and meet certainty)
+- `risky` commands can auto-run **only** if they’re on the allowlist (and meet certainty)
 - anything else prompts for Y/N to run the command. 
 
-By default, the whitelist is intentionally boring: `git`, `ls`, `cat`, `pwd`, `grep`, `find`, and friends.
+By default, the allowlist is intentionally boring: `git`, `ls`, `cat`, `pwd`, `grep`, `find`, and friends.
 
-And if you want to edit the whitelist today, you will have to crack open the TOML file (`ai status` will show you where to find it:  `~\.ai-cli\config.toml` on Mac and Linux and `%USER_PROFILE%\.ai-cli\config.toml` by default on Windows)
+And if you want to edit the allowlist today, you will have to crack open the TOML file (`ai status` will show you where to find it:  `~\.ai-cli\config.toml` on Mac and Linux and `%USER_PROFILE%\.ai-cli\config.toml` by default on Windows)
 
 ```toml
 [safety]
 always_confirm = false
 min_certainty = 80
-whitelist_prefixes = ["git", "ls", "cat", "echo", "pwd", "head", "tail", "wc", "grep", "find", "which", "man"]
+allowlist_prefixes = ["git", "ls", "cat", "echo", "pwd", "head", "tail", "wc", "grep", "find", "which", "man"]
 ```
 
 The safety policy is not perfect and may change, but the Y/N prompt is so minor that I would leave always_confirm to the default true. This dramatically improves the “I asked for something harmless and it decided to `rm -rf` my entire hard drive” failure mode.
@@ -99,7 +99,7 @@ The safety policy is not perfect and may change, but the Y/N prompt is so minor 
 ## [Quick start](https://github.com/kriserickson/ai-cli/blob/main/README.md#quick-start-users): the first five minutes
 
 
-Download from your [release page](https://github.com/kriserickson/ai-cli/releases) or build it following the instructions in the [README.md](https://github.com/kriserickson/ai-cli/blob/main/README.md#developer-guide):
+Download from the [release page](https://github.com/kriserickson/ai-cli/releases) or build it following the instructions in the [README.md](https://github.com/kriserickson/ai-cli/blob/main/README.md#developer-guide):
 
 To Install on macOS:
 
