@@ -78,16 +78,12 @@ export function setupFitModal() {
 	}
 
 	const closeBtn = fitModalEl.querySelector(".chat-close, .fit-close");
-	const overlay = fitModalEl.querySelector(
-		".chat-modal-overlay, .fit-modal-overlay",
-	);
 	const submitBtn = document.getElementById("fit-submit");
 	const tabs = fitModalEl.querySelectorAll(".fit-tab");
 
 	if (closeBtn) {
 		closeBtn.addEventListener("click", closeFitModal);
 	}
-
 
 	tabs.forEach((tab) => {
 		tab.addEventListener("click", () => {

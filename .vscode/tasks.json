@@ -4,7 +4,7 @@
     {
       "label": "CV: Run tests",
       "type": "shell",
-      "command": "npm --prefix cv test",
+      "command": "pnpm --dir cv run test",
       "group": {
         "kind": "test",
         "isDefault": true
@@ -18,7 +18,7 @@
     {
       "label": "CV: Watch tests",
       "type": "shell",
-      "command": "npm --prefix cv test:watch",
+      "command": "pnpm --dir cv run test:watch",
       "isBackground": true,
       "presentation": {
         "reveal": "always",

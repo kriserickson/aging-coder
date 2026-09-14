@@ -60,9 +60,9 @@ describe("index bootstrap", () => {
 		await import("../src/index");
 		expect(domReadyHandler).not.toBeNull();
 
-		if (domReadyHandler) {
-			await domReadyHandler(new Event("DOMContentLoaded"));
-		}
+		await (domReadyHandler as ((event: Event) => void) | null)?.(
+			new Event("DOMContentLoaded"),
+		);
 
 		expect(mocks.loadChatConfig).toHaveBeenCalledTimes(1);
 		expect(mocks.restoreConversationUI).toHaveBeenCalledTimes(1);
@@ -90,9 +90,9 @@ describe("index bootstrap", () => {
 			});
 
 		await import("../src/index");
-		if (domReadyHandler) {
-			await domReadyHandler(new Event("DOMContentLoaded"));
-		}
+		await (domReadyHandler as ((event: Event) => void) | null)?.(
+			new Event("DOMContentLoaded"),
+		);
 
 		const input = document.getElementById("chat-input") as HTMLInputElement;
 		input.dispatchEvent(new KeyboardEvent("keypress", { key: "Enter" }));

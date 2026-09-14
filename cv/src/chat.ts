@@ -170,7 +170,7 @@ function getTopicConfig(
 	index: number | null,
 	skillId: string | null,
 ) {
-	if (!chatConfig || !chatConfig.topics) {
+	if (!chatConfig?.topics) {
 		console.warn("getTopicConfig: No chatConfig or topics available");
 		return null;
 	}
@@ -284,13 +284,11 @@ function askSampleQuestion(question: string) {
 
 export function setupChatHandlers() {
 	const closeButton = document.querySelector(".chat-close");
-	const overlay = document.querySelector(".chat-modal-overlay");
 	const sendButton = document.querySelector(".chat-send");
 
 	if (closeButton) {
 		closeButton.addEventListener("click", closeChat);
 	}
-
 
 	if (sendButton) {
 		sendButton.addEventListener("click", sendMessage);

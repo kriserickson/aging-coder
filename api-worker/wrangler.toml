@@ -5,7 +5,7 @@ preview_urls = false
 
 [vars]
 # Add your environment variables here
-CHAT_MODEL = "gpt-4o-mini"
+CHAT_MODEL = "gpt-5.6-luna"
 CHAT_BASE_URL = "https://openrouter.ai/api/v1"
 CHAT_APP_NAME = "aging-coder-cv-chat"
 CHAT_APP_URL = "https://agingcoder.com"

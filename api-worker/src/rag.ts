@@ -1,5 +1,5 @@
-import cvData from './rag-data/cv.json';
-import questionsData from './rag-data/questions.json';
+import cvData from './rag-data/cv.json' with { type: 'json' };
+import questionsData from './rag-data/questions.json' with { type: 'json' };
 
 interface Question {
   name?: string;
@@ -641,13 +641,17 @@ const embedDocuments = async (
     await resetAllQuestionEmbeddings(cache);
   } else if (cache) {
     const needHydration = questionDocuments.filter(doc => !doc.embedding);
-    console.log(`[RAG] Hydrating ${needHydration.length}/${totalDocs} docs from KV (${alreadyInMemory} already in memory)...`);
+    console.log(
+      `[RAG] Hydrating ${needHydration.length}/${totalDocs} docs from KV (${alreadyInMemory} already in memory)...`,
+    );
     await Promise.all(needHydration.map(doc => hydrateDocumentFromCache(cache, doc)));
   }
 
   const hydrateDuration = Date.now() - hydrateStart;
   const hydratedCount = questionDocuments.filter(doc => doc.embedding).length - alreadyInMemory;
-  console.log(`[RAG] KV hydration took ${hydrateDuration}ms (hydrated ${hydratedCount} docs, ${alreadyInMemory} were already in memory)`);
+  console.log(
+    `[RAG] KV hydration took ${hydrateDuration}ms (hydrated ${hydratedCount} docs, ${alreadyInMemory} were already in memory)`,
+  );
 
   const pending = questionDocuments.filter(doc => !doc.embedding);
 

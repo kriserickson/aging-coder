@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Launch api-worker (wrangler dev)",
       "cwd": "${workspaceFolder}/api-worker",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": ["run", "dev"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
@@ -49,8 +49,8 @@
       "type": "node",
       "request": "launch",
       "name": "Debug CV: Vitest (run)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test", "--prefix", "cv", "--", "--run"],
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "cv", "run", "test", "--", "--run"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     },
@@ -58,8 +58,8 @@
       "type": "node",
       "request": "launch",
       "name": "Debug CV: Vitest (watch)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test:watch", "--prefix", "cv"],
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "cv", "run", "test:watch"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     }

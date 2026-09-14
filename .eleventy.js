@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
-const rssPlugin = require('@11ty/eleventy-plugin-rss');
+const rssPlugin = require('@11ty/eleventy-plugin-rss').default;
 const dateFilter = require('nunjucks-date');
 const markdownIt = require("markdown-it");
 const markdownItKatex = require("markdown-it-katex");
@@ -10,7 +10,7 @@ const isBuild = process.env.ELEVENTY_RUN_MODE === 'build';
 
 dotenv.config();
 
-const Image = require('@11ty/eleventy-img');
+const Image = require('@11ty/eleventy-img').default;
 const path = require('node:path');
 
 function getPosts(collectionApi) {

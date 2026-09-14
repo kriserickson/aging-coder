@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const inquirer = require('inquirer');
 const readline = require('readline');
 
 // Define the directory where posts are stored (resolve relative to this script)

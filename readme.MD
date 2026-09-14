@@ -7,19 +7,19 @@ Quick commands
 - Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 - Build the static site (writes to `_site/`):
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 - Serve locally with Eleventy (live-reload):
 
 ```bash
-npm run serve
+pnpm run serve
 ```
 
 High-level architecture
@@ -83,18 +83,18 @@ Thumbnail and image handling
 
 Drafts and publishing workflow
 
-- There are two common ways this project handles drafts: frontmatter flags (manual) and the convenience npm scripts in `package.json` (`npm run draft` and `npm run publish`). Below is the precise behavior of those helper scripts so you know what they do and how to call them.
+- There are two common ways this project handles drafts: frontmatter flags (manual) and the convenience pnpm scripts in `package.json` (`pnpm run draft` and `pnpm run publish`). Below is the precise behavior of those helper scripts so you know what they do and how to call them.
 
 - Frontmatter method (manual): Mark a post as a draft by adding `draft: true` to its frontmatter.  To publish a draft using this method: remove `draft: true` (or set it to `false`) and run the production build.
 
-- Npm scripts method (convenient): Use the `npm run draft` script to create a new draft post:
+- pnpm scripts method (convenient): Use the `pnpm run draft` script to create a new draft post:
 
 ```cmd
-npm run publish
+pnpm run publish
 ```
 
 - Notes & recommendations:
-  - Because `js/publish-draft.js` only scans the immediate files in `src/posts/`, drafts located in nested directories (for example `src/posts/older/my-draft.md`) will not be found by the `publish` script. If you rely on nested draft locations you can either move drafts to the top-level `src/posts/` before running `npm run publish` or I can update the script to search recursively.
+  - Because `js/publish-draft.js` only scans the immediate files in `src/posts/`, drafts located in nested directories (for example `src/posts/older/my-draft.md`) will not be found by the `publish` script. If you rely on nested draft locations you can either move drafts to the top-level `src/posts/` before running `pnpm run publish` or I can update the script to search recursively.
   - The `create-post.js` script enforces a title argument and marks the new post as a draft. If you want a different frontmatter template (for example to pre-fill `category` or `tags`) we can adjust the template in that script.
   - The publish script is conservative: it only removes a line that exactly matches `draft: true` (case-insensitive) and otherwise preserves existing frontmatter formatting and fields.
 
@@ -129,7 +129,7 @@ Adding a new post (quick)
 
 1. Create `src/posts/YYYY-MM-DD-slug.md` (or `slug.md` where you prefer).
 2. Add frontmatter as shown above (include `description` for better search/listing results).
-3. Preview locally with `npm run serve` (drafts are included by default when not running the production build env).
+3. Preview locally with `pnpm run serve` (drafts are included by default when not running the production build env).
 4. When ready, remove `draft: true` and run the production build with `ELEVENTY_RUN_MODE=build`.
 
 Tips and next steps
@@ -142,24 +142,24 @@ Tips and next steps
 CV chat (local + Cloudflare)
 
 - Copy `.env.example` to `.env` and set `CV_CHAT_API`.
-- Run `npm install` and then `npm run dev:cv-chat` to start the worker and site together.
+- Run `pnpm install` and then `pnpm run dev` to start the worker and site together.
 - Visit `http://localhost:8888/cv/` for the chat UI.
 
 Cloudflare deploy
 
-- From `api-worker/`, run `npm install`.
+- From the repository root, run `pnpm install`.
 - Configure secrets/vars:
-  - `npx wrangler secret put CHAT_API_KEY`
-  - `npx wrangler secret put CHAT_MODEL`
-  - `npx wrangler secret put CHAT_BASE_URL`
-  - `npx wrangler secret put CHAT_APP_NAME`
-  - `npx wrangler secret put CHAT_APP_URL`
-  - `npx wrangler secret put DAILY_LIMIT`
-  - `npx wrangler secret put CORS_ORIGINS`
-  - `npx wrangler secret put STREAM_DELAY_MS`
-  - `npx wrangler secret put LOG_ANALYTICS`
+  - `pnpm --dir api-worker exec wrangler secret put CHAT_API_KEY`
+  - `pnpm --dir api-worker exec wrangler secret put CHAT_MODEL`
+  - `pnpm --dir api-worker exec wrangler secret put CHAT_BASE_URL`
+  - `pnpm --dir api-worker exec wrangler secret put CHAT_APP_NAME`
+  - `pnpm --dir api-worker exec wrangler secret put CHAT_APP_URL`
+  - `pnpm --dir api-worker exec wrangler secret put DAILY_LIMIT`
+  - `pnpm --dir api-worker exec wrangler secret put CORS_ORIGINS`
+  - `pnpm --dir api-worker exec wrangler secret put STREAM_DELAY_MS`
+  - `pnpm --dir api-worker exec wrangler secret put LOG_ANALYTICS`
 - Ensure the Worker has the AI binding enabled (see `api-worker/wrangler.toml`). Without it, the service will skip RAG search and send all data as context.
-- Deploy with `npx wrangler deploy`.
+- Deploy with `pnpm --dir api-worker run deploy`.
 - Update `.env` `CV_CHAT_API` with the deployed worker URL.
 
 RAG data

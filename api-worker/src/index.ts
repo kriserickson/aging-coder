@@ -1,13 +1,13 @@
 import { type Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { fetchUrlContent } from './fetch-url-content';
+import { fetchUrlContent } from './fetch-url-content.js';
 import {
   buildConversationMessages,
   buildFitAssessmentSystemPrompt,
   buildFitAssessmentUserPrompt,
   buildSystemPrompt,
   buildUserPrompt,
-} from './prompt';
+} from './prompt.js';
 import {
   type ExactMatch,
   type ExpansionMetadata,
@@ -18,7 +18,7 @@ import {
   prepareQuestionEmbeddings,
   type RagResultWithMetadata,
   searchRag,
-} from './rag';
+} from './rag.js';
 
 interface Env {
   CHAT_API_KEY?: string;
@@ -156,7 +156,7 @@ const streamText = (content: string, { delayMs = 16 } = {}): ReadableStream => {
 
 const getOpenRouterConfig = (env: Env): OpenRouterConfig => ({
   apiKey: env?.CHAT_API_KEY,
-  model: env?.CHAT_MODEL || 'gpt-4o-mini',
+  model: env?.CHAT_MODEL || 'gpt-5.6-luna',
   baseUrl: env?.CHAT_BASE_URL || 'https://openrouter.ai/api/v1',
   appName: env?.CHAT_APP_NAME || 'aging-coder-cv-chat',
   appUrl: env?.CHAT_APP_URL || 'https://agingcoder.com',
@@ -239,7 +239,7 @@ const streamCompletionResponse = (response: Response, { delayMs = 0 } = {}): Rea
 
           for (const line of lines) {
             const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith('data:')) {
+            if (!trimmed.startsWith('data:')) {
               continue;
             }
             const data = trimmed.replace('data:', '').trim();
@@ -411,7 +411,9 @@ const summarizeAssistantMessage = (content: string): string => {
 
 app.post('/api/chat', async c => {
   const timings: Record<string, number> = {};
-  const mark = (label: string) => { timings[label] = Date.now(); };
+  const mark = (label: string) => {
+    timings[label] = Date.now();
+  };
   mark('request_start');
 
   try {
@@ -508,7 +510,15 @@ app.post('/api/chat', async c => {
 
       // Non-verbatim: safe to include directly in ragContext
       ragContext = exactMatch.context;
-      ragResults = [{questionId: '', questionName: exactMatch.question, context: exactMatch.context, score: 1, matchedOn: 'exactMatch'}];
+      ragResults = [
+        {
+          questionId: '',
+          questionName: exactMatch.question,
+          context: exactMatch.context,
+          score: 1,
+          matchedOn: 'exactMatch',
+        },
+      ];
     } else if (c.env.AI) {
       // No exact match - do RAG search if AI binding is available
       mark('rag_search_start');
