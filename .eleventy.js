@@ -103,7 +103,7 @@ module.exports = (eleventyConfig) => {
     // Transform images: wrap <img> tags and add lazy/loading attributes and a lightweight class
     // Also ensure an alt attribute exists (empty if necessary) to improve accessibility
     eleventyConfig.addTransform('wrapImages', (content, outputPath) => {
-            if (outputPath?.endsWith('.html')) {
+            if (typeof outputPath === 'string' && outputPath.endsWith('.html')) {
                 // Track whether each <img> sits inside a <picture> element.
                 // We do this by scanning for <picture> and </picture> boundaries.
                 let insidePicture = 0;
@@ -261,6 +261,11 @@ module.exports = (eleventyConfig) => {
     // Add eleventyComputed for dynamic permalink logic
     eleventyConfig.addGlobalData('eleventyComputed', {
         permalink: (data) => {
+            // Filtering collections alone does not stop Eleventy from publishing a draft.
+            if (isBuild && data.draft === true) {
+                return false;
+            }
+
             // Keep original pagination behavior
             if (data.pagination && data.pagination.pageNumber === 0) {
                 return '/';  // Return root for the first page
@@ -325,6 +330,15 @@ module.exports = (eleventyConfig) => {
 
             return posts.reverse();
         });
+
+    // Include rendered content pages and every archive page, but never feeds,
+    // redirect stubs, raw snippets, drafts, or pages explicitly omitted from sitemaps.
+    eleventyConfig.addCollection('sitemapPages', (collectionApi) => {
+        const pages = collectionApi.getAll().filter((item) =>
+            item.url && item.data.layout && item.data.draft !== true && item.data.sitemap !== false);
+        return [...new Map(pages.map((item) => [item.url, item])).values()]
+            .sort((a, b) => a.url.localeCompare(b.url));
+    });
 
     // Dev-friendly collection for legacy pagination: skip generating legacy redirect pages in dev to avoid massive re-renders
     eleventyConfig.addCollection('legacyPaginatePosts', (collectionApi) => {

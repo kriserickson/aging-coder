@@ -45,8 +45,9 @@
 {% endif %}
 
 {# Canonical URL #}
-{% set canonical = page.url.replace('index.njk', '') %}
-<link rel="canonical" href="{{ site.url }}{{ canonical }}">
+{% if page.url %}
+<link rel="canonical" href="{{ site.url }}{{ page.url }}">
+{% endif %}
 <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="{{ site.title }} Feed">
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">

@@ -11,7 +11,7 @@ eleventyExcludeFromCollections: true
 <head>
     <meta charset="UTF-8">
     <!-- Canonical tag is crucial here so Google ignores this duplicate -->
-    <link rel="canonical" href="{{ post.url | url }}">
+    <link rel="canonical" href="{{ site.url }}{{ post.url }}">
 
     <!-- Meta refresh redirect -->
     <meta http-equiv="refresh" content="0; url={{ post.url | url }}">

@@ -43,7 +43,7 @@ extra_css:
                 by <strong>{{ site.owner.name }}</strong>
                 {% set tagsize = tags.size %}
                 {% if tagsize != 0 %} in
-                    {% for tag in tags %}<a href="/tags/index.html#{{ tag | cgi_encode }}"
+                    {% for tag in tags %}<a href="/tags/#{{ tag | cgi_encode }}"
                             rel="tag">{{ tag }}</a>{% if not loop.last %}, {% endif %}
                     {% endfor %}
                 {% endif %} —
