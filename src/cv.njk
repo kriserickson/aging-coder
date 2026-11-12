@@ -17,9 +17,11 @@ extra_js:
     <div class="cv-name">{{ cv.personal.name }}</div>
     <div class="cv-contact">
       <span>{{ cv.personal.location }}</span> |
-      <a href="mailto:{{ cv.personal.email }}">{{ cv.personal.email }}</a>
+      <a href="mailto:{{ cv.personal.email }}">{{ cv.personal.email }}</a> |
+      <a href="tel:{{ cv.personal.phone | replace('-', '') }}">{{ cv.personal.phone }}</a>
     </div>
     <div class="cv-links">
+      <a href="{{ cv.personal.website }}" target="_blank">agingcoder.com</a> |
       <a href="{{ cv.personal.github }}" target="_blank">GitHub</a> |
       <a href="{{ cv.personal.linkedin }}" target="_blank">LinkedIn</a> |
       <a href="/img/kris-erickson-resume.pdf" target="_blank">CV as PDF</a>
