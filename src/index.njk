@@ -1,11 +1,11 @@
 ---
 layout: home.njk
 title: Aging Coder
-eleventyExcludeFromCollections: true
 pagination:
     data: collections.posts
     size: 5
     alias: post
+    addAllPagesToCollections: true
 ---
 {% for post in pagination.items %}
     <article class="card">
@@ -29,7 +29,7 @@ pagination:
             </section>
             <div class="post-tags">
                 {% if post.data.category %}
-                    <a href="/categories/index.html#{{ post.data.category | url }}" class="tag-pill">
+                    <a href="/categories/#{{ post.data.category | url }}" class="tag-pill">
                         {{ post.data.category | capitalize }}
                     </a>
                 {% endif %}

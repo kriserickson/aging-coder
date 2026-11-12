@@ -3,7 +3,6 @@ title : Sitemap
 permalink: /sitemap.txt
 eleventyExcludeFromCollections: true
 ---
-{% for page in site.pages %}
-{{site.url}}{{ page.url }}{% endfor %}
-{% for post in site.posts %}
-{{site.url}}{{ post.url }}{% endfor %}
+{% for item in collections.sitemapPages -%}
+{{ site.url | safe }}{{ item.url | safe }}
+{% endfor -%}

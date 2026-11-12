@@ -1,22 +1,13 @@
 ---
 layout: null
 permalink: sitemap.xml
+eleventyExcludeFromCollections: true
 ---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    {% for item in collections.sitemapPages %}
     <url>
-        <loc>{{ site.url }}</loc>
-    </url>
-
-    {% for page in site.pages %}
-    <url>
-        <loc>{{ site.url }}{{ page.url }}</loc>
-    </url>
-    {% endfor %}
-
-    {% for post in site.posts %}
-    <url>
-        <loc>{{ site.url }}{{ post.url }}</loc>
+        <loc>{{ (site.url ~ item.url) | escape }}</loc>
     </url>
     {% endfor %}
 </urlset>

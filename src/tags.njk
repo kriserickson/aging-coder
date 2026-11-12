@@ -3,7 +3,6 @@ layout: page.njk
 title: Tag Index
 permalink: /tags/
 description: "An archive of posts ordered by tag."
-eleventyExcludeFromCollections: true
 ---
 {% for tag in collections.tags %}
 	<h2 id="{{ tag.link }}">{{ tag.name | capitalize }}</h2>
