@@ -6,13 +6,13 @@
       "What are Kris's key technical skills?",
       "Tell me about Kris's management experience",
       "What major projects has Kris led?",
-      "There is really only one job listed here, has Kris worked anywhere else?"
+      "What is Kris working on at Kardium?"
     ]
   },
   "topics": {
     "summary": {
       "title": "About Kris's Background",
-      "message": "Kris brings 25+ years building and modernizing enterprise SaaS and high-volume commerce platforms, plus a track record leading teams and shipping reliable systems at scale. Here are a few questions to dig into depth, impact, and how he operates day-to-day.",
+      "message": "Kris brings 25+ years building and modernizing enterprise software, including high-scale SaaS, manufacturing systems, cloud architecture, and AI-enabled development. He has led teams of up to 10 developers and architected commerce and kiosk systems across 10+ countries.",
       "questions": [
         "Can you expand on Kris's enterprise SaaS experience?",
         "What measurable outcomes came from those projects?",
@@ -22,6 +22,16 @@
     },
     "experience": {
       "0": {
+        "title": "Staff Engineer at Kardium",
+        "message": "Since March 2026, Kris has helped modernize Kardium’s manufacturing systems on Azure, built an agentic RAG-based Ticket Tool, and automated deployments with Azure DevOps Pipelines and Terraform.",
+        "questions": [
+          "What manufacturing systems is Kris modernizing at Kardium?",
+          "How does the RAG-based Ticket Tool help support staff?",
+          "What label-printing and invoice reconciliation tools has Kris built?",
+          "How has Kris used AI and automated deployments at Kardium?"
+        ]
+      },
+      "1": {
         "title": "Director of Software Development",
         "message": "As Director at Storefront.com (2020-2025), Kris directed company-wide software strategy and managed teams of up to 10 developers.",
         "questions": [
@@ -31,16 +41,16 @@
           "How were legacy systems modernized during this time?"
         ]
       },
-      "1": {
+      "2": {
         "title": "Team Lead / Senior Software Architect",
         "message": "As Team Lead at Storefront.com (2010-2020), Kris led the launch of Android-based platforms and designed critical systems.",
         "questions": [
-          "What was the Android-based platform project and its impact?",
-          "How did the kiosk file transfer and payment system work?",
-          "What was the Remote Management platform?"          
+          "What was the Android photo kiosk project and its impact?",
+          "What was the Remote Management platform?",
+          "How did Kris improve retailer e-commerce and administrative tools?"
         ]
       },
-      "2": {
+      "3": {
         "title": "Senior Software Developer",
         "message": "As Senior Developer at Storefront.com (1998-2009), Kris architected the E-Commerce Platform and Windows Photo Kiosk.",
         "questions": [
@@ -49,16 +59,24 @@
           "How did the Windows Photo Kiosk work?",
           "What was the business impact of these systems?"
         ]
+      },
+      "4": {
+        "title": "Programmer at Canadian Forest Products (Canfor)",
+        "message": "At Canfor in 1998, Kris developed a Visual Basic system that replaced paper Material Safety Data Sheet binders with a searchable digital platform accessible across operations.",
+        "questions": [
+          "What did Kris build at Canfor?",
+          "How did the MSDS system improve compliance and retrieval?"
+        ]
       }
     },
     "skills": {
       "frontend": {
         "title": "Frontend Development Skills",
-        "message": "Kris has expert-level frontend development experience with React, Vue, Angular, and TypeScript in production applications.",
+        "message": "Kris has frontend experience with TypeScript, JavaScript, React, Vue, Blazor, Angular, HTML, CSS, and complex build systems.",
         "questions": [
           "Which frontend frameworks are you most experienced with?",
           "What is your philosophy on whether something should be done on the frontend vs backend?",
-          "What build tools have you worked with?"          
+          "What build tools have you worked with?"
         ]
       },
       "backend": {
@@ -67,16 +85,17 @@
         "questions": [
           "Which back-end languages have you used most?",
           "REST, GraphQL, or both?",
-          "Messaging/event-driven experience (Solace/Kafka/RabbitMQ)?",
-          "How do you debug production issues?",  
+          "What experience does Kris have with Solace and event-driven architecture?",
+          "How do you debug production issues?",
           "What about API design?"
         ]
       },
       "ai_ml": {
         "title": "AI/ML Experience",
-        "message": "Kris is passionate about AI/ML with hands-on experience in PyTorch, Hugging Face, and modern AI coding tools.",
+        "message": "Kris works with machine learning and agentic AI tools including Hugging Face Transformers, PyTorch, LangChain, LangGraph, n8n, ChromaDB, and LLM fine-tuning with LoRA/QLoRA.",
         "questions": [
           "Which ML frameworks have you used?",
+          "How has Kris used RAG and agentic AI at Kardium?",
           "What AI-assisted coding tools do you use?",
           "How do you feel about AI, and its impact on software development?"
         ]
@@ -87,44 +106,26 @@
         "questions": [
           "What native mobile experience do you have?",
           "Which cross-platform tools have you used?",
-          "Android or iOS preference?"         
+          "Android or iOS preference?"
         ]
       },
       "databases": {
         "title": "Database Experience",
-        "message": "Kris has extensive database experience with both SQL (MySQL, PostgreSQL) and NoSQL (MongoDB, Redis) technologies.",
+        "message": "Kris has experience with MySQL, SQL Server, PostgreSQL, SQLite, MongoDB, and Redis.",
         "questions": [
           "Which databases are you most familiar with?",
           "SQL or NoSQL preference?",
           "Experience with Redis?"
         ]
       },
-      "practices": {
-        "title": "Development Practices",
-        "message": "Kris has a strong foundation in Agile/Lean methodologies, TDD, and code review leadership.",
-        "questions": [
-          "What development methodologies do you prefer?",
-          "Experience with TDD?",
-          "How do you approach code reviews?"
-        ]
-      },
       "devops": {
-        "title": "DevOps Experience",
-        "message": "Kris has comprehensive DevOps experience with Docker, Kubernetes, and CI/CD pipelines.",
+        "title": "DevOps & Infrastructure Experience",
+        "message": "Kris has experience with Azure, AWS, Docker, Kubernetes, Terraform, and CI/CD, including Azure DevOps Pipelines, GitHub Actions, GitLab CI, and Jenkins.",
         "questions": [
           "What CI/CD experience do you have?",
           "Experience with Kubernetes?",
           "Which CI/CD tools have you used?",
           "What are your feelings about DevOps practices?"
-        ]
-      },
-      "languages": {
-        "title": "Programming Languages",
-        "message": "Kris is a polyglot developer who has released production code in 10+ languages and experimented with 20+ languages.",
-        "questions": [
-          "Which are your strongest languages?",
-          "Any unusual or niche languages?",
-          "How do you approach learning new languages?"
         ]
       }
     },
@@ -167,12 +168,12 @@
         ]
       },
       "4": {
-        "title": "Distributed SaaS Platform",
-        "message": "A microservices-based SaaS platform for customizable products and e-commerce integrations, co-architected by Kris.",
+        "title": "PrintSuite",
+        "message": "PrintSuite is a distributed C# microservices SaaS platform for customizable products and e-commerce integrations, co-architected by Kris using Solace event messaging, Shopify, and other commerce platforms.",
         "questions": [
           "How did the distributed SaaS platform help partners?",
           "What microservices architecture was used?",
-          "How do partners integrate?"          
+          "How do partners integrate?"
         ]
       }
     },
@@ -206,10 +207,21 @@
         "Where can I find the source code?"
       ],
       "info": {
-        "stack": ["Eleventy (11ty)", "Cloudflare Workers", "Hono", "OpenRouter", "OpenAI GPT models"],
+        "stack": [
+          "Eleventy (11ty)",
+          "Cloudflare Workers",
+          "Hono",
+          "OpenRouter",
+          "OpenAI GPT models"
+        ],
         "hosting": "Digital Ocean server fronted by Cloudflare",
         "source": "https://github.com/kriserickson/aging-coder",
-        "features": ["RAG-based context retrieval", "Streaming responses", "Job fit assessment", "Interactive CV exploration"]
+        "features": [
+          "RAG-based context retrieval",
+          "Streaming responses",
+          "Job fit assessment",
+          "Interactive CV exploration"
+        ]
       }
     }
   }

@@ -23,7 +23,12 @@
       "location": "Vancouver, BC",
       "period": "March 2026 – Present",
       "achievements": [
-        
+        "Helped architect an Azure-hosted modernization of the manufacturing execution system (MES), transitioning from legacy desktop applications to a platform based on Microsoft Dynamics 365, Siemens Opcenter, and supplemental applications, designed to support approximately 100× manufacturing growth.",
+        "Developed label-printing tools for proofing, printing, reprinting, and auditing hundreds of label formats, integrating inputs from multiple systems and supporting hundreds of printers.",
+        "Built an agentic RAG-based Ticket Tool in the first two weeks, helping support staff and developers troubleshoot dozens of legacy MES, PLM, and inventory applications using knowledge bases, runbooks, source code, requirements, and tool-assisted access to source code and read-only database information; widely adopted by support staff.",
+        "Developed an invoice reconciliation tool that matches uploaded invoice documents with PRs in the inventory system to address unreliable inventory costing data.",
+        "Replaced manual Azure deployment procedures with automated Azure DevOps Pipelines and Terraform to manage application releases.",
+        "Championed AI adoption across MES development by creating reusable skills and plugins used by colleagues, while contributing technical architecture, guidance, and mentoring."
       ]
     },
     {
@@ -42,7 +47,7 @@
     },
     {
       "title": "Team Lead / Senior Software Architect",
-      "company": "Storefront.com / Macdonald Harris and Associates",
+      "company": "Storefront.com",
       "location": "Vancouver, BC",
       "period": "January 2010 – July 2020",
       "achievements": [
@@ -64,6 +69,15 @@
         "Served as lead architect for the Storefront Windows Photo Kiosk (launched 2005), which processed millions of prints annually and drove over $1B in photo product sales by 2010.",
         "Designed and implemented scalable templating and rendering engines that powered dynamic content generation for enterprise platforms."
       ]
+    },
+    {
+      "title": "Programmer",
+      "company": "Canadian Forest Products (Canfor)",
+      "location": "Vancouver, BC",
+      "period": "Mar 1998 – Dec 1998",
+      "achievements": [
+        "Developed a Visual Basic system for importing, cataloging, and displaying Material Safety Data Sheets (MSDS), replacing a multi-binder paper process with a searchable digital platform accessible from terminals across all Canfor operations, improving compliance and retrieval times."
+      ]
     }
   ],
   "skills": [
@@ -73,14 +87,30 @@
       "items": [
         {
           "label": "Technologies",
-          "values": ["TypeScript", "JavaScript", "Vue", "React", "Angular", "HTML", "CSS"]
+          "values": [
+            "TypeScript",
+            "JavaScript",
+            "React",
+            "Vue",
+            "Blazor",
+            "Angular",
+            "HTML",
+            "CSS"
+          ]
         },
         {
           "label": "Tools",
-          "values": ["Vite", "Webpack", "Rollup", "Gulp", "Websockets", "PWAs"]
+          "values": [
+            "Vite",
+            "Webpack",
+            "Rollup",
+            "Gulp",
+            "Websockets",
+            "PWAs"
+          ]
         }
       ],
-      "description": "Expert in modern frontend development with complex build systems and real-time applications."
+      "description": "Experience with complex build systems, websockets, and PWAs."
     },
     {
       "id": "backend",
@@ -88,61 +118,114 @@
       "items": [
         {
           "label": "Technologies",
-          "values": ["PHP", "C#", "Node.js", "Python"]
+          "values": [
+            "Node.js",
+            "C#",
+            "PHP",
+            "Python"
+          ]
         },
         {
           "label": "Integration",
-          "values": ["Solace", "Kafka", "RabbitMQ", "REST APIs", "GraphQL"]
+          "values": [
+            "Solace",
+            "Event Driven Architecture (EDA)",
+            "REST APIs",
+            "GraphQL"
+          ]
         }
       ],
-      "description": "Strong backend development experience with message buses and API design."
+      "description": "Experience with message buses, particularly Solace, event-driven architecture, and API design."
     },
     {
       "id": "ai_ml",
-      "title": "AI/ML",
+      "title": "AI / Machine Learning",
       "items": [
         {
           "label": "Technologies",
-          "values": ["PyTorch", "OpenCV", "Scikit-learn", "Hugging Face Transformers"]
-        },
-        {
-          "label": "Tools",
-          "values": ["GitHub Copilot", "Cursor", "Windsurf", "agentic development environments"]
+          "values": [
+            "Hugging Face Transformers",
+            "PyTorch",
+            "OpenCV",
+            "Scikit-learn",
+            "LangChain",
+            "LangGraph",
+            "n8n",
+            "ChromaDB"
+          ]
         },
         {
           "label": "AI",
           "values": [
-            "Fine-tuning LLMs (LoRA, SIT)",
-            "Prompt engineering",
-            "AI-assisted coding tools"
+            "Fine-tuning LLMs (LoRA/QLoRA)",
+            "AI-assisted coding tools",
+            "AI-assisted development"
           ]
         }
       ],
-      "description": "Passionate about AI/ML with hands-on experience in machine learning and modern AI tools."
+      "description": "Experience with machine learning, LLM fine-tuning, and AI-assisted development."
+    },
+    {
+      "id": "devops",
+      "title": "DevOps & Infrastructure",
+      "items": [
+        {
+          "label": "Technologies",
+          "values": [
+            "Azure",
+            "Docker",
+            "Kubernetes",
+            "AWS",
+            "Terraform"
+          ]
+        },
+        {
+          "label": "CI/CD",
+          "values": [
+            "Azure DevOps Pipelines",
+            "GitHub Actions",
+            "GitLab CI",
+            "Jenkins"
+          ]
+        },
+        {
+          "label": "Authentication",
+          "values": [
+            "Open-Auth (Keycloak)"
+          ]
+        }
+      ],
+      "description": "Experience with cloud infrastructure, automated deployments, and CI/CD pipelines."
     },
     {
       "id": "mobile",
       "title": "Mobile",
       "items": [
         {
-          "label": "Platforms",
-          "values": ["Android", "iOS", "cross-platform"]
-        },
-        {
-          "label": "Technologies",
+          "label": "Android",
           "values": [
             "Java",
             "Kotlin",
-            "Jetpack Compose",
-            "ReactNative",
+            "Jetpack Compose"
+          ]
+        },
+        {
+          "label": "iOS",
+          "values": [
             "Swift",
-            "SwiftUI",
+            "SwiftUI"
+          ]
+        },
+        {
+          "label": "Cross-platform",
+          "values": [
+            "ReactNative",
             "Flutter",
             "Cordova"
           ]
         }
       ],
-      "description": "Full-stack mobile development experience across native and cross-platform technologies."
+      "description": "Experience across native Android, iOS, and cross-platform mobile development."
     },
     {
       "id": "databases",
@@ -150,57 +233,17 @@
       "items": [
         {
           "label": "Technologies",
-          "values": ["MySQL", "PostgreSQL", "SQLite", "MongoDB", "Redis", "CouchDB"]
-        }
-      ],
-      "description": "Extensive database experience with both SQL and NoSQL technologies."
-    },
-    {
-      "id": "practices",
-      "title": "Practices",
-      "items": [
-        {
-          "label": "Methodologies",
-          "values": ["Agile/Lean", "TDD", "code review leadership"]
-        },
-        {
-          "label": "Architecture",
-          "values": ["scalable microservices architecture", "system modernization"]
-        }
-      ],
-      "description": "Strong foundation in modern development practices and architectural patterns."
-    },
-    {
-      "id": "devops",
-      "title": "DevOps",
-      "items": [
-        {
-          "label": "Technologies",
-          "values": ["Docker", "Kubernetes", "Helm Charts", "Kustomize"]
-        },
-        {
-          "label": "CI/CD",
-          "values": ["GitHub Actions", "GitLab CI", "Jenkins", "Kaniko"]
-        },
-        {
-          "label": "Architecture",
-          "values": ["containerized build pipelines", "event-driven architecture"]
-        }
-      ],
-      "description": "Comprehensive DevOps experience with containerization and CI/CD pipelines."
-    },
-    {
-      "id": "languages",
-      "title": "Languages",
-      "items": [
-        {
-          "label": "Breadth",
           "values": [
-            "Released production code in 10+ languages; experience in 20+ programming languages"
+            "MySQL",
+            "SQL Server",
+            "PostgreSQL",
+            "SQLite",
+            "MongoDB",
+            "Redis"
           ]
         }
       ],
-      "description": "Polyglot developer with extensive language experience across different paradigms."
+      "description": "Experience with relational and NoSQL databases."
     }
   ],
   "education": [
@@ -223,24 +266,37 @@
       "name": "Storefront E-Commerce Platform",
       "period": "2000 - Present",
       "description": "Architected and developed enterprise e-commerce platform powering photo product ordering for 10+ major retailers",
-      "impact": "Still operational after 25 years, processing millions of orders",
-      "technologies": ["Web", "E-commerce", "Enterprise Systems"]
+      "impact": "Still operational, serving 10+ major retailers including Rite Aid, Costco Mexico, and London Drugs",
+      "technologies": [
+        "Web",
+        "E-commerce",
+        "Enterprise Systems"
+      ]
     },
     {
       "id": "storefront_kiosk",
       "name": "Storefront Windows Photo Kiosk",
       "period": "2005 - Present",
       "description": "Lead architect for Windows photo kiosk system",
-      "impact": "Processed millions of prints annually, drove over $1B in sales by 2010",
-      "technologies": ["Windows", "Kiosk Systems", "Photo Processing"]
+      "impact": "Processed millions of prints annually and supported over $1B in photo product sales at its 2010 peak",
+      "technologies": [
+        "Windows",
+        "Kiosk Systems",
+        "Photo Processing"
+      ]
     },
     {
       "id": "file_transfer_payment",
       "name": "Kiosk File Transfer and Payment System",
-      "period": "2010s",
+      "period": "2020 – 2025",
       "description": "Node.js and React system for mobile-to-kiosk photo transfer and phone-based payments",
-      "impact": "Eliminated credit card hardware costs and security risks, adopted by thousands of kiosks",
-      "technologies": ["Node.js", "React", "Mobile Integration", "Payment Systems"]
+      "impact": "Enabled customers to transfer photos from phones to kiosks via a barcode and pay for kiosk purchases on their devices",
+      "technologies": [
+        "Node.js",
+        "React",
+        "Mobile Integration",
+        "Payment Systems"
+      ]
     },
     {
       "id": "remote_management",
@@ -248,15 +304,25 @@
       "period": "2010s",
       "description": "Centralized monitoring and remote management platform for kiosks and lab equipment",
       "impact": "Scaled to 30,000+ devices with 12,000 requests/minute throughput",
-      "technologies": ["Distributed Systems", "Monitoring", "Remote Management"]
+      "technologies": [
+        "Distributed Systems",
+        "Monitoring",
+        "Remote Management"
+      ]
     },
     {
       "id": "saas_platform",
-      "name": "Distributed SaaS Platform",
-      "period": "2020s",
-      "description": "Microservices-based SaaS platform for customizable products and e-commerce integrations",
-      "impact": "Enabled rapid partner integration and scalability",
-      "technologies": ["Microservices", "SaaS", "APIs", "Cloud Architecture"]
+      "name": "PrintSuite",
+      "period": "2020 – 2025",
+      "description": "Co-architected a distributed C# microservices SaaS platform for customizable products and e-commerce integrations",
+      "impact": "Integrated with Shopify and other commerce platforms using Solace event messaging",
+      "technologies": [
+        "C#",
+        "Microservices",
+        "SaaS",
+        "Solace",
+        "Shopify"
+      ]
     }
   ]
 }
